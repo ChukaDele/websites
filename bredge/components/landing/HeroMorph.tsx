@@ -1,9 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import * as THREE from "three";
 
 const sources = ["Product", "Billing", "CRM", "Support", "Finance"];
 
@@ -19,55 +16,66 @@ export function HeroMorph() {
 
     if (!stage || !canvasHost || !desktop || reducedMotion) return;
 
-    gsap.registerPlugin(ScrollTrigger);
+    let cleanup = () => {};
+    let cancelled = false;
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-    canvasHost.appendChild(renderer.domElement);
+    const loadMotion = async () => {
+      const [{ default: gsap }, { ScrollTrigger }, THREE] = await Promise.all([
+        import("gsap"),
+        import("gsap/ScrollTrigger"),
+        import("three"),
+      ]);
+      if (cancelled) return;
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-    camera.position.set(0, 0, 8);
+      gsap.registerPlugin(ScrollTrigger);
 
-    const field = new THREE.Group();
-    scene.add(field);
-    const pointPositions = new Float32Array(96 * 3);
-    for (let index = 0; index < 96; index += 1) {
-      const offset = index * 3;
-      pointPositions[offset] = ((index * 37) % 19) / 4 - 2.4;
-      pointPositions[offset + 1] = ((index * 17) % 23) / 5 - 2.1;
-      pointPositions[offset + 2] = ((index * 11) % 13) / 9 - 0.8;
-    }
-    const pointsGeometry = new THREE.BufferGeometry();
-    pointsGeometry.setAttribute("position", new THREE.BufferAttribute(pointPositions, 3));
-    const points = new THREE.Points(pointsGeometry, new THREE.PointsMaterial({ color: 0x90d26f, size: 0.035, transparent: true, opacity: 0.82 }));
-    field.add(points);
+      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+      canvasHost.appendChild(renderer.domElement);
 
-    const linePositions = new Float32Array([
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+      camera.position.set(0, 0, 8);
+
+      const field = new THREE.Group();
+      scene.add(field);
+      const pointPositions = new Float32Array(96 * 3);
+      for (let index = 0; index < 96; index += 1) {
+        const offset = index * 3;
+        pointPositions[offset] = ((index * 37) % 19) / 4 - 2.4;
+        pointPositions[offset + 1] = ((index * 17) % 23) / 5 - 2.1;
+        pointPositions[offset + 2] = ((index * 11) % 13) / 9 - 0.8;
+      }
+      const pointsGeometry = new THREE.BufferGeometry();
+      pointsGeometry.setAttribute("position", new THREE.BufferAttribute(pointPositions, 3));
+      const points = new THREE.Points(pointsGeometry, new THREE.PointsMaterial({ color: 0x90d26f, size: 0.035, transparent: true, opacity: 0.82 }));
+      field.add(points);
+
+      const linePositions = new Float32Array([
       -2.4, 1.3, 0, 0, 0, 0, 2.2, 1.2, 0, 0, 0, 0,
       -2.5, -1.3, 0, 0, 0, 0, 2.4, -1.1, 0, 0, 0, 0,
       0, 2, 0, 0, 0, 0,
-    ]);
-    const linesGeometry = new THREE.BufferGeometry();
-    linesGeometry.setAttribute("position", new THREE.BufferAttribute(linePositions, 3));
-    field.add(new THREE.LineSegments(linesGeometry, new THREE.LineBasicMaterial({ color: 0x90d26f, transparent: true, opacity: 0.5 })));
+      ]);
+      const linesGeometry = new THREE.BufferGeometry();
+      linesGeometry.setAttribute("position", new THREE.BufferAttribute(linePositions, 3));
+      field.add(new THREE.LineSegments(linesGeometry, new THREE.LineBasicMaterial({ color: 0x90d26f, transparent: true, opacity: 0.5 })));
 
-    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.38, 1), new THREE.MeshBasicMaterial({ color: 0xfa8754, wireframe: true, transparent: true, opacity: 0.82 }));
-    field.add(core);
+      const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.38, 1), new THREE.MeshBasicMaterial({ color: 0xfa8754, wireframe: true, transparent: true, opacity: 0.82 }));
+      field.add(core);
 
-    const render = () => renderer.render(scene, camera);
-    const resize = () => {
+      const render = () => renderer.render(scene, camera);
+      const resize = () => {
       const { width, height } = canvasHost.getBoundingClientRect();
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       render();
-    };
-    const resizeObserver = new ResizeObserver(resize);
-    resizeObserver.observe(canvasHost);
-    resize();
+      };
+      const resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(canvasHost);
+      resize();
 
-    const context = gsap.context(() => {
+      const context = gsap.context(() => {
       const select = gsap.utils.selector(stage);
       const cards = select(".morph-card");
       const timeline = gsap.timeline({
@@ -94,18 +102,25 @@ export function HeroMorph() {
         .to(select(".morph-decision"), { autoAlpha: 1, y: 0, duration: 0.26 }, 0.64)
         .to(field.rotation, { y: 0.7, z: -0.12, duration: 0.84, onUpdate: render }, 0)
         .to(core.rotation, { x: 1.7, y: 2.2, duration: 0.84, onUpdate: render }, 0);
-    }, stage);
+      }, stage);
 
+      cleanup = () => {
+        context.revert();
+        resizeObserver.disconnect();
+        pointsGeometry.dispose();
+        linesGeometry.dispose();
+        core.geometry.dispose();
+        core.material.dispose();
+        points.material.dispose();
+        renderer.dispose();
+        renderer.domElement.remove();
+      };
+    };
+
+    void loadMotion();
     return () => {
-      context.revert();
-      resizeObserver.disconnect();
-      pointsGeometry.dispose();
-      linesGeometry.dispose();
-      core.geometry.dispose();
-      (core.material as THREE.Material).dispose();
-      (points.material as THREE.Material).dispose();
-      renderer.dispose();
-      renderer.domElement.remove();
+      cancelled = true;
+      cleanup();
     };
   }, []);
 
