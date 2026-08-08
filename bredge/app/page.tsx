@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { HeroMorph } from "../components/landing/HeroMorph";
+import { PageMotion } from "../components/landing/PageMotion";
 import { FooterExperience, PipelineDemo, ReferenceDashboards } from "../components/landing/Visuals";
 
 const problems = [
@@ -40,11 +41,10 @@ function Arrow() {
 export default function Home() {
   return (
     <main>
+      <PageMotion />
       <header className="site-header">
         <a className="brand" href="#top" aria-label="The Bredge home"><img src="/brand/bredge-logo.svg" alt="The Bredge" /></a>
-        <nav aria-label="Future site navigation">
-          {["Work", "Services", "About", "Insights"].map((item) => <button key={item} type="button" disabled className="future-link">{item}<span>Soon</span></button>)}
-        </nav>
+        <nav aria-label="Primary navigation"><a href="#work">Work</a><a href="#services">Services</a><a href="#practice">Practice</a></nav>
         <a className="button button-small" href="#contact">Start a conversation <Arrow /></a>
       </header>
 
@@ -59,13 +59,8 @@ export default function Home() {
         <div className="hero-system" aria-label="An illustrative data system becoming reliable">
           <div className="system-topline"><span className="signal" /> SYSTEM OBSERVATION <strong>LIVE</strong></div>
           <div className="system-grid" />
-          <div className="data-shard one"><small>PRODUCT</small><b>1,842</b><span>active accounts</span></div>
-          <div className="data-shard two"><small>BILLING</small><b>1,731</b><span>paid accounts</span></div>
-          <div className="data-shard three"><small>CRM</small><b>1,809</b><span>account records</span></div>
-          <div className="trusted-metric"><span>TRUSTED METRIC</span><b>1,764</b><small>reconciled customer entities</small><em>✓ verified</em></div>
-          <div className="orbit orbit-one" /><div className="orbit orbit-two" />
+          <div className="system-globe"><div className="data-shard one"><small>PRODUCT</small><b>1,842</b><span>active accounts</span></div><div className="data-shard two"><small>BILLING</small><b>1,731</b><span>paid accounts</span></div><div className="data-shard three"><small>CRM</small><b>1,809</b><span>account records</span></div><div className="trusted-metric"><span>TRUSTED METRIC</span><b>1,764</b><small>reconciled customer entities</small><em>✓ verified</em></div><div className="orbit orbit-one" /><div className="orbit orbit-two" /></div>
         </div>
-        <div className="hero-continuation" aria-hidden="true"><span>CONTINUE</span><p>Five systems are waiting below.</p><i>↓</i></div>
       </section>
 
       <HeroMorph />
@@ -89,19 +84,19 @@ export default function Home() {
 
       <section className="outcomes section-wrap"><div className="section-heading"><p className="eyebrow">BUSINESS OUTCOMES</p><h2>Start with the decision. Work backwards to the data.</h2></div><div className="outcome-grid">{outcomes.map(([name, question, details], index) => <article className={`outcome-card outcome-${index + 1}`} key={name}><span>0{index + 1}</span><h3>{name}</h3><p>{question}</p><small>{details}</small><div className="outcome-line" /></article>)}</div></section>
 
-      <section className="capabilities section-wrap"><div className="capability-intro"><p className="eyebrow">CAPABILITIES</p><h2>One data partner. From source to decision.</h2></div><div className="capability-list">{capabilities.map(([title, description, items], index) => <article key={title}><span>0{index + 1}</span><div><h3>{title}</h3><p>{description}</p></div><small>{items}</small></article>)}</div></section>
+      <section id="services" className="capabilities section-wrap"><div className="capability-intro"><p className="eyebrow">CAPABILITIES</p><h2>One data partner. From source to decision.</h2></div><div className="capability-list">{capabilities.map(([title, description, items], index) => <article key={title}><span>0{index + 1}</span><div><h3>{title}</h3><p>{description}</p></div><small>{items}</small></article>)}</div></section>
 
-      <section className="work-section section-wrap"><div className="section-heading work-intro"><p className="eyebrow">REFERENCE WORK</p><h2>See the work behind the answer.</h2><p>Our public portfolio is being rebuilt around complete data systems, not isolated screenshots. These reference builds use synthetic data to demonstrate how we work end to end.</p></div><ReferenceDashboards /></section>
+      <section id="work" className="work-section section-wrap"><div className="section-heading work-intro"><p className="eyebrow">REFERENCE WORK</p><h2>See the work behind the answer.</h2><p>Reference builds show how we connect sources, define metrics and deliver a trusted view.</p></div><ReferenceDashboards /></section>
 
       <section className="invisible"><div className="section-wrap"><div className="invisible-intro"><p className="eyebrow light">THE INVISIBLE 90%</p><h2>The dashboard is the last 10%.</h2><p>Before a number reaches a chart, we make sure it deserves to.</p></div><div className="quality-layout"><div className="quality-steps">{["Profile", "Resolve", "Reconcile", "Define", "Test", "Operate"].map((step, index) => <div key={step}><span>0{index + 1}</span><b>{step}</b></div>)}</div><div className="terminal"><div><span /> <span /> <span /></div><p>$ bredge checks run --environment reference</p>{["no_negative_durations", "source_reconciliation", "referential_integrity", "unique_customer_keys", "bounded_rates", "controlled_vocabulary"].map((check) => <p key={check} className="pass">✓ {check}</p>)}<strong>7 / 7 checks passed</strong><small>Reference environment · Synthetic data</small></div></div></div></section>
 
       <section className="trust section-wrap"><div className="section-heading"><p className="eyebrow">HOW WE WORK</p><h2>Don’t take the dashboard on trust.</h2><p>We make the logic behind it visible.</p></div><div className="principles">{principles.map(([number, title, description]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div><p className="trust-statement">Stay because we’re useful, not because only we understand what we built.</p></section>
 
-      <section className="engagements section-wrap"><div className="section-heading"><p className="eyebrow">WAYS TO WORK WITH BREDGE</p><h2>Bring us a problem. Or plug in a team.</h2></div><div className="engagement-stack"><article className="engagement-card ongoing"><p>ONGOING</p><h3>Your data team, without building one from scratch.</h3><div><span>Embedded Data Team</span><p>An embedded senior data capability for companies that need consistent progress across engineering, analytics and reporting without hiring every role internally.</p><ul><li>Ongoing delivery</li><li>Engineering + analytics + BI</li><li>Shared backlog and priorities</li><li>Capacity that flexes with the business</li></ul><small>Best when data is an ongoing business capability rather than a one-off deliverable.</small><button disabled type="button">Explore embedded teams <span>Soon</span></button></div></article><article className="engagement-card projects"><p>DEFINED SCOPE</p><h3>One problem. The right team. End-to-end delivery.</h3><div><span>Data Projects</span><p>Bring us a defined data challenge. We scope the outcome, assemble the capability required and deliver the solution without turning it into a six-month consulting programme.</p><ul><li>Data pipelines</li><li>Warehouses and models</li><li>BI and reporting</li><li>Reconciliation and automation</li></ul><small>Best when the problem is clear and the outcome can be defined.</small><button disabled type="button">Explore data projects <span>Soon</span></button></div></article></div></section>
+      <section className="engagements section-wrap"><div className="section-heading"><p className="eyebrow">WAYS TO WORK WITH BREDGE</p><h2>Bring us a problem. Or plug in a team.</h2></div><div className="engagement-stack"><article className="engagement-card ongoing"><p>ONGOING</p><h3>Your data team, without building one from scratch.</h3><div><span>Embedded Data Team</span><p>An embedded senior data capability for companies that need consistent progress across engineering, analytics and reporting without hiring every role internally.</p><ul><li>Ongoing delivery</li><li>Engineering + analytics + BI</li><li>Shared backlog and priorities</li><li>Capacity that flexes with the business</li></ul><small>Best when data is an ongoing business capability rather than a one-off deliverable.</small><a className="engagement-link" href="#contact">Talk about an embedded team <Arrow /></a></div></article><article className="engagement-card projects"><p>DEFINED SCOPE</p><h3>One problem. The right team. End-to-end delivery.</h3><div><span>Data Projects</span><p>Bring us a defined data challenge. We scope the outcome, assemble the capability required and deliver the solution without turning it into a six-month consulting programme.</p><ul><li>Data pipelines</li><li>Warehouses and models</li><li>BI and reporting</li><li>Reconciliation and automation</li></ul><small>Best when the problem is clear and the outcome can be defined.</small><a className="engagement-link" href="#contact">Talk about a data project <Arrow /></a></div></article></div></section>
 
       <section className="diagnostic section-wrap"><p className="eyebrow">DATA DIAGNOSTIC</p><div><h2>Not sure what needs fixing first?</h2><p>Start with a Data Diagnostic. We map the current environment, identify reliability and workflow gaps, and prioritise the changes most likely to improve decision-making.</p><small>Useful on its own. A clear starting point if more work follows.</small><a className="text-link" href="#contact">Start with a diagnostic <Arrow /></a></div></section>
 
-      <section className="technology"><div className="section-wrap"><p className="eyebrow light">THE PRACTICE</p><h2>Tools change. Sound data practice doesn’t.</h2><p>We work with the environment you have, and recommend complexity only when it earns its place.</p><div className="tech-line"><span>PYTHON</span><i /> <span>SQL</span><i /> <span>POSTGRESQL</span><i /> <span>POWER BI</span><i /> <span>GITHUB</span></div></div></section>
+      <section id="practice" className="technology"><div className="section-wrap"><p className="eyebrow light">THE PRACTICE</p><h2>Tools change. Sound data practice doesn’t.</h2><p>We work with the environment you have, and recommend complexity only when it earns its place.</p><div className="tech-line"><span>PYTHON</span><i /> <span>SQL</span><i /> <span>POSTGRESQL</span><i /> <span>POWER BI</span><i /> <span>GITHUB</span></div></div></section>
       <FooterExperience />
     </main>
   );

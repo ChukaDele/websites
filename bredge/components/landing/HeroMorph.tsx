@@ -89,17 +89,19 @@ export function HeroMorph() {
         },
       });
 
-      timeline
-        .to(select(".hero-morph-tease"), { autoAlpha: 0, yPercent: -35, duration: 0.22 }, 0);
+      gsap.set(select(".hero-morph-tease"), { autoAlpha: 0 });
+      gsap.set(cards, { autoAlpha: 0, y: 34 });
 
       cards.forEach((card, index) => {
-        timeline.to(card, { x: (index - 2) * 26, y: index % 2 ? -12 : 12, rotation: 0, scale: 0.82, autoAlpha: 0.3, duration: 0.46 }, 0.1 + index * 0.035);
+        timeline.to(card, { autoAlpha: 1, y: 0, duration: 0.16 }, index * 0.07);
+        timeline.to(card, { x: (index - 2) * 26, y: index % 2 ? -12 : 12, rotation: 0, scale: 0.82, autoAlpha: 0.3, duration: 0.46 }, 0.52 + index * 0.035);
       });
 
       timeline
         .to({}, { duration: 0.22 })
-        .to(select(".morph-result"), { autoAlpha: 1, y: 0, duration: 0.3 }, 0.48)
-        .to(select(".morph-decision"), { autoAlpha: 1, y: 0, duration: 0.26 }, 0.64)
+        .to(select(".hero-morph-tease"), { autoAlpha: 1, x: -300, duration: 0.26 }, 0.4)
+        .to(select(".morph-result"), { autoAlpha: 1, y: 0, duration: 0.3 }, 0.78)
+        .to(select(".morph-decision"), { autoAlpha: 1, y: 0, duration: 0.26 }, 0.94)
         .to(field.rotation, { y: 0.7, z: -0.12, duration: 0.84, onUpdate: render }, 0)
         .to(core.rotation, { x: 1.7, y: 2.2, duration: 0.84, onUpdate: render }, 0);
       }, stage);
