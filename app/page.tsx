@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import { HeroMorph } from "../components/landing/HeroMorph";
 import { FooterExperience, PipelineDemo, ReferenceDashboards } from "../components/landing/Visuals";
 
 const problems = [
@@ -53,7 +54,7 @@ export default function Home() {
           <h1>We build the data systems behind better business decisions.</h1>
           <p className="hero-summary">The Bredge is the data team growing companies plug into. We connect fragmented systems, build reliable data foundations, automate reporting and turn complex data into answers people can act on.</p>
           <div className="hero-actions"><a className="button" href="#contact">Talk to a data lead <Arrow /></a><a className="text-link" href="#story">See how we work <span>↓</span></a></div>
-          <p className="microcopy">Embedded data teams · Defined projects · UK &amp; US engagements</p>
+          <p className="microcopy">Embedded data teams · Defined projects · Global engagements</p>
         </div>
         <div className="hero-system" aria-label="An illustrative data system becoming reliable">
           <div className="system-topline"><span className="signal" /> SYSTEM OBSERVATION <strong>LIVE</strong></div>
@@ -64,7 +65,10 @@ export default function Home() {
           <div className="trusted-metric"><span>TRUSTED METRIC</span><b>1,764</b><small>reconciled customer entities</small><em>✓ verified</em></div>
           <div className="orbit orbit-one" /><div className="orbit orbit-two" />
         </div>
+        <div className="hero-continuation" aria-hidden="true"><span>CONTINUE</span><p>Five systems are waiting below.</p><i>↓</i></div>
       </section>
+
+      <HeroMorph />
 
       <section className="reassurance section-wrap">
         <p className="eyebrow">THE OPERATING MODEL</p>
