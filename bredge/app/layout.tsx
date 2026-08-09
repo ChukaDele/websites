@@ -4,6 +4,12 @@ import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
 import "./globals.css";
 import "./pages.css";
+import { Preloader } from "../components/site/Preloader";
+
+// Runs before first paint: mark first-entry (this session, motion allowed) so the
+// preloader overlay is present on the very first frame — no flash for returning
+// visitors, and it decides synchronously so there's no layout jump.
+const preloadInit = `(function(){try{if(!sessionStorage.getItem('bredge_preloaded')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('preload-active');}}catch(e){}})();`;
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://thebredge.com"),
@@ -41,8 +47,12 @@ const structuredData = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: preloadInit }} />
+      </head>
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+        <Preloader />
         {children}
       </body>
     </html>
