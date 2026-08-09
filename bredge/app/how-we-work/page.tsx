@@ -51,8 +51,10 @@ export default function HowWeWorkPage() {
       <section className="section">
         <div className="section-wrap">
           <div className="section-lead"><h2>Six principles that shape the work.</h2></div>
-          <div className="principle-grid">
-            {principles.map(([n, h, p]) => <article key={n}><span>{n}</span><h3>{h}</h3><p>{p}</p></article>)}
+          <div className="ruled">
+            {principles.map(([n, h, p]) => (
+              <div className="ruled-row" key={n}><span>{n}</span><h3>{h}</h3><p>{p}</p></div>
+            ))}
           </div>
         </div>
       </section>
@@ -60,8 +62,10 @@ export default function HowWeWorkPage() {
       <section className="section surface">
         <div className="section-wrap">
           <div className="section-lead"><h2>A working rhythm, not a black box.</h2></div>
-          <div className="steps six">
-            {rhythm.map(([n, h, p]) => <div className="step" key={n}><span>{n}</span><h3>{h}</h3><p>{p}</p></div>)}
+          <div className="ruled">
+            {rhythm.map(([n, h, p]) => (
+              <div className="ruled-row" key={n}><span>{n}</span><h3>{h}</h3><p>{p}</p></div>
+            ))}
           </div>
         </div>
       </section>

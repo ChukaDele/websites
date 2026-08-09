@@ -58,8 +58,10 @@ export default function EmbeddedPage() {
       <section className="section">
         <div className="section-wrap">
           <div className="section-lead"><h2>You probably don’t need another pair of hands. You need somebody to own the work.</h2></div>
-          <div className="grid-2">
-            {forWho.map(([h, p]) => <article className="tile" key={h}><h3>{h}</h3><p>{p}</p></article>)}
+          <div className="ruled">
+            {forWho.map(([h, p], i) => (
+              <div className="ruled-row" key={h}><span>{String(i + 1).padStart(2, "0")}</span><h3>{h}</h3><p>{p}</p></div>
+            ))}
           </div>
         </div>
       </section>
@@ -68,10 +70,12 @@ export default function EmbeddedPage() {
         <div className="section-wrap">
           <div className="section-lead">
             <h2>More than people on a timesheet.</h2>
-            <p>Staff augmentation gives you additional capacity to manage. Our embedded model is designed around shared ownership of outcomes. Together we agree what matters most, what to build next, what “reliable” means, who owns each decision and how progress is measured — then deliver against that rhythm.</p>
+            <p>Staff augmentation gives you extra capacity to manage. Our embedded model is built around shared ownership of outcomes — we agree what matters most, what to build next, what “reliable” means, who owns each decision and how progress is measured, then deliver against that rhythm. One team covers the whole stack:</p>
           </div>
-          <div className="grid-2">
-            {coverage.map(([h, p]) => <article className="tile" key={h}><h3>{h}</h3><p>{p}</p></article>)}
+          <div className="ruled">
+            {coverage.map(([h, p]) => (
+              <div className="ruled-row" key={h}><span>—</span><h3>{h}</h3><p>{p}</p></div>
+            ))}
           </div>
         </div>
       </section>

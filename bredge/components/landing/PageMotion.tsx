@@ -28,7 +28,6 @@ export function PageMotion() {
       const mm = gsap.matchMedia();
       matchMedia = mm;
       mm.add(DESKTOP_MOTION, () => {
-        gsap.to(".system-globe", { rotation: 6, transformOrigin: "50% 50%", duration: 7, ease: "sine.inOut", yoyo: true, repeat: -1 });
         gsap.to(".pipeline-core", { y: -8, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: -1 });
 
         const counters = gsap.utils.toArray<HTMLElement>("[data-count]");

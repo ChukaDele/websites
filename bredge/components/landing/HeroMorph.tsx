@@ -67,9 +67,6 @@ export function HeroMorph() {
         const linkPaths = select<SVGLineElement>(".morph-links line");
         const chips = select(".morph-exception");
         const dots = select(".morph-card i");
-        const video = stage.querySelector<HTMLVideoElement>(".morph-video");
-        const videoFrame = stage.querySelector<HTMLElement>(".morph-video-frame");
-        if (videoFrame) gsap.set(videoFrame, { autoAlpha: 0 });
 
         linkPaths.forEach((line) => {
           const length = Math.hypot(
@@ -106,40 +103,21 @@ export function HeroMorph() {
           timeline.to(chip, { autoAlpha: 1, y: 0, duration: 0.1, ease: "power2.out" }, 0.42 + index * 0.07);
         });
 
-        // ACT 4 — reconciliation: the Veo asset emerges (atmosphere only), exceptions
-        // resolve, sources settle behind. The generated video never carries meaning.
-        if (videoFrame) timeline.to(videoFrame, { autoAlpha: 0.62, duration: 0.16, ease: "power1.inOut" }, 0.5);
+        // ACT 4 — reconciliation: exceptions resolve, sources settle behind.
         timeline.to(chips, { autoAlpha: 0, y: -8, duration: 0.12, stagger: 0.04, ease: "power1.in" }, 0.68);
         timeline.to(dots, { backgroundColor: "#90d26f", duration: 0.1, stagger: 0.02 }, 0.7);
         timeline.to(cards, { autoAlpha: 0.22, duration: 0.2, ease: "power1.inOut" }, 0.72);
         timeline.to(linkPaths, { opacity: 0.2, duration: 0.2, ease: "none" }, 0.72);
 
-        // ACT 5 — one reliable view emerges, calmer than the opening; video recedes.
-        if (videoFrame) timeline.to(videoFrame, { autoAlpha: 0.14, duration: 0.2, ease: "power1.inOut" }, 0.82);
+        // ACT 5 — one reliable view emerges, calmer than the opening.
         timeline
           .to(select(".morph-result"), { autoAlpha: 1, y: 0, duration: 0.26, ease: "power2.out" }, 0.82)
           .to(select(".morph-decision"), { autoAlpha: 1, y: 0, duration: 0.22, ease: "power2.out" }, 0.96);
-
-        // Lazy playback: load + play only while the section is in view, pause otherwise.
-        let playTrigger: ScrollTrigger | undefined;
-        if (video) {
-          playTrigger = ScrollTrigger.create({
-            trigger: stage,
-            start: "top bottom",
-            end: "bottom top",
-            onToggle: (self) => {
-              if (self.isActive) void video.play().catch(() => {});
-              else video.pause();
-            },
-          });
-        }
 
         // The pin is measured while this bundle is still loading, so if the
         // user has already scrolled by the time it resolves, refresh the
         // stale start/end measurements.
         ScrollTrigger.refresh();
-
-        return () => { playTrigger?.kill(); if (video) video.pause(); };
       });
     };
 
@@ -158,12 +136,6 @@ export function HeroMorph() {
 
   return (
     <section ref={stageRef} id="story" className="hero-morph" aria-label="The journey from fragmented sources to a trusted decision">
-      <div className="morph-video-frame" aria-hidden="true">
-        <video className="morph-video" muted loop playsInline preload="none" poster="/media/reconcile-poster.jpg">
-          <source src="/media/reconcile.webm" type="video/webm" />
-          <source src="/media/reconcile.mp4" type="video/mp4" />
-        </video>
-      </div>
       <svg className="morph-links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
         {links.map(([x, y], index) => (
           <line key={index} x1={x} y1={y} x2={50} y2={52} vectorEffect="non-scaling-stroke" />

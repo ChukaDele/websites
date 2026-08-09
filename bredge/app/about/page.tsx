@@ -28,7 +28,7 @@ export default function AboutPage() {
     <PageShell>
       <section className="section-wrap page-hero">
         <p className="eyebrow">ABOUT THE BREDGE</p>
-        <h1>Technical enough to build it. Commercial enough to know why it matters.</h1>
+        <h1>Technical enough to build it. Close enough to the business to know why it matters.</h1>
         <p className="lede">The Bredge brings together data engineering, analytics and business intelligence around a simple idea: data is only valuable when somebody can use it to make a better decision.</p>
         <p className="lede">We work with organisations that need stronger data capability without the layers, hand-offs and overhead that often come with traditional consulting.</p>
       </section>
@@ -46,8 +46,10 @@ export default function AboutPage() {
       <section className="section">
         <div className="section-wrap">
           <div className="section-lead"><h2>Where it usually breaks.</h2></div>
-          <div className="grid-3">
-            {gaps.map(([h, p]) => <article className="tile" key={h}><h3 style={{ fontSize: "1.05rem", lineHeight: 1.2 }}>{h}</h3><p>{p}</p></article>)}
+          <div className="ruled">
+            {gaps.map(([h, p]) => (
+              <div className="ruled-row" key={h}><span>—</span><h3>{h}</h3><p>{p}</p></div>
+            ))}
           </div>
         </div>
       </section>
@@ -55,26 +57,20 @@ export default function AboutPage() {
       <section className="section surface">
         <div className="section-wrap">
           <div className="section-lead"><h2>What we believe.</h2></div>
-          <div className="grid-2">
-            {beliefs.map(([h, p]) => <article className="tile" key={h}><h3>{h}</h3><p>{p}</p></article>)}
+          <div className="ruled">
+            {beliefs.map(([h, p], i) => (
+              <div className="ruled-row" key={h}><span>{String(i + 1).padStart(2, "0")}</span><h3>{h}</h3><p>{p}</p></div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="section">
-        <div className="section-wrap">
-          <div className="section-lead"><h2>Small team. Close to the work.</h2><p>Clients work with the people who actually build and run the systems — not a layer of account managers in between.</p></div>
-          {/* TODO: replace with verified team members (photo, name, role, bio, LinkedIn) once confirmed.
-              Deliberately not rendering placeholder people — see NON-NEGOTIABLE TRUST RULES. */}
-          <div className="team-placeholder">
-            <b>Team profiles are being finalised.</b> We’d rather leave this blank than fill it with stock photos and invented titles. Real names, roles and backgrounds go here once confirmed. In the meantime, when you talk to us you speak directly with the people who’ll do the work.
-          </div>
-        </div>
-      </section>
+      {/* Team profile section intentionally omitted until verified people are ready —
+          no stock photos or invented bios. See NON-NEGOTIABLE TRUST RULES. */}
 
       <section className="section surface">
         <div className="section-wrap">
-          <div className="section-lead"><h2>Built to work across borders.</h2><p>The Bredge works with organisations across the UK and United States, collaborating remotely with teams and stakeholders wherever the work sits.</p></div>
+          <div className="section-lead"><h2>UK and US engagements.</h2><p>The Bredge works with growing and mid-market organisations across the United Kingdom and United States, collaborating remotely with teams and stakeholders wherever the work sits. We don’t run a network of offices — you work directly with the people doing the work.</p></div>
         </div>
       </section>
 

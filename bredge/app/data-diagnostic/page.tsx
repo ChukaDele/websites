@@ -55,17 +55,19 @@ export default function DiagnosticPage() {
       <section className="section">
         <div className="section-wrap">
           <div className="section-lead"><h2>You may need a diagnostic if…</h2></div>
-          <div className="grid-2">
-            {triggers.map((t) => <article className="tile" key={t}><p style={{ color: "var(--ink)", fontSize: "1rem" }}>{t}</p></article>)}
-          </div>
+          <ul className="checklist">
+            {triggers.map((t) => <li key={t}>{t}</li>)}
+          </ul>
         </div>
       </section>
 
       <section className="section surface">
         <div className="section-wrap">
           <div className="section-lead"><h2>What we review.</h2></div>
-          <div className="grid-3">
-            {review.map(([h, p]) => <article className="tile" key={h}><h3>{h}</h3><p>{p}</p></article>)}
+          <div className="ruled">
+            {review.map(([h, p], i) => (
+              <div className="ruled-row" key={h}><span>{String(i + 1).padStart(2, "0")}</span><h3>{h}</h3><p>{p}</p></div>
+            ))}
           </div>
         </div>
       </section>

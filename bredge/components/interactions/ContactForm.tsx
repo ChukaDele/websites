@@ -46,7 +46,7 @@ export function ContactForm() {
       if (res.ok) {
         form.reset();
         setNeed(""); setTimeline("");
-        setState({ kind: "ok", message: "Thanks — that’s with us. A data lead will read the context and reply, usually within a couple of working days." });
+        setState({ kind: "ok", message: "Thanks — that’s with us. A data lead will read the context and reply personally." });
       } else {
         const body = await res.json().catch(() => ({}));
         setState({ kind: "error", message: body.error || "Something went wrong sending that. Please email hello@thebredge.com and we’ll pick it up." });

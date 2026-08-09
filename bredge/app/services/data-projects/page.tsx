@@ -32,7 +32,7 @@ export default function ProjectsPage() {
       <section className="section-wrap page-hero">
         <Breadcrumbs trail={[["Services", "/services"], ["Data Projects", "/services/data-projects"]]} />
         <p className="eyebrow">DATA PROJECTS</p>
-        <h1>One problem. The right team. End-to-end delivery.</h1>
+        <h1>One problem. The right team. Delivered, not just advised.</h1>
         <p className="lede">Bring us a defined data challenge. We’ll understand what is broken, determine what needs to change and deliver the working system — without turning every problem into a transformation programme.</p>
         <div className="hero-cta-row"><a className="button" href="/contact">Discuss a project <span className="arrow" aria-hidden="true">↗</span></a></div>
       </section>
@@ -50,8 +50,10 @@ export default function ProjectsPage() {
       <section className="section">
         <div className="section-wrap">
           <div className="section-lead"><h2>Problems we can own.</h2></div>
-          <div className="grid-3">
-            {problems.map(([q, a]) => <article className="tile" key={q}><span className="q">{q}</span><p>{a}</p></article>)}
+          <div className="ruled">
+            {problems.map(([q, a]) => (
+              <div className="ruled-row" key={q}><span>—</span><p className="q">{q}</p><p>{a}</p></div>
+            ))}
           </div>
         </div>
       </section>
@@ -59,8 +61,10 @@ export default function ProjectsPage() {
       <section className="section surface">
         <div className="section-wrap">
           <div className="section-lead"><h2>Defined enough to manage. Flexible enough to solve the real problem.</h2></div>
-          <div className="steps">
-            {delivery.map(([n, h, p]) => <div className="step" key={n}><span>{n}</span><h3>{h}</h3><p>{p}</p></div>)}
+          <div className="ruled">
+            {delivery.map(([n, h, p]) => (
+              <div className="ruled-row" key={n}><span>{n}</span><h3>{h}</h3><p>{p}</p></div>
+            ))}
           </div>
         </div>
       </section>

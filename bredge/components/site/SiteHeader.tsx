@@ -13,7 +13,6 @@ const services = [
 const primary = [
   ["How we work", "/how-we-work"],
   ["About", "/about"],
-  ["Insights", "/insights"],
 ];
 
 function Arrow() {
