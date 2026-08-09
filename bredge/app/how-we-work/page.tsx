@@ -86,7 +86,7 @@ export default function HowWeWorkPage() {
       <section className="section-wrap callout">
         <div className="callout-inner">
           <div><h2>See how we could approach your data problem.</h2><p>Tell us where it hurts. We’ll show you how we’d think about it.</p></div>
-          <div><a className="button" href="/contact">Start a conversation <span className="arrow" aria-hidden="true">↗</span></a></div>
+          <div><a className="button" href="/schedule">Schedule a call <span className="arrow" aria-hidden="true">↗</span></a></div>
         </div>
       </section>
     </PageShell>

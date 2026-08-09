@@ -26,7 +26,7 @@ export default function ServicesPage() {
         <h1>From messy source systems to decisions your team can trust.</h1>
         <p className="lede">Your data problems rarely fit neatly into one discipline. A reporting problem may actually be a modelling problem. A dashboard nobody trusts may be a reconciliation problem. A forecasting problem may start with unreliable source data.</p>
         <p className="lede">The Bredge works across the data stack — from engineering and modelling to analytics, reporting and ongoing data operations — so the solution follows the problem rather than the other way around.</p>
-        <div className="hero-cta-row"><a className="button" href="/contact">Talk to a data lead <span className="arrow" aria-hidden="true">↗</span></a></div>
+        <div className="hero-cta-row"><a className="button" href="/schedule">Schedule a call <span className="arrow" aria-hidden="true">↗</span></a></div>
       </section>
 
       <section className="section surface">

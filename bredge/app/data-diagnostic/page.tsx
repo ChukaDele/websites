@@ -39,7 +39,7 @@ export default function DiagnosticPage() {
         <p className="eyebrow">DATA DIAGNOSTIC</p>
         <h1>Know something is wrong. Not sure what to fix first?</h1>
         <p className="lede">You don’t need to commission a six-month data programme to find out. A Bredge Data Diagnostic gives you a clear view of what’s working, where reliability or efficiency is breaking down, and what deserves attention first.</p>
-        <div className="hero-cta-row"><a className="button" href="/contact">Start a diagnostic <span className="arrow" aria-hidden="true">↗</span></a></div>
+        <div className="hero-cta-row"><a className="button" href="/contact?intent=diagnostic">Start a diagnostic <span className="arrow" aria-hidden="true">↗</span></a></div>
       </section>
 
       <section className="section surface">
@@ -88,7 +88,7 @@ export default function DiagnosticPage() {
             <h2>Find the highest-leverage place to start.</h2>
             <p>If the diagnostic points to a defined piece of work, a <a className="text-link" href="/services/data-projects">Data Project</a> is often the next step.</p>
           </div>
-          <div><a className="button" href="/contact">Talk to us about a Data Diagnostic <span className="arrow" aria-hidden="true">↗</span></a></div>
+          <div><a className="button" href="/contact?intent=diagnostic">Start with a Data Diagnostic <span className="arrow" aria-hidden="true">↗</span></a></div>
         </div>
       </section>
     </PageShell>

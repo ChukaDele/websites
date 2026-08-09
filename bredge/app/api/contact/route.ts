@@ -27,8 +27,9 @@ type Utm = { source?: string; medium?: string; campaign?: string; content?: stri
 type Payload = {
   formType?: string;
   name?: string; email?: string; company?: string;
-  need?: string; message?: string; timeline?: string;
-  page?: string; utm?: Utm;
+  country?: string; phone?: string; phoneE164?: string; phoneCountry?: string; callingCode?: string;
+  need?: string; projectType?: string; message?: string; timeline?: string;
+  page?: string; intent?: string; utm?: Utm;
   turnstileToken?: string;
   company_website?: string; // honeypot
   elapsedMs?: number;       // ms since the form was shown
@@ -95,11 +96,17 @@ export async function POST(request: Request) {
 
   const submission = {
     formType,
-    name, email, company,
+    name, email: email.toLowerCase(), company,
+    country: (body.phoneCountry || body.country || "").slice(0, 80),
+    phone: (body.phone || "").slice(0, 40),
+    phoneE164: (body.phoneE164 || "").slice(0, 24),
+    phoneCountry: (body.phoneCountry || "").slice(0, 8),
     need: (body.need || "").slice(0, 160),
+    projectType: (body.projectType || "").slice(0, 160),
     timeline: (body.timeline || "").slice(0, 120),
     message,
     page: (body.page || "").slice(0, 300),
+    intent: (body.intent || "").slice(0, 40),
     referrer: (request.headers.get("referer") || "").slice(0, 300),
     utm: {
       source: (body.utm?.source || "").slice(0, 120),

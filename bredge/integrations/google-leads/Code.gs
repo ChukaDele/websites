@@ -12,9 +12,10 @@ var SHEET_NAME = "Leads";
 var NOTIFY_EMAIL = "mcdavies001@gmail.com";
 
 var HEADERS = [
-  "Submission ID", "Received At", "Form Type", "Name", "Work Email", "Company",
-  "Need", "Timeline", "Message", "Landing Page", "Referrer",
-  "UTM Source", "UTM Medium", "UTM Campaign", "UTM Content", "Status",
+  "Submission ID", "Received At", "Form Type", "Name", "Email", "Company",
+  "Country", "Phone", "Phone E.164", "Phone Country",
+  "Need", "Project Type / Current Setup", "Timeline", "Message",
+  "Landing Page", "Referrer", "UTM Source", "UTM Medium", "UTM Campaign", "UTM Content", "Status",
 ];
 
 function doPost(e) {
@@ -36,7 +37,9 @@ function doPost(e) {
 
     var row = [
       id, receivedAt, str(body.formType) || "contact", name, email, company,
-      str(body.need), str(body.timeline), message, str(body.page), str(body.referrer),
+      str(body.country), str(body.phone), str(body.phoneE164), str(body.phoneCountry),
+      str(body.need), str(body.projectType), str(body.timeline), message,
+      str(body.page), str(body.referrer),
       str(utm.source), str(utm.medium), str(utm.campaign), str(utm.content), "New",
     ].map(safeCell_); // formula-injection protection on every cell
 

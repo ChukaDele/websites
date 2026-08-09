@@ -12,11 +12,9 @@ const columns: Array<[string, Array<[string, string] | [string, string, "soon"]>
     ["How we work", "/how-we-work"],
     ["Work", "", "soon"],
   ]],
-  ["Learn", [
-    ["Insights", "/insights"],
-  ]],
   ["Connect", [
-    ["Contact", "/contact"],
+    ["Schedule a call", "/schedule"],
+    ["Contact us", "/contact"],
     ["hello@thebredge.com", "mailto:hello@thebredge.com"],
   ]],
 ];

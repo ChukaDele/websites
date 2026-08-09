@@ -56,7 +56,7 @@ export default function Home() {
           <p className="eyebrow">DATA ENGINEERING <i /> ANALYTICS <i /> BUSINESS INTELLIGENCE</p>
           <h1>We build the data systems behind better business decisions.</h1>
           <p className="hero-summary">The Bredge is the data team that growing and mid-market companies plug into. We connect fragmented systems, build reliable data foundations, automate reporting and turn complex data into answers people can act on.</p>
-          <div className="hero-actions"><a className="button" href="/contact">Talk to a data lead <Arrow /></a><a className="text-link" href="#story">See how we work <span>↓</span></a></div>
+          <div className="hero-actions"><a className="button" href="/schedule">Schedule a call <Arrow /></a><a className="text-link" href="#story">See how we work <span>↓</span></a></div>
           <p className="microcopy">Embedded data teams · Defined projects · Ongoing data operations</p>
         </div>
         <HeroVideo />

@@ -43,9 +43,11 @@ export function PageMotion() {
         });
         ScrollTrigger.create({ trigger: ".pipeline-demo", start: "top 78%", once: true, onEnter: runCounters });
 
-        gsap.from(".outcome-card", { y: 28, autoAlpha: 0, stagger: 0.08, duration: 0.48, ease: "power3.out", scrollTrigger: { trigger: ".outcome-grid", start: "top 78%", once: true } });
-        gsap.from(".reference-case", { y: 34, autoAlpha: 0, stagger: 0.11, duration: 0.5, ease: "power3.out", scrollTrigger: { trigger: ".reference-work", start: "top 74%", once: true } });
-        gsap.from(".diagnostic", { y: 38, autoAlpha: 0, duration: 0.55, ease: "power3.out", scrollTrigger: { trigger: ".diagnostic", start: "top 76%", once: true } });
+        // Outcome cards: a quiet opacity-only INTRODUCE (no slide) as the reader
+        // reaches "start with the decision". Reference Work uses its sticky
+        // card-stack as the interaction; Diagnostic reveal removed — no generic
+        // fade-up simply because a section entered the viewport.
+        gsap.from(".outcome-card", { autoAlpha: 0, stagger: 0.06, duration: 0.4, ease: "power2.out", scrollTrigger: { trigger: ".outcome-grid", start: "top 80%", once: true } });
 
         // This bundle loads async: refresh so triggers measured mid-scroll
         // pick up the real layout offsets.

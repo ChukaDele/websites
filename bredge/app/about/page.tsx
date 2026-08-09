@@ -77,7 +77,7 @@ export default function AboutPage() {
       <section className="section-wrap callout">
         <div className="callout-inner">
           <div><h2>Bring us the complicated version.</h2><p>The messy, cross-system, nobody-owns-it problem is the one we like.</p></div>
-          <div><a className="button" href="/contact">Start a conversation <span className="arrow" aria-hidden="true">↗</span></a></div>
+          <div><a className="button" href="/schedule">Schedule a call <span className="arrow" aria-hidden="true">↗</span></a></div>
         </div>
       </section>
     </PageShell>

@@ -34,7 +34,7 @@ export default function ProjectsPage() {
         <p className="eyebrow">DATA PROJECTS</p>
         <h1>One problem. The right team. Delivered, not just advised.</h1>
         <p className="lede">Bring us a defined data challenge. We’ll understand what is broken, determine what needs to change and deliver the working system — without turning every problem into a transformation programme.</p>
-        <div className="hero-cta-row"><a className="button" href="/contact">Discuss a project <span className="arrow" aria-hidden="true">↗</span></a></div>
+        <div className="hero-cta-row"><a className="button" href="/schedule">Discuss a project <span className="arrow" aria-hidden="true">↗</span></a></div>
       </section>
 
       <section className="section surface">
@@ -85,7 +85,7 @@ export default function ProjectsPage() {
             <h2>Have a defined data problem?</h2>
             <p>Tell us what isn’t working yet. If it’s still fuzzy, a <a className="text-link" href="/data-diagnostic">Data Diagnostic</a> is the right first step.</p>
           </div>
-          <div><a className="button" href="/contact">Discuss your project <span className="arrow" aria-hidden="true">↗</span></a></div>
+          <div><a className="button" href="/schedule">Discuss a project <span className="arrow" aria-hidden="true">↗</span></a></div>
         </div>
       </section>
     </PageShell>

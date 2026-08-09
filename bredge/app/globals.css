@@ -14,6 +14,13 @@
   --body:1rem;
   --body-sm:0.9rem;
   --label:0.82rem;
+  /* motion system — fast, purposeful, ease-out for responsive UI */
+  --motion-instant:120ms;
+  --motion-fast:180ms;
+  --motion-base:240ms;
+  --motion-slow:360ms;
+  --ease-out:cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out:cubic-bezier(0.77, 0, 0.175, 1);
 }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; background:var(--paper); }
@@ -28,15 +35,23 @@ h1,h2,h3,p { margin-top:0; }
 h1,h2,h3 { letter-spacing:-.065em; font-weight:500; }
 h2 { font-size:clamp(2.7rem, 5.4vw, 5.9rem); line-height:.95; }
 h3 { line-height:1; }
-.button { display:inline-flex; align-items:center; gap:23px; min-height:53px; padding:0 22px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); font-size:13px; transition:transform .25s ease, background .25s ease; }
-.button:hover { background:var(--brand); color:var(--ink); transform:translateY(-2px); }
+/* Primary CTA: dependable, not performing for the mouse. No lift, no colour
+   flip, no arrow move on hover — just a barely-there background shift, a real
+   press response, and a strong focus-visible ring. */
+.button { display:inline-flex; align-items:center; gap:23px; min-height:53px; padding:0 22px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); font-size:13px; transition:background var(--motion-fast) var(--ease-out), transform var(--motion-instant) var(--ease-out); }
+.button:hover { background:#1d312b; }
+.button:active { transform:scale(.98); }
+.footer-button:hover { background:#a6e085; }
 .button-small { min-height:40px; padding:0 14px; font-size:11px; }
-.arrow { font-size:17px; line-height:1; transition:transform .25s ease; }.button:hover .arrow,.text-link:hover .arrow { transform:translate(3px,-3px); }
+.arrow { font-size:17px; line-height:1; transition:transform var(--motion-fast) var(--ease-out); }
+/* Editorial inline links: underline is static; arrow nudges only enough to confirm direction. */
+.text-link:hover .arrow,.engagement-link:hover .arrow { transform:translate(2px,-2px); }
+:where(a,button,input,textarea,select,[tabindex]):focus-visible { outline:2px solid var(--brand); outline-offset:3px; border-radius:1px; }
 .site-header { position:absolute; z-index:5; top:0; left:50%; display:flex; align-items:center; justify-content:space-between; width:min(1380px, calc(100% - 80px)); height:100px; transform:translateX(-50%); }
 .brand { display:flex; width:137px; }.brand img { display:block; width:100%; height:auto; }
 .site-header nav { display:flex; gap:25px; }
 .hero { position:relative; display:block; min-height:860px; padding-top:186px; padding-bottom:115px; overflow:hidden; }
-.hero-copy { position:relative; z-index:2; max-width:600px; }.hero h1 { max-width:620px; margin:0 0 32px; font-size:clamp(3.4rem, 5.6vw, 6.6rem); line-height:.9; }.hero-summary { max-width:520px; color:#46534f; font-size:18px; line-height:1.48; }.hero-actions { display:flex; align-items:center; gap:32px; margin-top:40px; }.text-link { display:inline-flex; align-items:center; gap:11px; padding-bottom:3px; border-bottom:1px solid var(--ink); font-size:13px; transition:color .2s; }.text-link:hover { color:#5f9560; }.microcopy { margin-top:72px; color:#68746f; font:10px var(--font-mono); letter-spacing:.07em; }
+.hero-copy { position:relative; z-index:2; max-width:600px; }.hero h1 { max-width:620px; margin:0 0 32px; font-size:clamp(3.4rem, 5.6vw, 6.6rem); line-height:.9; }.hero-summary { max-width:520px; color:#46534f; font-size:18px; line-height:1.48; }.hero-actions { display:flex; align-items:center; gap:32px; margin-top:40px; }.text-link { display:inline-flex; align-items:center; gap:11px; padding-bottom:3px; border-bottom:1px solid var(--ink); font-size:13px; transition:color var(--motion-fast) var(--ease-out); }.text-link:hover { color:#5f9560; }.microcopy { margin-top:72px; color:#68746f; font:10px var(--font-mono); letter-spacing:.07em; }
 /* Hero motion environment — the film bleeds off the right edge and dissolves
    into the paper via a left-edge mask. No border, no card, no chrome. */
 .hero-media { position:absolute; z-index:1; top:0; right:-4vw; bottom:0; width:64%; pointer-events:none; }
@@ -69,7 +84,6 @@ h3 { line-height:1; }
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }
 
 /* Comment pass: one spatial story with lighter motion on small screens. */
-.button:active { transform:scale(.97); }
 .hero { min-height:810px; padding-top:142px; padding-bottom:42px; }
 .hero-system { align-self:start; margin-top:48px; }
 .system-globe { position:absolute; inset:0; transform-origin:50% 50%; }

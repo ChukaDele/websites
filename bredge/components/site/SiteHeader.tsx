@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const services = [
   ["Services overview", "/services", "Everything we do, from source to decision"],
@@ -22,6 +23,8 @@ function Arrow() {
 export function SiteHeader({ variant = "solid" }: { variant?: "solid" | "overlay" }) {
   const [servicesOpen, setServicesOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname() || "/";
+  const servicesActive = pathname.startsWith("/services") || pathname === "/data-diagnostic";
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
@@ -35,9 +38,11 @@ export function SiteHeader({ variant = "solid" }: { variant?: "solid" | "overlay
 
       <nav className="site-nav" aria-label="Primary navigation">
         <div
-          className={`nav-item has-menu${servicesOpen ? " open" : ""}`}
+          className={`nav-item has-menu${servicesOpen ? " open" : ""}${servicesActive ? " active" : ""}`}
           onMouseEnter={() => setServicesOpen(true)}
           onMouseLeave={() => setServicesOpen(false)}
+          onFocus={() => setServicesOpen(true)}
+          onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setServicesOpen(false); }}
         >
           <a href="/services" aria-haspopup="true" aria-expanded={servicesOpen}>Services <span className="chev" aria-hidden="true">▾</span></a>
           <div className="nav-dropdown" role="menu">
@@ -46,11 +51,11 @@ export function SiteHeader({ variant = "solid" }: { variant?: "solid" | "overlay
             ))}
           </div>
         </div>
-        {primary.map(([label, href]) => <a key={href} className="nav-item" href={href}>{label}</a>)}
+        {primary.map(([label, href]) => <a key={href} className={`nav-item${pathname === href ? " active" : ""}`} href={href} aria-current={pathname === href ? "page" : undefined}>{label}</a>)}
         <span className="nav-item nav-soon" aria-disabled="true" title="Coming soon">Work <em>Soon</em></span>
       </nav>
 
-      <a className="button button-small header-cta" href="/contact">Talk to us <Arrow /></a>
+      <a className="button button-small header-cta" href="/schedule">Schedule a call <Arrow /></a>
 
       <button className="nav-toggle" aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen((v) => !v)}>
         <span className={menuOpen ? "open" : ""} />
@@ -64,7 +69,7 @@ export function SiteHeader({ variant = "solid" }: { variant?: "solid" | "overlay
         <p className="mobile-eyebrow">COMPANY</p>
         {primary.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}
         <span className="mobile-soon">Work <em>Coming soon</em></span>
-        <a className="button mobile-cta" href="/contact" onClick={() => setMenuOpen(false)}>Talk to us <Arrow /></a>
+        <a className="button mobile-cta" href="/schedule" onClick={() => setMenuOpen(false)}>Schedule a call <Arrow /></a>
       </div>
     )}
     </>

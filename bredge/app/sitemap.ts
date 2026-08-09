@@ -10,7 +10,6 @@ const routes: Array<[string, number, MetadataRoute.Sitemap[number]["changeFreque
   ["/data-diagnostic", 0.8, "monthly"],
   ["/how-we-work", 0.6, "monthly"],
   ["/about", 0.6, "monthly"],
-  ["/insights", 0.6, "weekly"],
   ["/contact", 0.7, "monthly"],
 ];
 

@@ -40,7 +40,7 @@ export default function EmbeddedPage() {
         <h1>Your data team, without building one from scratch.</h1>
         <p className="lede">Get ongoing engineering, analytics and BI capability working inside the rhythm of your business. We take ownership of an agreed data backlog, work closely with your teams and keep improving the systems behind your decisions.</p>
         <div className="hero-cta-row">
-          <a className="button" href="/contact">Talk to us about an embedded team <span className="arrow" aria-hidden="true">↗</span></a>
+          <a className="button" href="/schedule">Discuss an embedded team <span className="arrow" aria-hidden="true">↗</span></a>
         </div>
         <p className="microcopy" style={{ marginTop: 28 }}>A practical alternative to hiring an entire data function or managing multiple freelancers.</p>
       </section>
@@ -108,7 +108,7 @@ export default function EmbeddedPage() {
             <h2>Need a data function before you’re ready to hire one?</h2>
             <p>Tell us where the backlog is winning. We’ll work out the right shape of team from there.</p>
           </div>
-          <div><a className="button" href="/contact">Talk to a data lead <span className="arrow" aria-hidden="true">↗</span></a></div>
+          <div><a className="button" href="/schedule">Discuss an embedded team <span className="arrow" aria-hidden="true">↗</span></a></div>
         </div>
       </section>
     </PageShell>
