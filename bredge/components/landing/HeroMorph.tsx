@@ -99,12 +99,16 @@ export function HeroMorph() {
 
       timeline
         .to({}, { duration: 0.22 })
-        .to(select(".hero-morph-tease"), { autoAlpha: 1, x: -300, duration: 0.26 }, 0.4)
-        .to(select(".morph-result"), { autoAlpha: 1, y: 0, duration: 0.3 }, 0.78)
-        .to(select(".morph-decision"), { autoAlpha: 1, y: 0, duration: 0.26 }, 0.94)
+        .to(select(".hero-morph-tease"), { autoAlpha: 1, x: -300, duration: 0.26 }, 0.9)
+        .to(select(".morph-result"), { autoAlpha: 1, y: 0, duration: 0.3 }, 1.16)
+        .to(select(".morph-decision"), { autoAlpha: 1, y: 0, duration: 0.26 }, 1.36)
         .to(field.rotation, { y: 0.7, z: -0.12, duration: 0.84, onUpdate: render }, 0)
         .to(core.rotation, { x: 1.7, y: 2.2, duration: 0.84, onUpdate: render }, 0);
       }, stage);
+
+      // The pin/timeline are measured while this bundle is still loading, so if the
+      // user has already scrolled by the time it resolves, start/end can be stale.
+      ScrollTrigger.refresh();
 
       cleanup = () => {
         context.revert();
