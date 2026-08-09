@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { HeroMorph } from "../components/landing/HeroMorph";
-import { PageMotion } from "../components/landing/PageMotion";
+import { PrimaryNav } from "../components/landing/PrimaryNav";
 import { FooterExperience, PipelineDemo, ReferenceDashboards } from "../components/landing/Visuals";
 
 const problems = [
@@ -41,11 +41,10 @@ function Arrow() {
 export default function Home() {
   return (
     <main>
-      <PageMotion />
       <header className="site-header">
         <a className="brand" href="#top" aria-label="The Bredge home"><img src="/brand/bredge-logo.svg" alt="The Bredge" /></a>
-        <nav aria-label="Primary navigation"><a href="#work">Work</a><a href="#services">Services</a><a href="#practice">Practice</a></nav>
-        <a className="button button-small" href="#contact">Start a conversation <Arrow /></a>
+        <PrimaryNav />
+        <a className="button button-contact button-small" href="#contact">Start a conversation <Arrow /></a>
       </header>
 
       <section className="hero section-wrap" id="top">
@@ -53,11 +52,10 @@ export default function Home() {
           <p className="eyebrow">DATA ENGINEERING <i /> ANALYTICS <i /> BUSINESS INTELLIGENCE</p>
           <h1>We build the data systems behind better business decisions.</h1>
           <p className="hero-summary">The Bredge is the data team growing companies plug into. We connect fragmented systems, build reliable data foundations, automate reporting and turn complex data into answers people can act on.</p>
-          <div className="hero-actions"><a className="button" href="#contact">Talk to a data lead <Arrow /></a><a className="text-link" href="#story">See how we work <span>↓</span></a></div>
+          <div className="hero-actions"><a className="button button-contact" href="#contact">Talk to a data lead <Arrow /></a><a className="text-link text-link-down" href="#story">See how we work <span className="arrow">↓</span></a></div>
           <p className="microcopy">Embedded data teams · Defined projects · Global engagements</p>
         </div>
         <div className="hero-system" aria-label="An illustrative data system becoming reliable">
-          <div className="system-topline"><span className="signal" /> SYSTEM OBSERVATION <strong>LIVE</strong></div>
           <div className="system-grid" />
           <div className="system-globe"><div className="data-shard one"><small>PRODUCT</small><b>1,842</b><span>active accounts</span></div><div className="data-shard two"><small>BILLING</small><b>1,731</b><span>paid accounts</span></div><div className="data-shard three"><small>CRM</small><b>1,809</b><span>account records</span></div><div className="trusted-metric"><span>TRUSTED METRIC</span><b>1,764</b><small>reconciled customer entities</small><em>✓ verified</em></div><div className="orbit orbit-one" /><div className="orbit orbit-two" /></div>
         </div>
