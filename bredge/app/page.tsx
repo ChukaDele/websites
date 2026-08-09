@@ -1,7 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 import { HeroMorph } from "../components/landing/HeroMorph";
 import { PageMotion } from "../components/landing/PageMotion";
-import { FooterExperience, ReferenceDashboards } from "../components/landing/Visuals";
+import { ReferenceDashboards } from "../components/landing/Visuals";
+import { SiteHeader } from "../components/site/SiteHeader";
+import { SiteFooter } from "../components/site/SiteFooter";
 
 const problems = [
   ["01", "Your numbers disagree.", "Finance, sales and operations report different versions of the same metric. Every meeting starts by deciding which one is right."],
@@ -47,18 +48,14 @@ export default function Home() {
   return (
     <main>
       <PageMotion />
-      <header className="site-header">
-        <a className="brand" href="#top" aria-label="The Bredge home"><img src="/brand/bredge-logo.svg" alt="The Bredge" /></a>
-        <nav aria-label="Primary navigation"><a href="#work">Work</a><a href="#services">Services</a><a href="#practice">Practice</a></nav>
-        <a className="button button-small" href="#contact">Start a conversation <Arrow /></a>
-      </header>
+      <SiteHeader variant="overlay" />
 
       <section className="hero section-wrap" id="top">
         <div className="hero-copy">
           <p className="eyebrow">DATA ENGINEERING <i /> ANALYTICS <i /> BUSINESS INTELLIGENCE</p>
           <h1>We build the data systems behind better business decisions.</h1>
           <p className="hero-summary">The Bredge is the data team that growing companies plug into. We connect fragmented systems, build reliable data foundations, automate reporting and turn complex data into answers people can act on.</p>
-          <div className="hero-actions"><a className="button" href="#contact">Talk to a data lead <Arrow /></a><a className="text-link" href="#story">See how we work <span>↓</span></a></div>
+          <div className="hero-actions"><a className="button" href="/contact">Talk to a data lead <Arrow /></a><a className="text-link" href="#story">See how we work <span>↓</span></a></div>
           <p className="microcopy">Embedded data teams · Defined projects · Global engagements</p>
         </div>
         <div className="hero-system" aria-label="An illustrative data system becoming reliable">
@@ -90,12 +87,12 @@ export default function Home() {
 
       <section className="trust section-wrap"><div className="section-heading"><p className="eyebrow">OUR PRINCIPLES</p><h2>Don’t take the dashboard on trust.</h2><p>We make the logic behind it visible.</p></div><div className="principles">{principles.map(([number, title, description]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div><p className="trust-statement">Stay because we’re useful, not because only we understand what we built.</p></section>
 
-      <section className="engagements section-wrap"><div className="section-heading"><p className="eyebrow">WAYS TO WORK WITH BREDGE</p><h2>Bring us a problem. Or plug in a team.</h2></div><div className="engagement-stack"><article className="engagement-card ongoing"><p>ONGOING</p><h3>Your data team, without building one from scratch.</h3><div><span>Embedded Data Team</span><p>An embedded, fractional senior data capability for companies that need consistent progress across engineering, analytics and reporting without hiring every role internally.</p><ul><li>Ongoing delivery</li><li>Engineering + analytics + BI</li><li>Shared backlog and priorities</li><li>Capacity that flexes with the business</li></ul><small>Best when data is an ongoing business capability rather than a one-off deliverable.</small><a className="engagement-link" href="mailto:hello@thebredge.com?subject=Embedded%20data%20team">Talk about an embedded team <Arrow /></a></div></article><article className="engagement-card projects"><p>DEFINED SCOPE</p><h3>One problem. The right team. End-to-end delivery.</h3><div><span>Data Projects</span><p>Bring us a defined data challenge. We scope the outcome, assemble the capability required and deliver the solution without turning it into a six-month consulting programme.</p><ul><li>Data pipelines</li><li>Warehouses and models</li><li>BI and reporting</li><li>Reconciliation and automation</li></ul><small>Best when the problem is clear and the outcome can be defined.</small><a className="engagement-link" href="mailto:hello@thebredge.com?subject=Data%20project">Talk about a data project <Arrow /></a></div></article></div></section>
+      <section className="engagements section-wrap"><div className="section-heading"><p className="eyebrow">WAYS TO WORK WITH BREDGE</p><h2>Bring us a problem. Or plug in a team.</h2></div><div className="engagement-stack"><article className="engagement-card ongoing"><p>ONGOING</p><h3>Your data team, without building one from scratch.</h3><div><span>Embedded Data Team</span><p>An embedded, fractional senior data capability for companies that need consistent progress across engineering, analytics and reporting without hiring every role internally.</p><ul><li>Ongoing delivery</li><li>Engineering + analytics + BI</li><li>Shared backlog and priorities</li><li>Capacity that flexes with the business</li></ul><small>Best when data is an ongoing business capability rather than a one-off deliverable.</small><a className="engagement-link" href="/services/embedded-data-team">Explore embedded teams <Arrow /></a></div></article><article className="engagement-card projects"><p>DEFINED SCOPE</p><h3>One problem. The right team. End-to-end delivery.</h3><div><span>Data Projects</span><p>Bring us a defined data challenge. We scope the outcome, assemble the capability required and deliver the solution without turning it into a six-month consulting programme.</p><ul><li>Data pipelines</li><li>Warehouses and models</li><li>BI and reporting</li><li>Reconciliation and automation</li></ul><small>Best when the problem is clear and the outcome can be defined.</small><a className="engagement-link" href="/services/data-projects">Explore data projects <Arrow /></a></div></article></div></section>
 
-      <section className="diagnostic section-wrap"><p className="eyebrow">DATA DIAGNOSTIC</p><div><h2>Not sure what needs fixing first?</h2><p>Start with a Data Diagnostic. We map the current environment, identify reliability and workflow gaps, and prioritise the changes most likely to improve decision-making.</p><small>Useful on its own. A clear starting point if more work follows.</small><a className="text-link" href="mailto:hello@thebredge.com?subject=Data%20diagnostic">Start with a diagnostic <Arrow /></a></div></section>
+      <section className="diagnostic section-wrap"><p className="eyebrow">DATA DIAGNOSTIC</p><div><h2>Not sure what needs fixing first?</h2><p>Start with a Data Diagnostic. We map the current environment, identify reliability and workflow gaps, and prioritise the changes most likely to improve decision-making.</p><small>Useful on its own. A clear starting point if more work follows.</small><a className="text-link" href="/data-diagnostic">Start with a diagnostic <Arrow /></a></div></section>
 
       <section id="practice" className="technology"><div className="section-wrap"><p className="eyebrow light">THE PRACTICE</p><h2>Tools change. Sound data practice doesn’t.</h2><p>We work with the environment you have, recommend complexity only when it earns its place, and build foundations that are AI-ready when you are.</p><div className="tech-line"><span>PYTHON</span><i /> <span>SQL</span><i /> <span>POSTGRESQL</span><i /> <span>POWER BI</span><i /> <span>GITHUB</span></div></div></section>
-      <FooterExperience />
+      <SiteFooter />
     </main>
   );
 }

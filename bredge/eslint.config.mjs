@@ -35,6 +35,11 @@ const eslintConfig = defineConfig([
         version: "detect",
       },
     },
+    rules: {
+      // This site uses plain <a> for navigation (vinext handles routing); we
+      // intentionally don't use next/link, so this Next.js rule doesn't apply.
+      "@next/next/no-html-link-for-pages": "off",
+    },
   },
 ]);
 
