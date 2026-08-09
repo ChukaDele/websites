@@ -2,18 +2,34 @@
 
 import { useEffect, useRef } from "react";
 
-const sources = ["Product", "Billing", "CRM", "Support", "Finance"];
+const sources: Array<[string, string]> = [
+  ["Product", "1,842"],
+  ["Billing", "1,731"],
+  ["CRM", "1,809"],
+  ["Support", "1,795"],
+  ["Finance", "1,764"],
+];
+
+const exceptions = ["IDs don’t match", "Duplicate accounts", "Timing differences"];
+
+// Decorative connectors from each source card toward the reconciled model.
+// Coordinates are % of the section, drawn in a non-scaling-stroke SVG layer.
+const links = [
+  [46, 36],
+  [84, 40],
+  [57, 68],
+  [74, 66],
+  [66, 52],
+];
 
 const DESKTOP_MOTION = "(min-width: 1001px) and (prefers-reduced-motion: no-preference)";
 
 export function HeroMorph() {
   const stageRef = useRef<HTMLElement>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const stage = stageRef.current;
-    const canvasHost = canvasRef.current;
-    if (!stage || !canvasHost) return;
+    if (!stage) return;
 
     let disposed = false;
     let matchMedia: { revert: () => void } | undefined;
@@ -25,11 +41,7 @@ export function HeroMorph() {
       loaded = true;
       let modules;
       try {
-        modules = await Promise.all([
-          import("gsap"),
-          import("gsap/ScrollTrigger"),
-          import("three"),
-        ]);
+        modules = await Promise.all([import("gsap"), import("gsap/ScrollTrigger")]);
       } catch {
         // The CSS pre-hide expects GSAP to reveal these; if the deferred
         // bundle never arrives, fall back to the static resting layout.
@@ -40,7 +52,7 @@ export function HeroMorph() {
         if (decision) { decision.style.opacity = "1"; decision.style.transform = "none"; }
         return;
       }
-      const [{ default: gsap }, { ScrollTrigger }, THREE] = modules;
+      const [{ default: gsap }, { ScrollTrigger }] = modules;
       if (disposed) return;
 
       gsap.registerPlugin(ScrollTrigger);
@@ -50,56 +62,21 @@ export function HeroMorph() {
       const mm = gsap.matchMedia();
       matchMedia = mm;
       mm.add(DESKTOP_MOTION, () => {
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-        canvasHost.appendChild(renderer.domElement);
-
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-        camera.position.set(0, 0, 8);
-
-        const field = new THREE.Group();
-        scene.add(field);
-        const pointPositions = new Float32Array(96 * 3);
-        for (let index = 0; index < 96; index += 1) {
-          const offset = index * 3;
-          pointPositions[offset] = ((index * 37) % 19) / 4 - 2.4;
-          pointPositions[offset + 1] = ((index * 17) % 23) / 5 - 2.1;
-          pointPositions[offset + 2] = ((index * 11) % 13) / 9 - 0.8;
-        }
-        const pointsGeometry = new THREE.BufferGeometry();
-        pointsGeometry.setAttribute("position", new THREE.BufferAttribute(pointPositions, 3));
-        const points = new THREE.Points(pointsGeometry, new THREE.PointsMaterial({ color: 0x90d26f, size: 0.035, transparent: true, opacity: 0.82 }));
-        field.add(points);
-
-        const linePositions = new Float32Array([
-          -2.4, 1.3, 0, 0, 0, 0, 2.2, 1.2, 0, 0, 0, 0,
-          -2.5, -1.3, 0, 0, 0, 0, 2.4, -1.1, 0, 0, 0, 0,
-          0, 2, 0, 0, 0, 0,
-        ]);
-        const linesGeometry = new THREE.BufferGeometry();
-        linesGeometry.setAttribute("position", new THREE.BufferAttribute(linePositions, 3));
-        const linesMaterial = new THREE.LineBasicMaterial({ color: 0x90d26f, transparent: true, opacity: 0.5 });
-        field.add(new THREE.LineSegments(linesGeometry, linesMaterial));
-
-        const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.38, 1), new THREE.MeshBasicMaterial({ color: 0xfa8754, wireframe: true, transparent: true, opacity: 0.82 }));
-        field.add(core);
-
-        const render = () => renderer.render(scene, camera);
-        const resize = () => {
-          const { width, height } = canvasHost.getBoundingClientRect();
-          if (!width || !height) return;
-          renderer.setSize(width, height, false);
-          camera.aspect = width / height;
-          camera.updateProjectionMatrix();
-          render();
-        };
-        const resizeObserver = new ResizeObserver(resize);
-        resizeObserver.observe(canvasHost);
-        resize();
-
         const select = gsap.utils.selector(stage);
         const cards = select(".morph-card");
+        const linkPaths = select<SVGLineElement>(".morph-links line");
+        const chips = select(".morph-exception");
+        const dots = select(".morph-card i");
+
+        linkPaths.forEach((line) => {
+          const length = Math.hypot(
+            line.x2.baseVal.value - line.x1.baseVal.value,
+            line.y2.baseVal.value - line.y1.baseVal.value,
+          ) * 14; // viewBox units are ~1/14th of rendered px; close enough for a dash reveal
+          line.style.strokeDasharray = `${length}`;
+          line.style.strokeDashoffset = `${length}`;
+        });
+
         const timeline = gsap.timeline({
           scrollTrigger: {
             trigger: stage,
@@ -111,37 +88,36 @@ export function HeroMorph() {
           },
         });
 
-        // Narrative: the intro copy yields, the scattered sources converge
-        // and dim, and the reconciled view emerges over them.
-        timeline.to(select(".hero-morph-tease"), { autoAlpha: 0, yPercent: -35, duration: 0.22 }, 0);
+        // ACT 1 — the intro yields; the scattered sources are already alive.
+        timeline.to(select(".hero-morph-tease"), { autoAlpha: 0, yPercent: -30, duration: 0.2, ease: "power1.inOut" }, 0);
 
+        // ACT 2 — convergence: deliberate, mechanical, not springy.
         cards.forEach((card, index) => {
-          timeline.to(card, { x: (index - 2) * 26, y: index % 2 ? -12 : 12, rotation: 0, scale: 0.82, autoAlpha: 0.3, duration: 0.46 }, 0.1 + index * 0.035);
+          timeline.to(card, { x: (index - 2) * 26, y: index % 2 ? -12 : 12, rotation: 0, scale: 0.86, duration: 0.34, ease: "power1.inOut" }, 0.08 + index * 0.03);
         });
 
+        // ACT 3 — the systems try to agree and can't: links draw, exceptions surface.
+        timeline.to(linkPaths, { strokeDashoffset: 0, duration: 0.2, stagger: 0.03, ease: "none" }, 0.3);
+        timeline.to(dots, { backgroundColor: "#f0bf6c", duration: 0.08, stagger: 0.02 }, 0.34);
+        chips.forEach((chip, index) => {
+          timeline.to(chip, { autoAlpha: 1, y: 0, duration: 0.1, ease: "power2.out" }, 0.42 + index * 0.07);
+        });
+
+        // ACT 4 — reconciliation: exceptions resolve, sources settle behind.
+        timeline.to(chips, { autoAlpha: 0, y: -8, duration: 0.12, stagger: 0.04, ease: "power1.in" }, 0.68);
+        timeline.to(dots, { backgroundColor: "#90d26f", duration: 0.1, stagger: 0.02 }, 0.7);
+        timeline.to(cards, { autoAlpha: 0.28, duration: 0.2, ease: "power1.inOut" }, 0.72);
+        timeline.to(linkPaths, { opacity: 0.25, duration: 0.2, ease: "none" }, 0.72);
+
+        // ACT 5 — one trusted view, then the decision it unlocks.
         timeline
-          .to(select(".morph-result"), { autoAlpha: 1, y: 0, duration: 0.3 }, 0.48)
-          .to(select(".morph-decision"), { autoAlpha: 1, y: 0, duration: 0.26 }, 0.64)
-          .to(field.rotation, { y: 0.7, z: -0.12, duration: 0.84, onUpdate: render }, 0)
-          .to(core.rotation, { x: 1.7, y: 2.2, duration: 0.84, onUpdate: render }, 0);
+          .to(select(".morph-result"), { autoAlpha: 1, y: 0, duration: 0.26, ease: "power2.out" }, 0.8)
+          .to(select(".morph-decision"), { autoAlpha: 1, y: 0, duration: 0.22, ease: "power2.out" }, 0.96);
 
         // The pin is measured while this bundle is still loading, so if the
         // user has already scrolled by the time it resolves, refresh the
         // stale start/end measurements.
         ScrollTrigger.refresh();
-
-        return () => {
-          resizeObserver.disconnect();
-          pointsGeometry.dispose();
-          linesGeometry.dispose();
-          linesMaterial.dispose();
-          core.geometry.dispose();
-          core.material.dispose();
-          points.material.dispose();
-          renderer.dispose();
-          renderer.forceContextLoss();
-          renderer.domElement.remove();
-        };
       });
     };
 
@@ -160,7 +136,11 @@ export function HeroMorph() {
 
   return (
     <section ref={stageRef} id="story" className="hero-morph" aria-label="The journey from fragmented sources to a trusted decision">
-      <div ref={canvasRef} className="hero-morph-canvas" aria-hidden="true" />
+      <svg className="morph-links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        {links.map(([x, y], index) => (
+          <line key={index} x1={x} y1={y} x2={50} y2={52} vectorEffect="non-scaling-stroke" />
+        ))}
+      </svg>
       <div className="section-wrap hero-morph-content">
         <div className="hero-morph-tease">
           <p className="eyebrow">THE FULL PICTURE</p>
@@ -168,7 +148,18 @@ export function HeroMorph() {
           <p>Product, Billing and CRM disagree — and Support and Finance have versions of their own. Scroll to bring the picture into focus.</p>
         </div>
         <div className="morph-cards" aria-hidden="true">
-          {sources.map((source, index) => <div className={`morph-card card-${index + 1}`} key={source}><span>0{index + 1}</span><b>{source}</b><small>separate record</small></div>)}
+          {sources.map(([source, count], index) => (
+            <div className={`morph-card card-${index + 1}`} key={source}>
+              <span>0{index + 1}</span>
+              <b>{source}</b>
+              <strong>{count}</strong>
+              <small>customer records</small>
+              <i />
+            </div>
+          ))}
+        </div>
+        <div className="morph-exceptions" aria-hidden="true">
+          {exceptions.map((label, index) => <p className={`morph-exception exception-${index + 1}`} key={label}>{label}</p>)}
         </div>
         <div className="morph-result"><span>RECONCILED MODEL</span><strong>1 trusted view</strong><small>Definitions, checks and ownership included.</small></div>
         <div className="morph-decision"><span>THE NEXT PAGE</span><p>Now the question can move from “Which number?” to “What should we do?”</p></div>

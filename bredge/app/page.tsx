@@ -38,6 +38,11 @@ function Arrow() {
   return <span aria-hidden="true" className="arrow">↗</span>;
 }
 
+const artCounts = [6, 18, 3, 4];
+function OutcomeArt({ index }: { index: number }) {
+  return <div className={`outcome-art art-${index + 1}`} aria-hidden="true">{Array.from({ length: artCounts[index] }, (_, i) => <i key={i} />)}</div>;
+}
+
 export default function Home() {
   return (
     <main>
@@ -75,7 +80,7 @@ export default function Home() {
         <div className="problem-grid">{problems.map(([number, title, description]) => <article key={number} className="problem-card"><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div>
       </section>
 
-      <section className="outcomes section-wrap"><div className="section-heading"><p className="eyebrow">BUSINESS OUTCOMES</p><h2>Start with the decision. Work backwards to the data.</h2></div><div className="outcome-grid">{outcomes.map(([name, question, details], index) => <article className={`outcome-card outcome-${index + 1}`} key={name}><span>0{index + 1}</span><h3>{name}</h3><p>{question}</p><small>{details}</small><div className="outcome-line" /></article>)}</div></section>
+      <section className="outcomes section-wrap"><div className="section-heading"><p className="eyebrow">BUSINESS OUTCOMES</p><h2>Start with the decision. Work backwards to the data.</h2></div><div className="outcome-grid">{outcomes.map(([name, question, details], index) => <article className={`outcome-card outcome-${index + 1}`} key={name}><span>0{index + 1}</span><h3>{name}</h3><p>{question}</p><small>{details}</small><OutcomeArt index={index} /></article>)}</div></section>
 
       <section id="services" className="capabilities section-wrap"><div className="capability-intro"><p className="eyebrow">SERVICES</p><h2>One data partner. From source to decision.</h2></div><div className="capability-list">{capabilities.map(([title, description, items], index) => <article key={title}><span>0{index + 1}</span><div><h3>{title}</h3><p>{description}</p></div><small>{items}</small></article>)}</div></section>
 
