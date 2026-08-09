@@ -23,11 +23,24 @@ export function HeroMorph() {
     const load = async () => {
       if (loaded) return;
       loaded = true;
-      const [{ default: gsap }, { ScrollTrigger }, THREE] = await Promise.all([
-        import("gsap"),
-        import("gsap/ScrollTrigger"),
-        import("three"),
-      ]);
+      let modules;
+      try {
+        modules = await Promise.all([
+          import("gsap"),
+          import("gsap/ScrollTrigger"),
+          import("three"),
+        ]);
+      } catch {
+        // The CSS pre-hide expects GSAP to reveal these; if the deferred
+        // bundle never arrives, fall back to the static resting layout.
+        loaded = false;
+        const result = stage.querySelector<HTMLElement>(".morph-result");
+        const decision = stage.querySelector<HTMLElement>(".morph-decision");
+        if (result) { result.style.opacity = "1"; result.style.transform = "translate(-50%,-42%)"; }
+        if (decision) { decision.style.opacity = "1"; decision.style.transform = "none"; }
+        return;
+      }
+      const [{ default: gsap }, { ScrollTrigger }, THREE] = modules;
       if (disposed) return;
 
       gsap.registerPlugin(ScrollTrigger);
@@ -126,6 +139,7 @@ export function HeroMorph() {
           core.material.dispose();
           points.material.dispose();
           renderer.dispose();
+          renderer.forceContextLoss();
           renderer.domElement.remove();
         };
       });
@@ -149,9 +163,9 @@ export function HeroMorph() {
       <div ref={canvasRef} className="hero-morph-canvas" aria-hidden="true" />
       <div className="section-wrap hero-morph-content">
         <div className="hero-morph-tease">
-          <p className="eyebrow">CONTINUING THE STORY</p>
-          <h2>Five systems are already telling a story.</h2>
-          <p>They just are not telling the same one yet. Scroll to bring the picture into focus.</p>
+          <p className="eyebrow">THE FULL PICTURE</p>
+          <h2>Five systems are telling five stories.</h2>
+          <p>Product, Billing and CRM disagree — and Support and Finance have versions of their own. Scroll to bring the picture into focus.</p>
         </div>
         <div className="morph-cards" aria-hidden="true">
           {sources.map((source, index) => <div className={`morph-card card-${index + 1}`} key={source}><span>0{index + 1}</span><b>{source}</b><small>separate record</small></div>)}

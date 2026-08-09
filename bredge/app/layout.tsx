@@ -20,7 +20,7 @@ const structuredData = {
   url: "https://thebredge.com",
   logo: "https://thebredge.com/brand/bredge-logo.svg",
   image: "https://thebredge.com/og.png",
-  description: "The Bredge is a global data engineering, analytics and business intelligence partner. Growing SMEs plug in a senior data team without hiring one; established companies bring in defined data projects or an embedded fractional data team.",
+  description: "The Bredge is a global data engineering, analytics and business intelligence partner. Growing SMEs plug in a senior data team without hiring one; established companies bring us defined projects or plug in an embedded, fractional data team.",
   email: "hello@thebredge.com",
   areaServed: "Global",
   knowsAbout: ["Data engineering", "Data analytics", "Business intelligence", "Data quality", "Data governance", "Reporting automation", "Data reconciliation", "Power BI", "PostgreSQL", "Python", "SQL"],

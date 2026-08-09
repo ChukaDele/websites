@@ -14,7 +14,14 @@ export function PageMotion() {
     const load = async () => {
       if (loaded) return;
       loaded = true;
-      const [{ default: gsap }, { ScrollTrigger }] = await Promise.all([import("gsap"), import("gsap/ScrollTrigger")]);
+      let modules;
+      try {
+        modules = await Promise.all([import("gsap"), import("gsap/ScrollTrigger")]);
+      } catch {
+        loaded = false;
+        return;
+      }
+      const [{ default: gsap }, { ScrollTrigger }] = modules;
       if (disposed) return;
       gsap.registerPlugin(ScrollTrigger);
 
@@ -44,6 +51,13 @@ export function PageMotion() {
         // This bundle loads async: refresh so triggers measured mid-scroll
         // pick up the real layout offsets.
         ScrollTrigger.refresh();
+
+        return () => {
+          // GSAP reverts inline styles but not textContent overwritten mid count-up.
+          counters.forEach((counter) => {
+            counter.textContent = `${Number(counter.dataset.count ?? 0).toLocaleString()} records`;
+          });
+        };
       });
     };
 
