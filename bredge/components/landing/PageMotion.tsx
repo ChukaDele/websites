@@ -2,18 +2,25 @@
 
 import { useEffect } from "react";
 
+const DESKTOP_MOTION = "(min-width: 1001px) and (prefers-reduced-motion: no-preference)";
+
 export function PageMotion() {
   useEffect(() => {
-    if (window.matchMedia("(max-width: 1000px), (prefers-reduced-motion: reduce)").matches) return;
+    let disposed = false;
+    let matchMedia: { revert: () => void } | undefined;
+    let loaded = false;
+    const motionQuery = window.matchMedia(DESKTOP_MOTION);
 
-    let cleanup = () => {};
-    let cancelled = false;
-
-    const start = async () => {
+    const load = async () => {
+      if (loaded) return;
+      loaded = true;
       const [{ default: gsap }, { ScrollTrigger }] = await Promise.all([import("gsap"), import("gsap/ScrollTrigger")]);
-      if (cancelled) return;
+      if (disposed) return;
       gsap.registerPlugin(ScrollTrigger);
-      const context = gsap.context(() => {
+
+      const mm = gsap.matchMedia();
+      matchMedia = mm;
+      mm.add(DESKTOP_MOTION, () => {
         gsap.to(".system-globe", { rotation: 6, transformOrigin: "50% 50%", duration: 7, ease: "sine.inOut", yoyo: true, repeat: -1 });
         gsap.to(".pipeline-core", { y: -8, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: -1 });
 
@@ -33,17 +40,24 @@ export function PageMotion() {
         gsap.from(".outcome-card", { y: 28, autoAlpha: 0, stagger: 0.08, duration: 0.48, ease: "power3.out", scrollTrigger: { trigger: ".outcome-grid", start: "top 78%", once: true } });
         gsap.from(".reference-case", { y: 34, autoAlpha: 0, stagger: 0.11, duration: 0.5, ease: "power3.out", scrollTrigger: { trigger: ".reference-work", start: "top 74%", once: true } });
         gsap.from(".diagnostic", { y: 38, autoAlpha: 0, duration: 0.55, ease: "power3.out", scrollTrigger: { trigger: ".diagnostic", start: "top 76%", once: true } });
+
+        // This bundle loads async: refresh so triggers measured mid-scroll
+        // pick up the real layout offsets.
+        ScrollTrigger.refresh();
       });
-
-      // Mirrors the HeroMorph fix: this bundle loads async, so scroll-triggered
-      // reveals measured against a mid-scroll layout can start with the wrong offsets.
-      ScrollTrigger.refresh();
-
-      cleanup = () => context.revert();
     };
 
-    void start();
-    return () => { cancelled = true; cleanup(); };
+    if (motionQuery.matches) void load();
+    const onChange = (event: MediaQueryListEvent) => {
+      if (event.matches) void load();
+    };
+    motionQuery.addEventListener("change", onChange);
+
+    return () => {
+      disposed = true;
+      motionQuery.removeEventListener("change", onChange);
+      matchMedia?.revert();
+    };
   }, []);
 
   return null;

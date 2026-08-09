@@ -13,6 +13,35 @@ export const metadata: Metadata = {
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
 };
 
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  name: "The Bredge",
+  url: "https://thebredge.com",
+  logo: "https://thebredge.com/brand/bredge-logo.svg",
+  image: "https://thebredge.com/og.png",
+  description: "The Bredge is a global data engineering, analytics and business intelligence partner. Growing SMEs plug in a senior data team without hiring one; established companies bring in defined data projects or an embedded fractional data team.",
+  email: "hello@thebredge.com",
+  areaServed: "Global",
+  knowsAbout: ["Data engineering", "Data analytics", "Business intelligence", "Data quality", "Data governance", "Reporting automation", "Data reconciliation", "Power BI", "PostgreSQL", "Python", "SQL"],
+  makesOffer: [
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Embedded Data Team", description: "An ongoing senior data capability across engineering, analytics and BI for companies that need consistent progress without hiring every role internally." } },
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Data Projects", description: "Defined-scope delivery of data pipelines, warehouses, models, BI, reporting, reconciliation and automation." } },
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Data Diagnostic", description: "A mapped assessment of the current data environment that prioritises the changes most likely to improve decision-making." } },
+  ],
+  audience: [
+    { "@type": "Audience", audienceType: "Small and medium-sized businesses building their first reliable data foundation" },
+    { "@type": "Audience", audienceType: "Companies hiring a project-based or fractional data team" },
+  ],
+};
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return (
+    <html lang="en">
+      <body>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+        {children}
+      </body>
+    </html>
+  );
 }
