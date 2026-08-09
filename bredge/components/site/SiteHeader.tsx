@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 const services = [
   ["Services overview", "/services", "Everything we do, from source to decision"],
   ["Embedded Data Team", "/services/embedded-data-team", "Ongoing capability inside your business"],
-  ["Data Projects", "/services/data-projects", "One defined problem, delivered end to end"],
+  ["Data Projects", "/services/data-projects", "One defined problem, delivered in full"],
   ["Data Diagnostic", "/data-diagnostic", "Find the highest-leverage place to start"],
 ];
 
