@@ -3,6 +3,7 @@ import { PageMotion } from "../components/landing/PageMotion";
 import { ReferenceDashboards } from "../components/landing/Visuals";
 import { SiteHeader } from "../components/site/SiteHeader";
 import { SiteFooter } from "../components/site/SiteFooter";
+import { HeroVideo } from "../components/site/HeroVideo";
 
 const problems = [
   ["01", "Your numbers disagree.", "Finance, sales and operations report different versions of the same metric. Every meeting starts by deciding which one is right."],
@@ -54,17 +55,11 @@ export default function Home() {
         <div className="hero-copy">
           <p className="eyebrow">DATA ENGINEERING <i /> ANALYTICS <i /> BUSINESS INTELLIGENCE</p>
           <h1>We build the data systems behind better business decisions.</h1>
-          <p className="hero-summary">The Bredge is the data team that growing and mid-market companies plug into. We connect fragmented systems, build reliable data foundations, automate reporting and turn complex data into answers people can act on — across the UK and US.</p>
+          <p className="hero-summary">The Bredge is the data team that growing and mid-market companies plug into. We connect fragmented systems, build reliable data foundations, automate reporting and turn complex data into answers people can act on.</p>
           <div className="hero-actions"><a className="button" href="/contact">Talk to a data lead <Arrow /></a><a className="text-link" href="#story">See how we work <span>↓</span></a></div>
-          <p className="microcopy">Embedded data teams · Defined projects · UK &amp; US engagements</p>
+          <p className="microcopy">Embedded data teams · Defined projects · Ongoing data operations</p>
         </div>
-        <div className="hero-media" aria-label="Fragmented data systems resolving into one connected model">
-          <video className="hero-video" autoPlay muted loop playsInline poster="/media/reconcile-poster.jpg">
-            <source src="/media/reconcile.webm" type="video/webm" />
-            <source src="/media/reconcile.mp4" type="video/mp4" />
-          </video>
-          <span className="hero-media-tag"><span className="signal" /> DATA · RECONCILED</span>
-        </div>
+        <HeroVideo />
       </section>
 
       <HeroMorph />

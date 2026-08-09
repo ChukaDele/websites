@@ -1,104 +1,130 @@
 /**
- * Contact submissions. Runs on the Cloudflare Worker.
+ * Single lead pipeline for every Bredge form.
  *
- * Honest delivery contract:
- *  - Validates input and rejects obvious spam (honeypot).
- *  - Forwards the submission to whatever the operator has configured:
- *      CONTACT_WEBHOOK_URL  — any HTTPS endpoint (Slack/Make/Zapier/email relay), OR
- *      CONTACT_EMAIL + RESEND_API_KEY — send via Resend.
- *  - If NOTHING is configured, returns 503 with a clear message so the UI shows a
- *    failure state and the mailto fallback. We never report success unless a
- *    downstream actually accepted the submission — no silent drops.
+ *   Browser → POST /api/contact (this Worker route = security boundary)
+ *           → Google Apps Script Web App → Google Sheet + notification email
  *
- * No secrets are hard-coded; the operator sets them as Worker secrets/vars.
+ * Layers, in order: origin allowlist → honeypot → min-interaction-time →
+ * field validation → content heuristics → Cloudflare Turnstile (server-side)
+ * → forward to Apps Script with a shared secret. We only report success if the
+ * Apps Script confirms the row was written. No secrets ever reach the client.
+ *
+ * Required Worker secrets/vars (see integrations/google-leads/SETUP.md):
+ *   GOOGLE_LEADS_WEBHOOK_URL     — deployed Apps Script /exec URL
+ *   GOOGLE_LEADS_WEBHOOK_SECRET  — shared secret, also in Apps Script props
+ *   TURNSTILE_SECRET_KEY         — Cloudflare Turnstile secret (optional in dev)
  */
 
+import { ALLOWED_ORIGINS } from "../../../lib/config";
+
 interface Env {
-  CONTACT_WEBHOOK_URL?: string;
-  CONTACT_EMAIL?: string;
-  RESEND_API_KEY?: string;
+  GOOGLE_LEADS_WEBHOOK_URL?: string;
+  GOOGLE_LEADS_WEBHOOK_SECRET?: string;
+  TURNSTILE_SECRET_KEY?: string;
 }
 
+type Utm = { source?: string; medium?: string; campaign?: string; content?: string };
 type Payload = {
+  formType?: string;
   name?: string; email?: string; company?: string;
   need?: string; message?: string; timeline?: string;
+  page?: string; utm?: Utm;
+  turnstileToken?: string;
   company_website?: string; // honeypot
+  elapsedMs?: number;       // ms since the form was shown
 };
 
 function getEnv(): Env {
-  // vinext exposes bindings on the request context; fall back to process.env in dev.
   return (globalThis as unknown as { process?: { env?: Env } }).process?.env ?? {};
 }
 
-export async function POST(request: Request) {
-  let body: Payload;
-  try {
-    body = (await request.json()) as Payload;
-  } catch {
-    return Response.json({ error: "Invalid request." }, { status: 400 });
-  }
+const bad = (error: string, status = 400) => Response.json({ error }, { status });
+const ok = () => Response.json({ ok: true }, { status: 200 });
+// Bots that trip the honeypot / speed trap get a fake 200 so they don't learn.
+const silentOk = () => Response.json({ ok: true }, { status: 200 });
 
-  // Honeypot: a real user never fills this. Pretend success to the bot.
-  if (body.company_website && body.company_website.trim() !== "") {
-    return Response.json({ ok: true }, { status: 200 });
+async function verifyTurnstile(token: string, secret: string, ip?: string) {
+  const body = new URLSearchParams({ secret, response: token });
+  if (ip) body.set("remoteip", ip);
+  try {
+    const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body });
+    const data = (await r.json()) as { success?: boolean };
+    return !!data.success;
+  } catch {
+    return false;
   }
+}
+
+export async function POST(request: Request) {
+  const env = getEnv();
+
+  // Origin allowlist
+  const origin = request.headers.get("origin");
+  if (origin && !ALLOWED_ORIGINS.includes(origin)) return bad("Unexpected origin.", 403);
+
+  let body: Payload;
+  try { body = (await request.json()) as Payload; } catch { return bad("Invalid request."); }
+
+  // Honeypot + speed trap → silently accepted, never stored.
+  if (body.company_website && body.company_website.trim() !== "") return silentOk();
+  if (typeof body.elapsedMs === "number" && body.elapsedMs >= 0 && body.elapsedMs < 1200) return silentOk();
 
   const name = (body.name || "").trim();
   const email = (body.email || "").trim();
   const company = (body.company || "").trim();
   const message = (body.message || "").trim();
-  if (!name || !email || !company || !message) {
-    return Response.json({ error: "Please add your name, work email, company and a short description." }, { status: 400 });
-  }
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 200) {
-    return Response.json({ error: "That email doesn’t look right." }, { status: 400 });
-  }
-  if (message.length > 5000) {
-    return Response.json({ error: "That message is very long — please trim it a little." }, { status: 400 });
+  const formType = (body.formType || "contact").trim().slice(0, 40);
+
+  if (!name || !email || !company || !message) return bad("Please add your name, work email, company and a short description.");
+  if (name.length > 120 || company.length > 160) return bad("That name or company looks too long.");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 200) return bad("That email doesn’t look right.");
+  if (message.length > 5000) return bad("That message is very long — please trim it a little.");
+
+  // Conservative content heuristics (don't block legitimate technical URLs).
+  const linkCount = (message.match(/https?:\/\//gi) || []).length;
+  if (linkCount > 6) return bad("Too many links in the message.");
+
+  // Turnstile (server-side) — enforced only when the secret is configured.
+  if (env.TURNSTILE_SECRET_KEY) {
+    const token = (body.turnstileToken || "").trim();
+    if (!token) return bad("Please complete the verification.");
+    const ip = request.headers.get("cf-connecting-ip") || undefined;
+    const passed = await verifyTurnstile(token, env.TURNSTILE_SECRET_KEY, ip);
+    if (!passed) return bad("Verification failed — please try again.");
   }
 
-  const env = getEnv();
   const submission = {
+    formType,
     name, email, company,
-    need: (body.need || "").slice(0, 120),
+    need: (body.need || "").slice(0, 160),
     timeline: (body.timeline || "").slice(0, 120),
     message,
+    page: (body.page || "").slice(0, 300),
+    referrer: (request.headers.get("referer") || "").slice(0, 300),
+    utm: {
+      source: (body.utm?.source || "").slice(0, 120),
+      medium: (body.utm?.medium || "").slice(0, 120),
+      campaign: (body.utm?.campaign || "").slice(0, 160),
+      content: (body.utm?.content || "").slice(0, 160),
+    },
     receivedAt: new Date().toISOString(),
   };
 
-  try {
-    if (env.CONTACT_WEBHOOK_URL) {
-      const r = await fetch(env.CONTACT_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source: "thebredge.com/contact", ...submission }),
-      });
-      if (!r.ok) throw new Error(`Webhook responded ${r.status}`);
-      return Response.json({ ok: true }, { status: 200 });
-    }
-
-    if (env.RESEND_API_KEY && env.CONTACT_EMAIL) {
-      const r = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.RESEND_API_KEY}` },
-        body: JSON.stringify({
-          from: "The Bredge <noreply@thebredge.com>",
-          to: [env.CONTACT_EMAIL],
-          reply_to: email,
-          subject: `New enquiry — ${company} (${submission.need || "unspecified"})`,
-          text: `Name: ${name}\nEmail: ${email}\nCompany: ${company}\nNeed: ${submission.need}\nTimeline: ${submission.timeline}\n\n${message}`,
-        }),
-      });
-      if (!r.ok) throw new Error(`Resend responded ${r.status}`);
-      return Response.json({ ok: true }, { status: 200 });
-    }
-  } catch {
-    return Response.json({ error: "We couldn’t deliver that just now. Please email hello@thebredge.com and we’ll pick it up." }, { status: 502 });
+  if (!env.GOOGLE_LEADS_WEBHOOK_URL || !env.GOOGLE_LEADS_WEBHOOK_SECRET) {
+    // Not configured — do not pretend it was received.
+    return bad("Our form delivery isn’t configured yet. Please email hello@thebredge.com and we’ll reply personally.", 503);
   }
 
-  // Nothing configured — do not pretend it was received.
-  return Response.json(
-    { error: "Our form delivery isn’t configured yet. Please email hello@thebredge.com and we’ll reply personally." },
-    { status: 503 },
-  );
+  try {
+    const r = await fetch(env.GOOGLE_LEADS_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret: env.GOOGLE_LEADS_WEBHOOK_SECRET, ...submission }),
+    });
+    const data = (await r.json().catch(() => ({}))) as { ok?: boolean };
+    if (!r.ok || !data.ok) throw new Error(`Webhook responded ${r.status}`);
+    return ok();
+  } catch {
+    return bad("That didn’t send. Please try again, or email hello@thebredge.com.", 502);
+  }
 }

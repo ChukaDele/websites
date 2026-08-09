@@ -70,7 +70,7 @@ export default function AboutPage() {
 
       <section className="section surface">
         <div className="section-wrap">
-          <div className="section-lead"><h2>UK and US engagements.</h2><p>The Bredge works with growing and mid-market organisations across the United Kingdom and United States, collaborating remotely with teams and stakeholders wherever the work sits. We don’t run a network of offices — you work directly with the people doing the work.</p></div>
+          <div className="section-lead"><h2>You work with the people doing the work.</h2><p>No account-manager layer, no offshore hand-off. Whoever you talk to is close to the build — the same people who design the models, reconcile the numbers and keep the systems running. We collaborate remotely with your teams wherever the work sits.</p></div>
         </div>
       </section>
 

@@ -54,7 +54,7 @@ export function SiteFooter() {
 
         <div className="footer-bottom">
           <img src="/brand/bredge-logo.svg" alt="The Bredge" />
-          <p>Data systems for decisions people can trust. · UK &amp; US engagements</p>
+          <p>Data systems for decisions people can trust.</p>
           <small>© {year} The Bredge</small>
         </div>
       </div>

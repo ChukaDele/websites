@@ -287,6 +287,12 @@
 .chip-opt { padding:9px 13px; border:1px solid var(--line); background:var(--paper); color:#3c4b46; font-size:.85rem; cursor:pointer; transition:background .18s, border-color .18s, color .18s; }
 .chip-opt[aria-pressed="true"] { border-color:var(--ink); background:var(--ink); color:var(--paper); }
 .hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+.form-success { display:flex; flex-direction:column; gap:14px; align-items:flex-start; animation:success-in .5s ease both; }
+.form-success .success-mark { display:flex; align-items:center; justify-content:center; width:46px; height:46px; border-radius:50%; background:var(--brand); color:var(--ink); font-size:22px; }
+.form-success h2 { margin:0; font-size:var(--heading-lg); letter-spacing:-.03em; }
+.form-success p { margin:0; max-width:42ch; color:#46534f; line-height:1.5; }
+@keyframes success-in { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@media (prefers-reduced-motion:reduce) { .form-success { animation:none; } }
 .form-status { margin-top:14px; padding:13px 15px; font-size:.88rem; line-height:1.45; }
 .form-status.err { border:1px solid #d3a08a; background:#f6e9e3; color:#8a4a2f; }
 .form-status.ok { border:1px solid var(--brand); background:#eaf7e2; color:#3c6b43; }
