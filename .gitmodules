@@ -1,0 +1,3 @@
+[submodule "chuka-personal-site"]
+	path = chuka-personal-site
+	url = https://github.com/ChukaDele/chuka-personal-site.git
