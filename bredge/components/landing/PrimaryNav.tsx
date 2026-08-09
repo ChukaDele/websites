@@ -30,7 +30,7 @@ export function PrimaryNav() {
     <nav className="primary-nav" aria-label="Primary navigation">
       <a className="nav-link" data-active={active === "work"} href="#work">Work</a>
       <div className="nav-services" onMouseEnter={() => { cancelClose(); setOpen(true); }} onMouseLeave={closeSoon} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }}>
-        <button className="nav-link nav-services-trigger" data-active={isServicesActive} type="button" aria-expanded={open} aria-controls="services-menu" onClick={() => setOpen((value) => !value)} onKeyDown={(event) => { if (event.key === "Escape") setOpen(false); }}>
+        <button className="nav-link nav-services-trigger" data-active={isServicesActive} type="button" aria-expanded={open} aria-controls="services-menu" onClick={() => setOpen(true)} onKeyDown={(event) => { if (event.key === "Escape") setOpen(false); }}>
           Services <span className="nav-chevron" aria-hidden="true">↓</span>
         </button>
         <div className="services-menu" id="services-menu" data-open={open}>
