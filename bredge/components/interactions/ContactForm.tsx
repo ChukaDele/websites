@@ -4,21 +4,24 @@ import { useEffect, useRef, useState } from "react";
 import { TURNSTILE_SITE_KEY } from "../../lib/config";
 import { PhoneField, type PhoneValue } from "./PhoneField";
 
-const needs = ["Data Project", "Embedded Data Team", "Data Diagnostic", "Not sure yet"];
+const NEED_OPTIONS = [
+  "Data engineering",
+  "Analytics",
+  "BI & reporting",
+  "Data quality / reconciliation",
+  "Reporting & workflow automation",
+  "Embedded Data Team",
+  "Data Diagnostic",
+  "Not sure yet",
+];
+const CONCRETE = new Set(["Data engineering", "Analytics", "BI & reporting", "Data quality / reconciliation", "Reporting & workflow automation"]);
+const NOT_SURE = "Not sure yet";
+
+const CAPABILITY = { label: "What does your data capability look like today?", options: ["No dedicated data team", "Existing team needs capacity", "Missing a specialist capability", "Not sure"] };
+const URGENT = { label: "Which area is most urgent?", options: ["Data engineering", "Analytics", "BI / reporting", "Data quality", "Automation", "Not sure"] };
+
 const timelines = ["As soon as possible", "Within 1–2 months", "This quarter", "Exploring"];
-
-const progressive: Record<string, { label: string; options: string[] }> = {
-  "Data Project": { label: "What kind of project?", options: ["Data engineering", "BI / reporting", "Analytics", "Reconciliation / data quality", "Automation", "Not sure"] },
-  "Embedded Data Team": { label: "What does your data capability look like today?", options: ["No dedicated data team", "Existing team needs capacity", "Missing a specialist capability", "Not sure"] },
-};
-
-const helperFor: Record<string, string> = {
-  "Data Diagnostic": "What feels unreliable, manual or difficult today?",
-  "Not sure yet": "Tell us what’s happening. We’ll work out where the problem sits.",
-};
-const DEFAULT_HELPER = "Messy is fine. A few sentences is enough.";
-
-const INTENT_TO_NEED: Record<string, string> = { project: "Data Project", embedded: "Embedded Data Team", diagnostic: "Data Diagnostic" };
+const INTENT_TO_NEED: Record<string, string> = { project: "Data engineering", embedded: "Embedded Data Team", diagnostic: "Data Diagnostic" };
 
 type State = { kind: "idle" | "sending" | "ok" | "error"; message?: string };
 
@@ -29,19 +32,21 @@ function readUtm() {
 }
 
 export function ContactForm({ formType = "contact" }: { formType?: string }) {
-  const [need, setNeed] = useState("");
-  const [projectType, setProjectType] = useState("");
+  const [needs, setNeeds] = useState<string[]>([]);
+  const [capability, setCapability] = useState("");
+  const [urgentArea, setUrgentArea] = useState("");
   const [timeline, setTimeline] = useState("");
   const [phone, setPhone] = useState<PhoneValue>({ display: "", e164: "", country: "", callingCode: "", valid: false });
   const [phoneTouched, setPhoneTouched] = useState(false);
   const [state, setState] = useState<State>({ kind: "idle" });
   const lastLead = useRef<{ name: string; email: string; phone: string } | null>(null);
   const startedAt = useRef(0);
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     startedAt.current = performance.now();
     const intent = new URLSearchParams(window.location.search).get("intent");
-    if (intent && INTENT_TO_NEED[intent]) queueMicrotask(() => setNeed(INTENT_TO_NEED[intent]));
+    if (intent && INTENT_TO_NEED[intent]) queueMicrotask(() => setNeeds([INTENT_TO_NEED[intent]]));
     if (!TURNSTILE_SITE_KEY) return;
     const s = document.createElement("script");
     s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
@@ -49,23 +54,34 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
     return () => { s.remove(); };
   }, []);
 
+  function toggleNeed(n: string) {
+    setNeeds((prev) => {
+      if (n === NOT_SURE) return prev.includes(NOT_SURE) ? [] : [NOT_SURE];
+      const next = prev.includes(n) ? prev.filter((x) => x !== n) : [...prev.filter((x) => x !== NOT_SURE), n];
+      return next;
+    });
+  }
+
+  function focusField(id: string) {
+    const el = formRef.current?.querySelector<HTMLElement>(id);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    el?.focus?.();
+  }
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (state.kind === "sending") return;
-    const form = e.currentTarget;
-    const data = new FormData(form);
+    const data = new FormData(e.currentTarget);
     const email = String(data.get("email") || "").trim().toLowerCase();
+    const projectType = [capability, urgentArea].filter(Boolean).join(" · ");
     const payload = {
       formType,
       name: String(data.get("name") || "").trim(),
       email,
       company: String(data.get("company") || "").trim(),
       country: phone.country,
-      phone: phone.display,
-      phoneE164: phone.e164,
-      phoneCountry: phone.country,
-      callingCode: phone.callingCode,
-      need,
+      phone: phone.display, phoneE164: phone.e164, phoneCountry: phone.country, callingCode: phone.callingCode,
+      needs,
       projectType,
       message: String(data.get("message") || "").trim(),
       timeline,
@@ -77,16 +93,12 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
       elapsedMs: Math.round(performance.now() - startedAt.current),
     };
 
-    if (!payload.name || !payload.email || !payload.company || !payload.message) {
-      setState({ kind: "error", message: "Please add your name, email, company and a few words on the problem." });
-      return;
-    }
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payload.email)) {
-      setState({ kind: "error", message: "That email doesn’t look right — please check it." });
-      return;
-    }
-    if (!need) { setState({ kind: "error", message: "Let us know what best describes what you need." }); return; }
-    if (!phone.valid) { setPhoneTouched(true); setState({ kind: "error", message: "Check that phone number." }); return; }
+    if (!payload.name) { setState({ kind: "error", message: "Please add your name." }); focusField("#name"); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payload.email)) { setState({ kind: "error", message: "That email doesn’t look right — please check it." }); focusField("#email"); return; }
+    if (!payload.company) { setState({ kind: "error", message: "Please add your company or organisation." }); focusField("#company"); return; }
+    if (!phone.valid) { setPhoneTouched(true); setState({ kind: "error", message: "Check that phone number." }); focusField("#phone-input"); return; }
+    if (needs.length === 0) { setState({ kind: "error", message: "Please select at least one area we can help with." }); focusField("#needs-group"); return; }
+    if (!payload.message) { setState({ kind: "error", message: "Tell us a little about what you’re trying to solve." }); focusField("#message"); return; }
     if (TURNSTILE_SITE_KEY && !payload.turnstileToken) { setState({ kind: "error", message: "Please complete the verification and try again." }); return; }
 
     setState({ kind: "sending" });
@@ -105,9 +117,7 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
   }
 
   function goSchedule() {
-    try {
-      if (lastLead.current) sessionStorage.setItem("bredge_schedule_prefill", JSON.stringify(lastLead.current));
-    } catch { /* ignore */ }
+    try { if (lastLead.current) sessionStorage.setItem("bredge_schedule_prefill", JSON.stringify(lastLead.current)); } catch { /* ignore */ }
     window.location.href = "/schedule";
   }
 
@@ -122,11 +132,16 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
     );
   }
 
-  const prog = progressive[need];
-  const helper = helperFor[need] || DEFAULT_HELPER;
+  const showCapability = needs.includes("Embedded Data Team");
+  const showUrgent = needs.some((n) => CONCRETE.has(n));
+  const helper = needs.length > 1
+    ? "Tell us what you’re trying to improve and what’s getting in the way."
+    : needs.length === 1 && needs[0] === "Data Diagnostic"
+      ? "What feels unreliable, manual or difficult today?"
+      : "Messy is fine. A few sentences is enough.";
 
   return (
-    <form className="contact-form" onSubmit={onSubmit} noValidate>
+    <form className="contact-form" ref={formRef} onSubmit={onSubmit} noValidate>
       <div className="field">
         <label htmlFor="name">Name <i aria-hidden="true">*</i></label>
         <input id="name" name="name" autoComplete="name" required />
@@ -143,22 +158,39 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
       <PhoneField onChange={setPhone} />
       {phoneTouched && !phone.valid && phone.display.length <= 3 && <span className="field-error" style={{ marginTop: -8 }}>Add a phone number.</span>}
 
-      <div className="field">
-        <span className="group-label">What best describes what you need? <i aria-hidden="true">*</i></span>
-        <div className="chip-select" role="group" aria-label="What you need">
-          {needs.map((n) => (
-            <button type="button" key={n} className="chip-opt" aria-pressed={need === n} onClick={() => { setNeed(need === n ? "" : n); setProjectType(""); }}>{n}</button>
+      <fieldset className="field needs-field" id="needs-group">
+        <legend className="group-label">What can we help with? <i aria-hidden="true">*</i></legend>
+        <span className="help help-top">Select all that apply.</span>
+        <div className="chip-select">
+          {NEED_OPTIONS.map((n) => (
+            <label key={n} className={`chip-opt chip-check${needs.includes(n) ? " on" : ""}`}>
+              <input type="checkbox" checked={needs.includes(n)} onChange={() => toggleNeed(n)} />
+              {n}
+            </label>
           ))}
         </div>
+      </fieldset>
+
+      <div className={`progressive${showCapability ? " open" : ""}`}>
+        {showCapability && (
+          <div className="field">
+            <span className="group-label">{CAPABILITY.label}</span>
+            <div className="chip-select" role="group" aria-label={CAPABILITY.label}>
+              {CAPABILITY.options.map((o) => (
+                <button type="button" key={o} className="chip-opt" aria-pressed={capability === o} onClick={() => setCapability(capability === o ? "" : o)}>{o}</button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className={`progressive${prog ? " open" : ""}`}>
-        {prog && (
+      <div className={`progressive${showUrgent ? " open" : ""}`}>
+        {showUrgent && (
           <div className="field">
-            <span className="group-label">{prog.label}</span>
-            <div className="chip-select" role="group" aria-label={prog.label}>
-              {prog.options.map((o) => (
-                <button type="button" key={o} className="chip-opt" aria-pressed={projectType === o} onClick={() => setProjectType(projectType === o ? "" : o)}>{o}</button>
+            <span className="group-label">{URGENT.label} <span className="opt">optional</span></span>
+            <div className="chip-select" role="group" aria-label={URGENT.label}>
+              {URGENT.options.map((o) => (
+                <button type="button" key={o} className="chip-opt" aria-pressed={urgentArea === o} onClick={() => setUrgentArea(urgentArea === o ? "" : o)}>{o}</button>
               ))}
             </div>
           </div>
@@ -172,7 +204,7 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
       </div>
 
       <div className="field">
-        <span className="group-label">Target timeline</span>
+        <span className="group-label">Target timeline <span className="opt">optional</span></span>
         <div className="chip-select" role="group" aria-label="Timeline">
           {timelines.map((t) => (
             <button type="button" key={t} className="chip-opt" aria-pressed={timeline === t} onClick={() => setTimeline(timeline === t ? "" : t)}>{t}</button>

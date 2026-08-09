@@ -12,7 +12,9 @@ export function PageShell({ children }: { children: ReactNode }) {
   );
 }
 
-/** Small breadcrumb row with schema.org BreadcrumbList JSON-LD. */
+/** BreadcrumbList structured data only — the visible trail is intentionally NOT
+ *  rendered (it duplicated the page H1 and added template clutter). SEO keeps
+ *  the schema; the page stays clean. */
 export function Breadcrumbs({ trail }: { trail: Array<[string, string]> }) {
   const json = {
     "@context": "https://schema.org",
@@ -24,17 +26,5 @@ export function Breadcrumbs({ trail }: { trail: Array<[string, string]> }) {
       item: `https://thebredge.com${url}`,
     })),
   };
-  return (
-    <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(json) }} />
-      <nav className="breadcrumbs" aria-label="Breadcrumb">
-        {trail.map(([name, url], i) => (
-          <span key={url} style={{ display: "contents" }}>
-            {i > 0 && <span aria-hidden="true">/</span>}
-            {i < trail.length - 1 ? <a href={url}>{name}</a> : <span style={{ opacity: 1, color: "var(--ink)" }}>{name}</span>}
-          </span>
-        ))}
-      </nav>
-    </>
-  );
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(json) }} />;
 }

@@ -4,6 +4,7 @@ import { ReferenceDashboards } from "../components/landing/Visuals";
 import { SiteHeader } from "../components/site/SiteHeader";
 import { SiteFooter } from "../components/site/SiteFooter";
 import { HeroVideo } from "../components/site/HeroVideo";
+import { InvisibleQuery } from "../components/landing/InvisibleQuery";
 
 const problems = [
   ["01", "Your numbers disagree.", "Finance, sales and operations report different versions of the same metric. Every meeting starts by deciding which one is right."],
@@ -80,7 +81,7 @@ export default function Home() {
 
       <section id="work" className="work-section section-wrap"><div className="section-heading work-intro"><p className="eyebrow">REFERENCE WORK</p><h2>See the work behind the answer.</h2><p>Reference builds show how we connect sources, define metrics and deliver a trusted view.</p></div><ReferenceDashboards /></section>
 
-      <section className="quality-block"><div className="section-wrap"><div className="quality-intro"><p className="eyebrow light">THE INVISIBLE 90%</p><h2>The dashboard is the last 10%.</h2><p>Before a number reaches a chart, we make sure it deserves to.</p></div><div className="quality-layout"><div className="quality-steps">{["Profile", "Resolve", "Reconcile", "Define", "Test", "Operate"].map((step, index) => <div key={step}><span>0{index + 1}</span><b>{step}</b></div>)}</div><div className="terminal"><div><span /> <span /> <span /></div><p>$ bredge checks run --environment reference</p>{["no_negative_durations", "source_reconciliation", "referential_integrity", "unique_customer_keys", "bounded_rates", "controlled_vocabulary"].map((check) => <p key={check} className="pass">✓ {check}</p>)}<strong>6 / 6 checks passed</strong><small>Reference environment · Synthetic data</small></div></div></div></section>
+      <InvisibleQuery />
 
       <section className="trust section-wrap"><div className="section-heading"><p className="eyebrow">OUR PRINCIPLES</p><h2>Don’t take the dashboard on trust.</h2><p>We make the logic behind it visible.</p></div><div className="principles">{principles.map(([number, title, description]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div><p className="trust-statement">Stay because we’re useful, not because only we understand what we built.</p></section>
 

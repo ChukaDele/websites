@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 const services = [
@@ -23,17 +23,49 @@ function Arrow() {
 export function SiteHeader({ variant = "solid" }: { variant?: "solid" | "overlay" }) {
   const [servicesOpen, setServicesOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrollState, setScrollState] = useState<"top" | "hidden" | "compact">("top");
+  const headerRef = useRef<HTMLElement>(null);
   const pathname = usePathname() || "/";
   const servicesActive = pathname.startsWith("/services") || pathname === "/data-diagnostic";
+  const lock = servicesOpen || menuOpen;
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
+  // Never hide while a menu is open — derived, so no setState-in-effect.
+  const appliedState = lock && scrollState === "hidden" ? "compact" : scrollState;
+
+  // Adaptive header: hide on meaningful scroll-down, return compact on scroll-up.
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let lastY = window.scrollY;
+    let acc = 0;
+    const THRESH = 16;   // accumulated movement to flip state (defeats trackpad noise)
+    const HIDE_AT = 140; // don't hide until past the fold-ish
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const y = Math.max(0, window.scrollY);
+      const dy = y - lastY;
+      if ((dy > 0 && acc < 0) || (dy < 0 && acc > 0)) acc = 0; // reset on direction change
+      acc += dy;
+      const focusInside = headerRef.current?.contains(document.activeElement);
+      if (y < 80) setScrollState("top");
+      else if (lock || focusInside) setScrollState((s) => (s === "top" ? "compact" : s));
+      else if (acc > THRESH && y > HIDE_AT) { setScrollState("hidden"); acc = 0; }
+      else if (acc < -THRESH) { setScrollState("compact"); acc = 0; }
+      lastY = y;
+    };
+    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [lock]);
+
   return (
     <>
-    <header className={`site-header${variant === "solid" ? " site-header--solid" : ""}`}>
+    <header ref={headerRef} className={`site-header${variant === "solid" ? " site-header--solid" : ""} is-${appliedState}`}>
       <a className="brand" href="/" aria-label="The Bredge home"><img src="/brand/bredge-logo.svg" alt="The Bredge" /></a>
 
       <nav className="site-nav" aria-label="Primary navigation">

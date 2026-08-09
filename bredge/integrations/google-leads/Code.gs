@@ -14,7 +14,7 @@ var NOTIFY_EMAIL = "mcdavies001@gmail.com";
 var HEADERS = [
   "Submission ID", "Received At", "Form Type", "Name", "Email", "Company",
   "Country", "Phone", "Phone E.164", "Phone Country",
-  "Need", "Project Type / Current Setup", "Timeline", "Message",
+  "Needs", "Project Type / Current Setup", "Timeline", "Message",
   "Landing Page", "Referrer", "UTM Source", "UTM Medium", "UTM Campaign", "UTM Content", "Status",
 ];
 
@@ -38,7 +38,7 @@ function doPost(e) {
     var row = [
       id, receivedAt, str(body.formType) || "contact", name, email, company,
       str(body.country), str(body.phone), str(body.phoneE164), str(body.phoneCountry),
-      str(body.need), str(body.projectType), str(body.timeline), message,
+      str(body.needs), str(body.projectType), str(body.timeline), message,
       str(body.page), str(body.referrer),
       str(utm.source), str(utm.medium), str(utm.campaign), str(utm.content), "New",
     ].map(safeCell_); // formula-injection protection on every cell
@@ -76,16 +76,20 @@ function safeCell_(v) {
 function str(v) { return v == null ? "" : String(v).trim(); }
 
 function notify_(id, body, name, email, company, message) {
-  var need = str(body.need), timeline = str(body.timeline), formType = str(body.formType) || "contact";
-  var subject = "[Bredge lead] " + (company || "Unknown") + " — " + (need || formType);
+  var needsStr = str(body.needs), timeline = str(body.timeline), formType = str(body.formType) || "contact";
+  var needsList = needsStr ? needsStr.split(";").map(function (s) { return s.trim(); }).filter(String) : [];
+  var firstNeed = needsList.length ? needsList[0] : formType;
+  var subject = "[Bredge lead] " + (company || "Unknown") + " — " + firstNeed;
   var utm = body.utm || {};
+  var needsBlock = needsList.length ? needsList.map(function (n) { return "  - " + n; }).join("\n") : "  —";
   var lines = [
     "New lead from the Bredge site.", "",
     "Name:      " + name,
     "Email:     " + email,
     "Company:   " + company,
     "Form:      " + formType,
-    "Need:      " + (need || "—"),
+    "Needs:", needsBlock,
+    "Setup:     " + (str(body.projectType) || "—"),
     "Timeline:  " + (timeline || "—"),
     "", "Message:", message, "",
     "Page:      " + str(body.page),

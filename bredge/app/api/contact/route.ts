@@ -28,7 +28,7 @@ type Payload = {
   formType?: string;
   name?: string; email?: string; company?: string;
   country?: string; phone?: string; phoneE164?: string; phoneCountry?: string; callingCode?: string;
-  need?: string; projectType?: string; message?: string; timeline?: string;
+  need?: string; needs?: string[]; projectType?: string; message?: string; timeline?: string;
   page?: string; intent?: string; utm?: Utm;
   turnstileToken?: string;
   company_website?: string; // honeypot
@@ -76,10 +76,17 @@ export async function POST(request: Request) {
   const message = (body.message || "").trim();
   const formType = (body.formType || "contact").trim().slice(0, 40);
 
-  if (!name || !email || !company || !message) return bad("Please add your name, work email, company and a short description.");
+  if (!name || !email || !company || !message) return bad("Please add your name, email, company and a short description.");
   if (name.length > 120 || company.length > 160) return bad("That name or company looks too long.");
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 200) return bad("That email doesn’t look right.");
   if (message.length > 5000) return bad("That message is very long — please trim it a little.");
+
+  // Needs: accept array, fall back to legacy single `need`, allowlist only.
+  const ALLOWED_NEEDS = new Set(["Data engineering", "Analytics", "BI & reporting", "Data quality / reconciliation", "Reporting & workflow automation", "Embedded Data Team", "Data Diagnostic", "Not sure yet"]);
+  let needs: string[] = Array.isArray(body.needs) ? body.needs : (body.need ? [body.need] : []);
+  needs = needs.map((n) => String(n).trim()).filter((n) => ALLOWED_NEEDS.has(n));
+  needs = [...new Set(needs)].slice(0, 8);
+  if (needs.length === 0) return bad("Please select at least one area we can help with.");
 
   // Conservative content heuristics (don't block legitimate technical URLs).
   const linkCount = (message.match(/https?:\/\//gi) || []).length;
@@ -101,7 +108,7 @@ export async function POST(request: Request) {
     phone: (body.phone || "").slice(0, 40),
     phoneE164: (body.phoneE164 || "").slice(0, 24),
     phoneCountry: (body.phoneCountry || "").slice(0, 8),
-    need: (body.need || "").slice(0, 160),
+    needs: needs.join("; "),
     projectType: (body.projectType || "").slice(0, 160),
     timeline: (body.timeline || "").slice(0, 120),
     message,
