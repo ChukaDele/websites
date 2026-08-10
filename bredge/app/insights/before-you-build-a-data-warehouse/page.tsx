@@ -1,88 +1,391 @@
 import type { Metadata } from "next";
 import { PageShell } from "../../../components/site/PageShell";
+import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram } from "../../../components/insights/Article";
 import { pageMetadata } from "../../../lib/seo";
 
+const SLUG = "before-you-build-a-data-warehouse";
+const TOC = [
+  { id: "short-answer", label: "The short answer" },
+  { id: "usual", label: "What this usually looks like" },
+  { id: "try-first", label: "Before you build anything" },
+  { id: "what-it-tells-you", label: "What your answers tell you" },
+  { id: "underneath", label: "What a warehouse actually does" },
+  { id: "good", label: "What good looks like" },
+  { id: "wrong", label: "Common ways this goes wrong" },
+  { id: "boundary", label: "When you genuinely need one" },
+  { id: "decision", label: "A readiness decision guide" },
+];
+
 export const metadata: Metadata = pageMetadata({
-  title: "Before You Build a Data Warehouse | The Bredge",
-  description: "The questions to answer before building a data warehouse — do you need one yet, requirements, architecture, and build versus managed.",
+  title: "Do You Need a Data Warehouse? A Practical Decision Guide | The Bredge",
+  description: "Do you need a data warehouse yet? A practical readiness checklist covering requirements, the modern data stack, and cases where a warehouse is premature.",
   path: "/insights/before-you-build-a-data-warehouse",
 });
 
-const articleJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Article",
-  headline: "Before you build a data warehouse, answer these questions",
-  description: "The questions to answer before building a data warehouse — do you need one yet, requirements, architecture, and build versus managed.",
-  author: { "@type": "Organization", name: "The Bredge" },
-  publisher: { "@type": "Organization", name: "The Bredge" },
-  mainEntityOfPage: "https://thebredge.com/insights/before-you-build-a-data-warehouse",
-  articleSection: "Data engineering",
-};
-
-export default function Article() {
+export default function Page() {
   return (
     <PageShell>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
-      <article className="article section-wrap">
-        <p className="eyebrow">INSIGHTS · ARCHITECTURE</p>
-        <h1>Before you build a data warehouse, answer these questions.</h1>
-        <p className="article-lede">Before you build a data warehouse, the useful question is not &ldquo;which warehouse?&rdquo; but &ldquo;do we need one yet, and what will it be for?&rdquo; A warehouse earns its keep when data is spread across several systems, when questions routinely span those systems, and when spreadsheets and direct connections can no longer keep up. If your reporting still comes from one or two tools, a warehouse is probably premature — and building one early tends to produce impressive plumbing that answers no one&rsquo;s question.</p>
-        <div className="article-body">
-          <h2>Do you actually need a warehouse yet?</h2>
-          <p>A data warehouse is a central place that consolidates data from many sources so it can be modelled and analysed together. It is worth building when:</p>
+      <ArticleLayout
+        slug={SLUG}
+        toc={TOC}
+        heroDiagram={
+          <Diagram
+            title="Sources to consumers: where a warehouse fits — and where it does not yet"
+            caption="A warehouse is the transformation and modelling layer between raw sources and the tools people use. It is worth building only once specific conditions hold."
+          >
+            <svg
+              viewBox="0 0 720 300"
+              xmlns="http://www.w3.org/2000/svg"
+              role="img"
+              style={{ fontFamily: '"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace' }}
+            >
+              <defs>
+                <marker id="dwArw" markerWidth="8" markerHeight="8" refX="5.5" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L6,3 L0,6 Z" fill="rgba(20,35,33,.5)" />
+                </marker>
+              </defs>
+
+              {/* group headers */}
+              <text x="90" y="40" textAnchor="middle" fontSize="11" fill="#5a6964" letterSpacing="1">SOURCES</text>
+              <text x="272" y="40" textAnchor="middle" fontSize="11" fill="#2f5a37" letterSpacing="1">TRANSFORM · MODEL</text>
+              <text x="453" y="40" textAnchor="middle" fontSize="11" fill="#5a6964" letterSpacing="1">SERVE</text>
+              <text x="630" y="40" textAnchor="middle" fontSize="11" fill="#5a6964" letterSpacing="1">CONSUMERS</text>
+
+              {/* source boxes */}
+              <g fontSize="12" fill="#2c3a36">
+                <rect x="24" y="64" width="132" height="32" fill="#f4f1e9" stroke="rgba(20,35,33,.35)" />
+                <text x="90" y="84" textAnchor="middle">CRM</text>
+                <rect x="24" y="108" width="132" height="32" fill="#f4f1e9" stroke="rgba(20,35,33,.35)" />
+                <text x="90" y="128" textAnchor="middle">Billing</text>
+                <rect x="24" y="152" width="132" height="32" fill="#f4f1e9" stroke="rgba(20,35,33,.35)" />
+                <text x="90" y="172" textAnchor="middle">Product DB</text>
+              </g>
+
+              {/* sources -> transform */}
+              <g fill="none" stroke="rgba(20,35,33,.35)" strokeWidth="1.4">
+                <line x1="156" y1="80" x2="196" y2="90" markerEnd="url(#dwArw)" />
+                <line x1="156" y1="124" x2="196" y2="124" markerEnd="url(#dwArw)" />
+                <line x1="156" y1="168" x2="196" y2="158" markerEnd="url(#dwArw)" />
+              </g>
+
+              {/* transform box (emphasised) */}
+              <rect x="196" y="64" width="152" height="120" fill="rgba(144,210,111,.16)" stroke="#90d26f" strokeWidth="1.6" />
+              <g textAnchor="middle" fill="#25402c">
+                <text x="272" y="112" fontSize="12">combine · clean</text>
+                <text x="272" y="132" fontSize="12">tested models</text>
+                <text x="272" y="156" fontSize="9" fill="#4a7050">defined once</text>
+              </g>
+
+              {/* transform -> serve */}
+              <line x1="348" y1="124" x2="388" y2="124" fill="none" stroke="rgba(20,35,33,.35)" strokeWidth="1.4" markerEnd="url(#dwArw)" />
+
+              {/* serve box */}
+              <rect x="388" y="88" width="130" height="72" fill="#f4f1e9" stroke="rgba(20,35,33,.35)" />
+              <g textAnchor="middle" fill="#2c3a36">
+                <text x="453" y="118" fontSize="12">tables +</text>
+                <text x="453" y="136" fontSize="12">semantic layer</text>
+              </g>
+
+              {/* serve -> consumers */}
+              <g fill="none" stroke="rgba(20,35,33,.35)" strokeWidth="1.4">
+                <line x1="518" y1="124" x2="564" y2="80" markerEnd="url(#dwArw)" />
+                <line x1="518" y1="124" x2="564" y2="124" markerEnd="url(#dwArw)" />
+                <line x1="518" y1="124" x2="564" y2="168" markerEnd="url(#dwArw)" />
+              </g>
+
+              {/* consumer boxes */}
+              <g fontSize="12" fill="#2c3a36">
+                <rect x="564" y="64" width="132" height="32" fill="#f4f1e9" stroke="rgba(20,35,33,.35)" />
+                <text x="630" y="84" textAnchor="middle">Dashboards</text>
+                <rect x="564" y="108" width="132" height="32" fill="#f4f1e9" stroke="rgba(20,35,33,.35)" />
+                <text x="630" y="128" textAnchor="middle">Finance model</text>
+                <rect x="564" y="152" width="132" height="32" fill="#f4f1e9" stroke="rgba(20,35,33,.35)" />
+                <text x="630" y="172" textAnchor="middle">Ops reports</text>
+              </g>
+
+              {/* warehouse marker: bracket under transform + serve */}
+              <path d="M190,202 L190,210 L524,210 L524,202" fill="none" stroke="#90d26f" strokeWidth="1.4" strokeDasharray="4 4" />
+              <text x="357" y="232" textAnchor="middle" fontSize="11" fill="#2f5a37" letterSpacing="1.5">A WAREHOUSE FITS HERE</text>
+              <text x="357" y="250" textAnchor="middle" fontSize="9" fill="#5a6964">only once the readiness conditions hold</text>
+            </svg>
+          </Diagram>
+        }
+      >
+        <section id="short-answer">
+          <h2>The short answer</h2>
+          <p>
+            A data warehouse is a central database that pulls data out of several systems, cleans and reshapes it, and holds the
+            result so it can be analysed together. Throughout this article a <em>consumer</em> means anyone or anything that reads
+            that data: a dashboard, a finance model, a board pack, an operations report.
+          </p>
+          <p>
+            You need one when three things are true at once. You must combine several sources. You must model them into
+            definitions you can trust. And many consumers must use those definitions, repeatedly, without re-deriving them each
+            time.
+          </p>
+          <p>
+            Until all three hold, simpler options usually win on both cost and speed: better SQL against the source you already
+            have; a single managed connector (a hosted integration that syncs a source into a database for you); a controlled,
+            well-governed spreadsheet; a semantic model (one place where each metric is defined once and reused everywhere); or a
+            smaller database that consolidates only what you need. This article is about telling the two situations apart honestly,
+            because building early is expensive and quietly hard to undo.
+          </p>
+        </section>
+
+        <section id="usual">
+          <h2>What this usually looks like</h2>
+          <p>
+            The question rarely arrives as a technical decision. It arrives as friction. Dashboards have multiplied, and two of
+            them disagree about the same number. Someone keeps a private spreadsheet because they trust it more than the reporting
+            tool. Every month, several people export CSV files from the CRM, the billing system and the finance tool, then stitch
+            them together by hand. A new question takes days, because answering it means chasing the same exports again.
+          </p>
+          <p>
+            At some point somebody says: &ldquo;we should get a data warehouse.&rdquo; It sounds like the obvious next step, and
+            sometimes it is. But &ldquo;get a warehouse&rdquo; is a solution looking for its problem. The friction above has several
+            possible causes, and only some of them are cured by a warehouse. The rest are cured by tidying one query, governing one
+            definition, or connecting one tool properly.
+          </p>
+          <p>
+            So the useful first move is not to price up a warehouse. It is to name the problem precisely enough to know whether a
+            warehouse is even the right shape of answer.
+          </p>
+        </section>
+
+        <section id="try-first">
+          <h2>Before you build anything</h2>
+          <p>
+            Run this readiness checklist before you provision anything. Answer each question with a number or a name, not a
+            feeling. If most answers come back small, you are looking at a task, not a system.
+          </p>
+          <TryThisFirst title="Data Warehouse Readiness Checklist">
+            <ol>
+              <li>
+                <strong>How many sources must be combined?</strong> Count the systems a single important answer has to cross — not
+                the systems you happen to own.
+              </li>
+              <li>
+                <strong>How often must the answer refresh?</strong> Once a month, once a day, or continuously? Freshness drives cost
+                far more than data volume does.
+              </li>
+              <li>
+                <strong>How many consumers depend on it?</strong> One analyst, one team, or the whole company? Count the people and
+                the tools that would read the result.
+              </li>
+              <li>
+                <strong>Do the definitions need to be governed once?</strong> Is there a metric — &ldquo;active customer&rdquo;,
+                &ldquo;gross margin&rdquo;, &ldquo;churn&rdquo; — that must mean the same thing everywhere, arbitrated by a named
+                owner?
+              </li>
+              <li>
+                <strong>Is anyone going to own it after launch?</strong> Name the person or role responsible for it running
+                tomorrow morning. A warehouse is a system to operate, not a project to finish.
+              </li>
+              <li>
+                <strong>What actually breaks today?</strong> Write the specific failure: the meeting that argues about numbers, the
+                report that takes two days, the query that times out. If you cannot name it, you are not ready to build — you are
+                ready to do discovery.
+              </li>
+            </ol>
+          </TryThisFirst>
+        </section>
+
+        <section id="what-it-tells-you">
+          <h2>What your answers tell you</h2>
+          <p>Read your answers together, not one at a time. The pattern matters more than any single number.</p>
+          <p>
+            <strong>One or two sources, a handful of consumers, monthly refresh, no shared definition in dispute.</strong> A
+            warehouse is almost certainly premature. The friction is more likely a single slow or wrong query, or a tool connected
+            to the wrong source. Better SQL, or a managed connector into the tool you already report from, will move faster and cost
+            a fraction as much.
+          </p>
+          <p>
+            <strong>Several sources, but only one contested definition.</strong> You may not have a warehouse problem at all. You
+            have a definitions problem. A semantic model can settle it without moving any data: define the metric once, and point
+            every report at that definition instead of forty private copies of it.
+          </p>
+          <p>
+            <strong>Several sources, many consumers, a daily rhythm, and definitions that must be governed centrally.</strong> Now
+            the answers line up behind a warehouse. The cost of stitching exports by hand, and of everyone re-deriving the same
+            numbers, has overtaken the cost of building and running the thing.
+          </p>
+          <p>
+            And if nobody will own it, the honest answer is &ldquo;not yet&rdquo;, whatever the other answers say. An unowned
+            warehouse decays into exactly the mess it was meant to replace — only now it is a mess with a monthly bill.
+          </p>
+        </section>
+
+        <section id="underneath">
+          <h2>What a warehouse actually does</h2>
+          <p>Strip away the branding and a warehouse is four stages in a line: sources, ingestion, transformation and modelling, then serving.</p>
+          <p>
+            <em>Ingestion</em> is moving raw data from each source into the warehouse. <em>Transformation and modelling</em> is
+            turning those raw tables into clean, tested datasets with a clear, agreed meaning. <em>Serving</em> is exposing the
+            result to the tools people use. The value lives almost entirely in the middle stage; the two ends are largely
+            commodity.
+          </p>
+          <p>
+            There are two orders for the first two stages. ETL — extract, transform, load — reshapes the data before it lands. ELT
+            — extract, load, transform — lands the raw data first, then transforms it inside the warehouse using SQL. Modern cloud
+            warehouses are cheap and fast enough that ELT has become the default: you keep the raw data, and your transformations
+            are version-controlled SQL you can test, review and rerun.
+          </p>
+          <p>
+            The assembled toolkit for this has a name — the <em>modern data stack</em>: managed connectors for ingestion, a cloud
+            warehouse to hold the data, a transformation tool to model it, and a BI (business intelligence) tool to serve it. None
+            of it is exotic, and most of it you rent rather than build.
+          </p>
+          <p>
+            The one idea worth understanding in depth is the <em>incremental model</em> — processing only new or changed rows on
+            each run, instead of rebuilding every table from scratch. It is what keeps cost roughly flat as data grows. A simple
+            incremental pattern uses a high-water mark: find the newest row you have already loaded, then load only the rows newer
+            than that.
+          </p>
+          <pre>
+            <span className="c">-- Append only the rows that changed since the last run</span>{"\n"}
+            <span className="k">INSERT INTO</span>{" analytics.orders                    "}<span className="c">-- the modelled table</span>{"\n"}
+            <span className="k">SELECT</span>{" order_id, customer_id, amount, updated_at"}{"\n"}
+            <span className="k">FROM</span>{"   raw.orders                              "}<span className="c">-- raw, freshly ingested source</span>{"\n"}
+            <span className="k">WHERE</span>{"  updated_at > ("}<span className="k">SELECT</span>{" max(updated_at) "}<span className="k">FROM</span>{" analytics.orders);"}
+          </pre>
+          <p>
+            On the first run the modelled table is empty, so every row loads. On every run afterwards, the subquery finds the latest
+            <code> updated_at</code> already stored, and the <code>WHERE</code> clause lets through only rows newer than that. You
+            process a day of changes, not the whole of history. In production you would usually <em>merge</em> rather than append,
+            so an update to an existing order replaces the old row instead of duplicating it — but the high-water-mark idea is the
+            same. This is the difference between a warehouse that costs about the same each month and one whose bill climbs with
+            every row you have ever collected.
+          </p>
+        </section>
+
+        <section id="good">
+          <h2>What good looks like</h2>
+          <p>
+            Right-sizing matters more than any tool choice. The correct architecture is the smallest one that answers your
+            recurring questions reliably. Here is what that looks like at three scales.
+          </p>
+          <h3>Early: one or two systems</h3>
+          <p>
+            Connect your BI tool directly to the source, or sync it with a single managed connector into a small database. Keep
+            your definitions in a short, written, shared document. No warehouse. This is not a compromise; it is the right size for
+            the problem.
+          </p>
+          <h3>Growing: several systems, daily decisions</h3>
+          <p>
+            A boring, sound shape. Managed connectors land raw data in a cloud warehouse. A transformation layer turns raw tables
+            into staging models close to the source, then business-level models with a clearly stated <em>grain</em> — the one
+            thing each row represents, such as one order or one order line. A semantic layer defines each metric once, and a BI tool
+            sits on top. Incremental models keep the cost flat. This is the sweet spot the modern data stack was built for.
+          </p>
+          <h3>Larger: many teams, strict governance</h3>
+          <p>
+            The same shape, hardened: tests that run on every change, documented lineage so any figure traces back to its source
+            row, access controls, and a named team that operates it. Nothing exotic — the growing-company stack, owned and
+            defended.
+          </p>
+          <p>
+            At every scale the rule holds: resist designing for a load you do not have. An over-built platform costs money, but its
+            real cost is the ongoing burden of running something more complicated than the problem it serves.
+          </p>
+        </section>
+
+        <section id="wrong">
+          <h2>Common ways this goes wrong</h2>
+          <p>A few failures show up again and again. All are expensive, and all are avoidable.</p>
           <ul>
-            <li>Your data lives in several systems — a CRM, a billing platform, a product database, a finance tool — and real questions require joining them.</li>
-            <li>Reporting directly against production systems is slowing them down, or you are being rate-limited by source-system APIs.</li>
-            <li>Definitions and history need to live somewhere stable, independent of any one operational tool.</li>
-            <li>The volume or complexity of transformations has outgrown what a spreadsheet or a single BI tool can maintain.</li>
+            <li>
+              <strong>Building a warehouse to fix one report.</strong> If a single dashboard is wrong, fix that query or that
+              definition. A warehouse is a large answer to a small, local problem, and it will not make a bad definition correct.
+            </li>
+            <li>
+              <strong>No owner.</strong> A warehouse launched without someone responsible for running it does not stay reliable.
+              Connectors break, sources change shape, tests go stale. Within months it is just another source people quietly stop
+              trusting.
+            </li>
+            <li>
+              <strong>Premature complexity.</strong> Real-time streaming, a lakehouse, orchestration for pipelines you do not have
+              yet. Each piece is defensible alone and indefensible together when the business only needs yesterday&rsquo;s numbers,
+              reliably.
+            </li>
+            <li>
+              <strong>Moving the mess in unchanged.</strong> Loading messy source data into a warehouse and pointing dashboards at
+              it just relocates the mess and adds a bill. The value is in the modelling — resolving identity, fixing grain, agreeing
+              definitions. Skip that and you have paid for storage, not clarity.
+            </li>
           </ul>
-          <p>If none of these are true yet — one core system, modest volume, a handful of reports — a well-structured BI tool connected directly to your source, or a lightweight managed pipeline into a simple database, will serve you better and cost far less to run.</p>
+        </section>
 
-          <h2>Answer these questions first</h2>
-          <p>The scope, cost and shape of a warehouse are decided by requirements, not by the technology. Establish these before anyone provisions anything:</p>
-          <ul>
-            <li><strong>What decisions must this support?</strong> Name them. A warehouse with no decisions attached is a museum.</li>
-            <li><strong>Which sources feed it, and how do they identify the same entities?</strong> Identity across systems is the hardest part, and it does not solve itself.</li>
-            <li><strong>What freshness is required?</strong> Daily is cheap and simple; near-real-time is a different and more expensive system. Do not pay for real-time to serve a monthly board pack.</li>
-            <li><strong>Who owns definitions?</strong> Where does &ldquo;active customer&rdquo; or &ldquo;gross margin&rdquo; live, and who arbitrates when teams disagree?</li>
-            <li><strong>Who will operate it after launch?</strong> A warehouse is a system to run, not a project to finish.</li>
-            <li><strong>What does history need to look like?</strong> Do you need to reconstruct what a figure was on a past date, or only see the current state?</li>
-          </ul>
-          <p>If you cannot answer the first two clearly, you are not ready to build — you are ready to do discovery.</p>
+        <section id="boundary">
+          <h2>When you genuinely need one</h2>
+          <p>
+            There is a real line, and it is worth stating plainly. A warehouse becomes the right answer — not a premature one — when
+            the work has genuinely become a system rather than a task. The clearest example is when you must combine several systems
+            and resolve them into one trustworthy result, repeatedly. Building <a href="/insights/one-customer-view">a single
+            customer view</a> across CRM, billing and product data is exactly this kind of problem: it does not stay solved without
+            a modelled system underneath it. When the conditions below all hold, building is the cheaper choice, and delaying only
+            prolongs the manual stitching.
+          </p>
+          <SystemBoundary
+            conditions={[
+              "Several sources must be joined and modelled together to answer your most important questions — not simply stored side by side.",
+              "Many consumers rely on the result, repeatedly, and re-deriving it by hand no longer scales.",
+              "Definitions must be governed centrally, so one metric means one thing across every report.",
+              "The result must refresh reliably on a schedule — typically daily — without someone running it by hand.",
+              "Someone owns it: a named person or team keeps it running, tested and trusted after launch.",
+            ]}
+          />
+        </section>
 
-          <h2>Architecture for a growing company</h2>
-          <p>Most growing companies do not need an elaborate architecture. A sound, boring shape works: managed extract-and-load into a cloud warehouse, a modelling layer that turns raw source tables into clean, tested datasets (staging models close to the source, then business-level models with a clearly stated grain), a semantic layer where metrics are defined once, and a BI tool on top. Incremental models keep cost down as volume grows, by processing only new or changed data rather than rebuilding everything nightly.</p>
-          <p>Resist the urge to design for a scale you do not have. The cost of an over-built platform is not only money; it is the ongoing operational burden of a system more complicated than the problem it serves.</p>
-
-          <h2>Build versus managed</h2>
-          <p>For almost every growing company, buy the commodity parts and build only what is specific to you. Ingestion is a solved problem — managed connectors move data from common sources reliably and are cheaper than the engineering time to hand-roll and maintain your own. Where your effort belongs is in modelling, definitions and the business logic no vendor can know: what your metrics mean and how your entities reconcile. Building custom pipelines for standard sources is where early data teams quietly lose a year.</p>
-
-          <h2>When a warehouse is premature</h2>
-          <p>It is too early if your data is effectively in one place, your questions do not cross systems, your volumes are small, and no one is waiting on answers. In that situation a warehouse adds cost, latency and a system to maintain while solving a problem you do not yet have. The right first move is often narrower: connect your BI tool directly, tidy your definitions, and revisit the warehouse when a real, cross-system question arrives — and keeps arriving.</p>
-
-          <h2>Common mistakes</h2>
-          <ul>
-            <li>Choosing the technology before writing down the decisions it must support.</li>
-            <li>Building custom ingestion for sources a managed connector already handles.</li>
-            <li>Designing for real-time when the business needs yesterday&rsquo;s numbers, reliably.</li>
-            <li>Ignoring identity resolution until the first cross-system join produces nonsense.</li>
-            <li>Treating launch as the finish line, with no owner for operation or definitions.</li>
-          </ul>
-
-          <h2>A short way to decide</h2>
-          <ul>
-            <li>One system, small volume, no cross-system questions → not yet. Connect directly and revisit.</li>
-            <li>Several systems, questions that span them, reporting straining under load → build, but scope it to the decisions.</li>
-            <li>Requirements still vague → do discovery first; a warehouse built on unclear requirements is expensive to unpick.</li>
-            <li>Tempted to build custom pipelines → buy the commodity parts; spend your effort on modelling and definitions.</li>
-          </ul>
-
-          <h2>When The Bredge is relevant</h2>
-          <p>We are as happy to tell you not to build a warehouse yet as to build one. The value is in getting the requirements and the architecture right for the scale you are actually at — not the scale a vendor deck imagines. When a warehouse is the right move, we scope it to the decisions it has to support, and leave your team able to run it.</p>
-
-          <p>When it is time, see our <a href="/services/data-projects">data warehouse projects</a>, or begin with <a href="/data-diagnostic">a Data Diagnostic</a> to pin down requirements before you build.</p>
-        </div>
-      </article>
+        <section id="decision">
+          <h2>A readiness decision guide</h2>
+          <p>
+            Match your situation to the closest row. The recommended move is deliberately the smallest thing that resolves the real
+            problem, not the most impressive.
+          </p>
+          <table className="article-table">
+            <thead>
+              <tr>
+                <th>Your situation</th>
+                <th>What it usually is</th>
+                <th>Start with</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>One slow or wrong report, from a single source</td>
+                <td>A query or logic problem</td>
+                <td>Better SQL — fix the query and pin down its definition</td>
+              </tr>
+              <tr>
+                <td>The data exists in one tool, but not in the tool that reports on it</td>
+                <td>An ingestion gap</td>
+                <td>A managed connector into your existing BI tool or database</td>
+              </tr>
+              <tr>
+                <td>Numbers reconcile in the data, but one metric is defined differently everywhere</td>
+                <td>A definitions problem</td>
+                <td>A semantic model — define it once, reuse it everywhere</td>
+              </tr>
+              <tr>
+                <td>A few sources, modest volume, growing cross-system questions</td>
+                <td>Early consolidation</td>
+                <td>A small database with a light managed pipeline</td>
+              </tr>
+              <tr>
+                <td>Several sources, many consumers, daily governed decisions, a clear owner</td>
+                <td>A system problem</td>
+                <td>A data warehouse, scoped tightly to the decisions it must support</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            If you can place yourself in one row with confidence, act on that row. If you cannot — if the honest answer to
+            &ldquo;what breaks today?&rdquo; is still vague — that uncertainty is itself the finding. Pinning the requirements down
+            before you provision anything is exactly what <a href="/data-diagnostic">a Data Diagnostic</a> is for. The cheapest
+            warehouse is the one you did not need to build; the second cheapest is the one you scoped precisely before you started.
+          </p>
+        </section>
+      </ArticleLayout>
     </PageShell>
   );
 }

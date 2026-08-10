@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { TURNSTILE_SITE_KEY } from "../../lib/config";
 import { PhoneField, type PhoneValue } from "./PhoneField";
-import { trackEvent, trackOnce } from "../../lib/analytics";
+import { trackEvent, trackOnce, trafficGroup } from "../../lib/analytics";
 
 const NEED_OPTIONS = [
   "Data engineering",
@@ -85,6 +85,9 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
       country: phone.country,
       phone: phone.display, phoneE164: phone.e164, phoneCountry: phone.country, callingCode: phone.callingCode,
       needs,
+      capability,
+      urgentArea,
+      trafficGroup: trafficGroup(),
       projectType,
       message: String(data.get("message") || "").trim(),
       timeline,

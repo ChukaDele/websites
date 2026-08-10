@@ -28,8 +28,8 @@ type Payload = {
   formType?: string;
   name?: string; email?: string; company?: string;
   country?: string; phone?: string; phoneE164?: string; phoneCountry?: string; callingCode?: string;
-  need?: string; needs?: string[]; projectType?: string; message?: string; timeline?: string;
-  page?: string; intent?: string; utm?: Utm;
+  need?: string; needs?: string[]; projectType?: string; capability?: string; urgentArea?: string; message?: string; timeline?: string;
+  page?: string; intent?: string; trafficGroup?: string; utm?: Utm;
   turnstileToken?: string;
   company_website?: string; // honeypot
   elapsedMs?: number;       // ms since the form was shown
@@ -109,6 +109,9 @@ export async function POST(request: Request) {
     phoneE164: (body.phoneE164 || "").slice(0, 24),
     phoneCountry: (body.phoneCountry || "").slice(0, 8),
     needs: needs.join("; "),
+    capability: (body.capability || "").slice(0, 120),
+    urgentArea: (body.urgentArea || "").slice(0, 120),
+    trafficGroup: (body.trafficGroup || "").slice(0, 40),
     projectType: (body.projectType || "").slice(0, 160),
     timeline: (body.timeline || "").slice(0, 120),
     message,
