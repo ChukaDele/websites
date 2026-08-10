@@ -44,15 +44,21 @@ The **first** fix attempt **removed** the interaction — it collapsed Reference
 flow. The owner rejected this. The rule is: **fix the interaction, never remove it.** A broken
 motion system is repaired to work across modes, not deleted to make the symptom disappear.
 
-## Fix (commit 2e65994 — "Rebuild Reference Work as ONE sticky scene + fix Invisible-90% zoom overlap")
+## Fix (accepted state = commit 2e65994 "Rebuild Reference Work as ONE sticky scene …")
+
+Attribution note: the Invisible-90% runway change first landed in the earlier commit `3d6f29d`
+(the rejected attempt that *removed* Reference Work) and was **preserved** into `2e65994`, which
+replaced that removal with the sticky rebuild. `2e65994` is the accepted end state.
 
 - **Reference Work rebuilt as ONE sticky scene:** a single `.reference-sticky` element,
   `position: sticky; top: 0; height: 100vh`, with the three cards positioned `absolute` inside
-  it. The scroll runway is a viewport-relative `300vh` stage. A scroll-progress state machine
-  drives `active` / `prev` / `next` card states. Enhanced motion is gated on height + width +
-  motion capability, with a natural-flow fallback below the gate.
-- **Invisible 90% runway made relational:** `end` changed from `"+=2800"` to a
-  viewport-relative function `innerHeight * 2.6`, with `invalidateOnRefresh: true`.
+  it. The scroll runway is a viewport-relative stage (`300vh` at `2e65994`, later refined to
+  `calc(var(--rw-len, 3) * 100vh)`). A scroll-progress state machine drives `active` / `prev` /
+  `next` card states. Enhanced motion is gated on height + width + motion capability, with a
+  natural-flow fallback below the gate.
+- **Invisible 90% runway made relational (commit `3d6f29d`, preserved into `2e65994`):** `end`
+  changed from `"+=2800"` to a viewport-relative function `innerHeight * 2.6`, with
+  `invalidateOnRefresh: true`.
 - **Invisible-Query headline capped:** `clamp(2.5rem, 4.6vw, 4.2rem)`, its grid changed to
   `minmax(320px, 400px) minmax(0, 1fr)` with `min-width: 0` so it can no longer overflow its
   column.
@@ -65,8 +71,10 @@ motion system is repaired to work across modes, not deleted to make the symptom 
 
 - `scripts/rw-regression.sh` — asserts no `.reference-case` is `position: sticky`, all three
   WORK cards render, and `/__build` returns 200.
-- Planned Playwright zoom-matrix test across 67 / 75 / 80 / 90 / 100 / 110 / 125% asserting the
-  Reference→Invisible-Query non-overlap invariant.
+- `tests/e2e/responsive-motion.spec.ts` (`npm run test:e2e`) — Playwright zoom-equivalent matrix
+  (`z67 … z125` + short-desktop / tablet / mobile) asserting no horizontal overflow, the
+  single-sticky-owner contract, mode gating, and IQ headline/terminal non-overlap. 52 green
+  against production, including the 80% (`z80`) case. `z80` reproduces the owner's condition.
 
 ## Links
 

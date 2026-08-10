@@ -40,6 +40,14 @@ Every rule below is a directive, not a suggestion.
 **Load this before touching any scrollytelling, GSAP/ScrollTrigger, sticky/pinned, hero-video,
 card-stack, scroll-scrub, parallax or Three.js code.**
 
+## 0. Prime directive — fix the interaction, never remove it
+
+When an approved scroll/motion interaction breaks under some viewport, zoom or device, **repair it
+to work across modes** (or fall back to a deliberate, designed reduced mode). Deleting the
+interaction to make the symptom disappear is a regression, not a fix — and it will be rejected.
+This is rule zero; every rule below exists to serve it. If a fix makes an interaction disappear,
+you have not fixed it.
+
 ## 1. Relational geometry, not fixed-viewport assumptions
 
 Express layout and motion as relationships that resolve against live geometry — never as
