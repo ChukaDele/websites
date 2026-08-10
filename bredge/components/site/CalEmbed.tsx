@@ -57,6 +57,8 @@ export function CalEmbed() {
         Cal("init", "bredge", { origin: "https://cal.com" });
         Cal.ns.bredge("inline", { elementOrSelector: hostRef.current, calLink: CAL_LINK, layout: "month_view", config: { theme: "light", layout: "month_view", ...prefill } });
         Cal.ns.bredge("ui", { theme: "light", hideEventTypeDetails: false, cssVarsPerTheme: { light: { "cal-brand": "#142321" } } });
+        // Real booking completion — from Cal's supported embed event, never inferred.
+        Cal.ns.bredge("on", { action: "bookingSuccessful", callback: () => trackOnce("schedule_booking_complete", {}) });
       } catch { setFailed(true); }
     });
 

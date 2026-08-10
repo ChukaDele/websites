@@ -35,22 +35,30 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const structuredData = {
   "@context": "https://schema.org",
-  "@type": "ProfessionalService",
-  name: "The Bredge",
-  url: "https://thebredge.com",
-  logo: "https://thebredge.com/brand/bredge-logo.svg",
-  image: "https://thebredge.com/og.png",
-  description: "The Bredge is a data engineering, analytics and business intelligence partner. Growing and mid-market companies plug in a senior data team without hiring one; established companies bring us defined projects or plug in an embedded, fractional data team.",
-  email: "hello@thebredge.com",
-  knowsAbout: ["Data engineering", "Data analytics", "Business intelligence", "Data quality", "Data governance", "Reporting automation", "Data reconciliation", "Power BI", "PostgreSQL", "Python", "SQL"],
-  makesOffer: [
-    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Embedded Data Team", description: "An ongoing senior data capability across engineering, analytics and BI for companies that need consistent progress without hiring every role internally." } },
-    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Data Projects", description: "Defined-scope delivery of data pipelines, warehouses, models, BI, reporting, reconciliation and automation." } },
-    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Data Diagnostic", description: "A mapped assessment of the current data environment that prioritises the changes most likely to improve decision-making." } },
-  ],
-  audience: [
-    { "@type": "Audience", audienceType: "Growing and mid-market organisations building a reliable data foundation" },
-    { "@type": "Audience", audienceType: "Established teams adding specialist data capacity via projects or an embedded team" },
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://thebredge.com/#organization",
+      name: "The Bredge",
+      url: "https://thebredge.com",
+      logo: "https://thebredge.com/brand/bredge-logo.svg",
+      image: "https://thebredge.com/og.png",
+      email: "hello@thebredge.com",
+      description: "The Bredge is a data engineering, analytics and business intelligence partner. Growing and mid-market companies plug in a senior data team without hiring one; established companies bring us defined projects or plug in an embedded, fractional data team.",
+      knowsAbout: ["Data engineering", "Data analytics", "Business intelligence", "Data quality", "Data governance", "Reporting automation", "Data reconciliation", "Power BI", "PostgreSQL", "Python", "SQL"],
+      makesOffer: [
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Embedded Data Team", description: "An ongoing senior data capability across engineering, analytics and BI for companies that need consistent progress without hiring every role internally." } },
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Data Projects", description: "Defined-scope delivery of data pipelines, warehouses, models, BI, reporting, reconciliation and automation." } },
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Data Diagnostic", description: "A mapped assessment of the current data environment that prioritises the changes most likely to improve decision-making." } },
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://thebredge.com/#website",
+      url: "https://thebredge.com",
+      name: "The Bredge",
+      publisher: { "@id": "https://thebredge.com/#organization" },
+    },
   ],
 };
 

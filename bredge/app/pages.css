@@ -518,3 +518,8 @@
 .consent-actions { display:flex; align-items:center; gap:12px; flex-shrink:0; }
 .consent-reject { border:0; background:none; color:var(--muted); font:inherit; font-size:.82rem; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
 @media (max-width:620px) { .consent { flex-direction:column; align-items:flex-start; gap:12px; } }
+
+/* cookie settings control (link-styled button in footer) */
+.cookie-settings { border:0; background:none; padding:0; color:inherit; font:inherit; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
+.footer-bottom small a, .footer-bottom .cookie-settings { color:#8a978f; }
+.footer-bottom small a:hover, .footer-bottom .cookie-settings:hover { color:#c3d0c9; }

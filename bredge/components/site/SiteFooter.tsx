@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import { CookieSettings } from "./CookieSettings";
 
 const columns: Array<[string, Array<[string, string] | [string, string, "soon"]>]> = [
   ["Services", [
@@ -54,7 +55,7 @@ export function SiteFooter() {
         <div className="footer-bottom">
           <img src="/brand/bredge-logo.svg" alt="The Bredge" />
           <p>Data systems for decisions people can trust.</p>
-          <small>© {year} The Bredge · <a href="/privacy">Privacy</a></small>
+          <small>© {year} The Bredge · <a href="/privacy">Privacy</a> · <a href="/cookies">Cookies</a> · <a href="/terms">Terms</a> · <CookieSettings /></small>
         </div>
       </div>
     </footer>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageShell } from "../../components/site/PageShell";
 import { DisciplineIntersections } from "../../components/interactions/DisciplineIntersections";
+import { ExperienceRows } from "../../components/site/ExperienceRows";
 import { pageMetadata } from "../../lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -42,6 +43,8 @@ export default function AboutPage() {
           <DisciplineIntersections />
         </div>
       </section>
+
+      <ExperienceRows />
 
       <section className="section">
         <div className="section-wrap">

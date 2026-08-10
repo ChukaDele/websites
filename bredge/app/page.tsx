@@ -5,6 +5,7 @@ import { SiteHeader } from "../components/site/SiteHeader";
 import { SiteFooter } from "../components/site/SiteFooter";
 import { HeroVideo } from "../components/site/HeroVideo";
 import { InvisibleQuery } from "../components/landing/InvisibleQuery";
+import { ExperienceRows } from "../components/site/ExperienceRows";
 
 const problems = [
   ["01", "Your numbers disagree.", "Finance, sales and operations report different versions of the same metric. Every meeting starts by deciding which one is right."],
@@ -64,6 +65,8 @@ export default function Home() {
       </section>
 
       <HeroMorph />
+
+      <ExperienceRows motion />
 
       <section className="reassurance section-wrap">
         <p className="eyebrow">THE OPERATING MODEL</p>

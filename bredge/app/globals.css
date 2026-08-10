@@ -56,10 +56,11 @@ h3 { line-height:1; }
    own paper background. No border, shadow, card or heavy mask; the asset already
    provides its own negative space. A whisper-thin left edge feather only, so the
    plate never reads as a hard rectangle against the copy column. */
-.hero-media { position:absolute; z-index:1; top:0; right:0; bottom:0; width:56%; pointer-events:none; overflow:hidden; background:var(--paper); }
-.hero-video { width:100%; height:100%; object-fit:cover; object-position:center;
-  -webkit-mask-image:linear-gradient(to right, transparent 0, #000 8%, #000 100%);
-  mask-image:linear-gradient(to right, transparent 0, #000 8%, #000 100%); }
+.hero-media { position:absolute; z-index:1; inset:0; width:100%; height:100%; pointer-events:none; overflow:hidden; background:var(--paper); }
+/* Handoff into the dark Five Systems field — the ambient plate recedes at the base
+   so the section transitions rather than hard-cuts. */
+.hero::after { content:""; position:absolute; z-index:1; left:0; right:0; bottom:0; height:96px; background:linear-gradient(to bottom, rgba(244,241,233,0), #172824); pointer-events:none; }
+.hero-video { width:100%; height:100%; object-fit:cover; object-position:center; }
 .hero-morph { position:relative; min-height:92vh; overflow:hidden; background:#172824; color:var(--paper); }.hero-morph::before { position:absolute; inset:0; content:""; background:radial-gradient(circle at 51% 50%,rgba(144,210,111,.15),transparent 30%),linear-gradient(rgba(193,222,210,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(193,222,210,.07) 1px,transparent 1px); background-size:auto,56px 56px,56px 56px; }.morph-links { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }.morph-links line { stroke:#b6ef9d; stroke-width:1; stroke-dasharray:3 8; opacity:.4; }
 .hero-morph-content { position:relative; min-height:100vh; padding-top:13vh; }.hero-morph-tease { position:relative; z-index:2; max-width:590px; }.hero-morph-tease h2 { margin:0 0 24px; }.hero-morph-tease > p:not(.eyebrow) { max-width:420px; color:#c4d1cb; line-height:1.5; }.morph-cards { position:absolute; top:50%; right:4%; width:min(760px,60vw); height:340px; transform:translateY(-50%); }.morph-card { position:absolute; display:grid; gap:6px; width:196px; padding:18px 18px 16px; border:1px solid rgba(244,241,233,.4); background:rgba(30,50,45,.92); box-shadow:10px 12px 0 rgba(0,0,0,.18); transform-origin:center; }.morph-card span,.morph-result span,.morph-decision span { color:#a6d68c; font:9px var(--font-mono); letter-spacing:.1em; }.morph-card b { color:#dce7e1; font-size:13px; font-weight:500; letter-spacing:.02em; }.morph-card strong { font-size:38px; line-height:.95; letter-spacing:-.06em; }.morph-card small { color:#a9bcb3; font-size:10px; }.morph-card i { position:absolute; top:13px; right:13px; width:7px; height:7px; border-radius:50%; background:rgba(244,241,233,.35); }.morph-exceptions { position:absolute; z-index:3; top:50%; left:50%; pointer-events:none; }.morph-exception { position:absolute; margin:0; padding:7px 11px; border:1px solid rgba(240,191,108,.55); background:rgba(14,26,22,.93); color:#f0bf6c; font:10px var(--font-mono); letter-spacing:.08em; white-space:nowrap; opacity:0; transform:translateY(10px); }.morph-exception.exception-1 { top:-128px; left:-200px; }.morph-exception.exception-2 { top:-52px; left:96px; }.morph-exception.exception-3 { top:78px; left:-156px; }.morph-card.card-1 { top:0; left:0; transform:rotate(-5deg); }.morph-card.card-2 { top:14px; right:0; transform:rotate(4deg); }.morph-card.card-3 { bottom:0; left:5%; transform:rotate(4deg); }.morph-card.card-4 { bottom:12px; right:7%; transform:rotate(-4deg); }.morph-card.card-5 { top:44%; left:38%; transform:rotate(8deg); }.morph-result { position:absolute; top:50%; left:50%; display:grid; gap:11px; width:260px; padding:24px; border:1px solid var(--brand); background:#b6ef9d; color:var(--ink); box-shadow:12px 14px 0 rgba(0,0,0,.24); transform:translate(-50%,-42%); }.morph-result span { color:#416343; }.morph-result strong { font-size:38px; line-height:.9; letter-spacing:-.07em; }.morph-result small { color:#47634f; font-size:11px; line-height:1.4; }.morph-decision { position:absolute; right:0; bottom:12vh; width:min(370px,31vw); padding-left:20px; border-left:1px solid rgba(244,241,233,.4); }.morph-decision p { margin:13px 0 0; font-size:17px; line-height:1.36; }
 @media (min-width:1001px) and (prefers-reduced-motion:no-preference) { .morph-result,.morph-decision { opacity:0; }.morph-result { transform:translate(-50%,-42%) translateY(24px); }.morph-decision { transform:translateY(16px); } }
@@ -125,3 +126,25 @@ h3 { line-height:1; }
 @media (min-width:1001px) and (prefers-reduced-motion:reduce) {
   .reference-case { position:relative; top:auto; }
 }
+
+/* ---------- Team Experience — "Experience brought forward" ---------- */
+.xp { padding:120px 0; }
+.xp h2 { margin:0 0 16px; }
+.xp-intro { max-width:52ch; margin:0 0 44px; color:#55615c; font-size:1.05rem; line-height:1.5; }
+.xp-rows { display:grid; gap:16px 28px; }
+/* Base (mobile-first): open two-column composition — no marquee. */
+.xp-track { display:grid; grid-template-columns:1fr 1fr; gap:16px 26px; }
+.xp-track span { display:flex; align-items:center; min-height:34px; color:#2c3a36; font-size:1.02rem; letter-spacing:-.02em; line-height:1.15; }
+.xp-note { max-width:70ch; margin:40px 0 0; color:var(--muted); font-size:.78rem; line-height:1.5; }
+
+/* Desktop enhancement: two wide rows, natural width, edge-faded, opposing drift. */
+@media (min-width:801px) {
+  .xp-rows { gap:0; }
+  .xp-row { overflow:hidden; padding:22px 0; border-top:1px solid var(--line); }
+  .xp-row:last-child { border-bottom:1px solid var(--line); }
+  .xp-motion .xp-row { -webkit-mask-image:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
+  .xp-track { display:flex; width:max-content; gap:clamp(34px, 4.5vw, 72px); white-space:nowrap; will-change:transform; transition:transform .12s linear; }
+  .xp-row-b .xp-track { padding-left:8%; }
+  .xp-track span { min-height:0; font-size:clamp(1.1rem, 1.7vw, 1.7rem); color:#33413c; }
+}
+@media (prefers-reduced-motion:reduce) { .xp-track { transition:none; } }
