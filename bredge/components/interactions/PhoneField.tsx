@@ -89,7 +89,7 @@ export function PhoneField({ onChange }: { onChange: (v: PhoneValue) => void }) 
         />
         {open && (
           <div className="phone-menu" role="listbox">
-            <input className="phone-search" ref={(el) => el?.focus()} placeholder="Search country or code" value={query} onChange={(e) => setQuery(e.target.value)} />
+            <input className="phone-search" ref={(el) => el?.focus()} aria-label="Search country or code" placeholder="Search country or code" value={query} onChange={(e) => setQuery(e.target.value)} />
             <div className="phone-list">
               {filtered.map((c) => (
                 <button type="button" key={c.iso} className="phone-opt" onClick={() => { setCountry(c.iso as CountryCode); setOpen(false); setQuery(""); }}>

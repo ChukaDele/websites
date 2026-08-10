@@ -1,0 +1,144 @@
+version: 2
+
+# ============================================================================
+# Bredge Data Reliability Checks — dbt tests
+# ----------------------------------------------------------------------------
+# The same intent as the SQL suite, expressed as dbt tests so it runs on every
+# build rather than by hand. Drop this into a dbt project whose sources match
+# the synthetic schema in ../README.md and run:
+#
+#   dbt test --select source:crm source:billing
+#   dbt test --select staging          # the staged models below
+#   dbt test --select assert_revenue_reconciles
+#
+# All data is synthetic.
+# ============================================================================
+
+sources:
+  - name: crm
+    description: "System of record for deals booked by the commercial team."
+    schema: crm
+    # Warn if the newest row is more than 6h old; error at 24h. Freshness is
+    # judged against the decision the data feeds, not the clock.
+    freshness:
+      warn_after: { count: 6, period: hour }
+      error_after: { count: 24, period: hour }
+    loaded_at_field: loaded_at
+    tables:
+      - name: customers
+        columns:
+          - name: customer_id
+            description: "CRM-minted surrogate key."
+            data_tests: [unique, not_null]
+          - name: customer_ref
+            description: "Business key, e.g. 'CUS-1001'."
+            data_tests: [unique, not_null]
+      - name: orders
+        columns:
+          - name: order_id
+            data_tests: [unique, not_null]
+          - name: order_ref
+            data_tests: [unique, not_null]
+          - name: customer_id
+            data_tests:
+              - not_null
+              - relationships:
+                  to: source('crm', 'customers')
+                  field: customer_id
+
+  - name: billing
+    description: "Invoicing platform. Linked to CRM only by a soft text ref."
+    schema: billing
+    freshness:
+      warn_after: { count: 12, period: hour }
+      error_after: { count: 24, period: hour }
+    loaded_at_field: loaded_at
+    tables:
+      - name: accounts
+        columns:
+          - name: account_id
+            data_tests: [unique, not_null]
+      - name: invoices
+        columns:
+          - name: invoice_id
+            data_tests: [unique, not_null]
+          - name: account_id
+            data_tests:
+              - not_null
+              - relationships:
+                  to: source('billing', 'accounts')
+                  field: account_id
+      - name: invoice_lines
+        columns:
+          - name: invoice_line_id
+            data_tests: [unique, not_null]
+          - name: invoice_id
+            data_tests:
+              - not_null
+              - relationships:
+                  to: source('billing', 'invoices')
+                  field: invoice_id
+
+models:
+  - name: stg_crm__orders
+    description: "Cleaned CRM orders, one row per order."
+    columns:
+      - name: order_id
+        description: "Grain: one row per order. The primary key of this model."
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Resolved to the canonical customer in dim_customers."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_id
+      - name: order_status
+        description: "Only these three states are legal."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['signed', 'cancelled', 'refunded']
+      - name: amount_gbp
+        data_tests:
+          - not_null
+
+  - name: stg_billing__invoice_lines
+    description: "Cleaned billing invoice lines, one row per line."
+    columns:
+      - name: invoice_line_id
+        description: "Grain: one row per invoice line. Primary key."
+        data_tests:
+          - unique
+          - not_null
+      - name: invoice_id
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_billing__invoices')
+              field: invoice_id
+      - name: line_kind
+        description: "Charges are positive; discounts and refunds are negative."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['charge', 'discount', 'refund']
+
+  - name: dim_customers
+    description: >
+      Canonical customer dimension. One row per real-world customer after
+      identity resolution collapses CRM duplicates (see ../sql/duplicate_identity.sql).
+    columns:
+      - name: customer_id
+        description: "Canonical customer id. Every downstream fact joins to this."
+        data_tests:
+          - unique
+          - not_null
+      - name: country
+        data_tests:
+          - accepted_values:
+              values: ['GB', 'IE', 'FR', 'DE', 'NL', 'US']
+              config:
+                severity: warn   # a new market is a warning to investigate, not a build failure
