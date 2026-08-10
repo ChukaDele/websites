@@ -29,8 +29,8 @@ export default function InsightsPage() {
             <p>{featured.standfirst}</p>
             <span className="insight-meta">{featured.read} <span className="arrow" aria-hidden="true">↗</span></span>
           </div>
-          <div className="insight-featured-viz" aria-hidden="true">
-            <svg viewBox="0 0 320 326" xmlns="http://www.w3.org/2000/svg" style={{ fontFamily: "var(--font-mono, monospace)" }}>
+          <div className="insight-featured-viz">
+            <svg viewBox="0 0 320 326" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three conflicting revenue figures from CRM, Finance and the board pack reconciled through time, grain, identity and definition into one canonical revenue figure." style={{ fontFamily: "var(--font-mono, monospace)" }}>
               <defs><marker id="fa" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0 L5,3 L0,6 Z" fill="#2c3a36" /></marker></defs>
               <g fontSize="11">
                 <rect x="0" y="0" width="320" height="36" fill="none" stroke="#f0bf6c" strokeWidth="1.5" />
