@@ -1,0 +1,50 @@
+DNS SAFETY BACKUP — thebredge.com
+Captured (UTC): 2026-08-10 03:49:39Z
+Method: public DNS resolution (dig). Registrar dashboard export still recommended as the authoritative record.
+==================================================================
+
+## Nameservers (delegation)
+dns2.registrar-servers.com.
+dns1.registrar-servers.com.
+
+## SOA
+dns1.registrar-servers.com. hostmaster.registrar-servers.com. 1767580728 43200 3600 604800 3601
+
+## A (apex)
+75.2.70.75
+99.83.190.102
+
+## AAAA (apex)
+
+## www (CNAME/A)
+proxy-ssl.webflow.com.
+proxy-ssl-geo-2.webflow.com.
+18.202.8.75
+3.248.56.152
+54.155.19.65
+proxy-ssl.webflow.com.
+
+## MX (EMAIL — DO NOT ALTER)
+10 mx2.privateemail.com.
+10 mx1.privateemail.com.
+
+## TXT (apex — SPF / verifications)
+"v=spf1 include:spf.privateemail.com ~all"
+"google-site-verification=A4dVMGAUT9_rGwXY8O6QkufrhR44NxCv41dwJp7DLW0"
+
+## _dmarc TXT
+
+## DKIM (privateemail default selector)
+"v=DKIM1;k=rsa;p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArQhCdVkfkutcsIR9hAi0p7Udv0H6o4LihncLORm7vxic44c1eXD/LRVyfz4qIg8roM0c4ZeN01tl9grZGLa6U2lZidWvtzGPNxrn1ECA0F/NWI9bp8VpAB2+Kfu5oY7v1BR2Zv5RLowYSYEYR9mu3gLDVRi9Zvu2aWkMtZm04crpfuEyteY4k2wB+e8Dl/zdd96" "dkwrCLQTcl/aMb1VUpq5lrTKlfpwcF4v+s4qS2D2QLmsWR413n470qFRFOkfDyfScUwCtKXMYtRxogdvAiWQpMOVyPXq0ntI+3ltm8HsOZJWCtwJBgsWRujzlsnjUYVGsfKsXtSJjzrkmNFNFLwIDAQAB"
+
+## DKIM (common selectors)
+
+## CAA
+
+## Autodiscover/autoconfig (mail client)
+privateemail.com.
+privateemail.com.
+
+## Current live HTTP behaviour
+apex https -> http=301 redirect=https://www.thebredge.com/
+www  https -> http=200 redirect=
