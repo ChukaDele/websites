@@ -32,6 +32,9 @@ export function ReferenceDashboards() {
     const cards = Array.from(stage.querySelectorAll<HTMLElement>(".reference-case"));
     if (!cards.length) return;
     const mq = window.matchMedia("(min-width: 1001px) and (min-height: 720px) and (prefers-reduced-motion: no-preference)");
+    // Stage length is relational to the card count (one viewport of runway per
+    // card), not a blind fixed height — add a WORK card and the runway follows.
+    stage.style.setProperty("--rw-len", String(cards.length));
     let raf = 0;
 
     const setActive = (idx: number) => {
