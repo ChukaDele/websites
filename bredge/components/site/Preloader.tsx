@@ -5,13 +5,14 @@ import { useEffect, useRef } from "react";
 const sources = ["PRODUCT", "BILLING", "CRM", "FINANCE", "SUPPORT"];
 
 /**
- * First-entry reconciliation preloader. Five misaligned source records align,
- * one briefly goes amber and resolves, a green signal passes through, and they
- * converge into one line that expands toward the hero before the overlay lifts.
+ * First-entry signature preloader: five disagreeing source records
+ * (PRODUCT/BILLING/CRM/FINANCE/SUPPORT) align, one amber exception resolves, a
+ * green signal passes across the system, and the geometry collapses into the
+ * Bredge mark — which the hero then forms around. ~1.1s, hard safety ≤1.5s.
  *
- * Robustness: only shown when the head script added `.preload-active` (first
- * visit this session, motion allowed). A pure-CSS safety fade guarantees the
- * overlay lifts even if JS/GSAP never runs. Hard max ~1200ms.
+ * Only runs when the head script added `.preload-active` (first visit this
+ * session, motion allowed). A pure-CSS safety fade lifts the overlay even if
+ * JS/GSAP never runs. Never traps the visitor.
  */
 export function Preloader() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -30,9 +31,7 @@ export function Preloader() {
       html.classList.add("preload-done");
       root.style.display = "none";
     };
-
-    // Absolute safety: never let the overlay trap the visitor.
-    const safety = window.setTimeout(finish, 1200);
+    const safety = window.setTimeout(finish, 1500);
 
     let killed = false;
     let ctx: { revert: () => void } | undefined;
@@ -44,34 +43,33 @@ export function Preloader() {
       const rows = q(".pl-record");
       const line = q(".pl-line");
       const signal = q(".pl-signal");
+      const exception = q(".pl-record.pending .pl-dot");
+      const mark = q(".pl-mark");
       const c = gsap.context(() => {
         const offsets = [-46, 30, -20, 38, -30];
         const tl = gsap.timeline({ defaults: { ease: "power2.out" }, onComplete: finish });
-        // records perceptible immediately (misaligned), then align
+        // ACT 1–3 — records perceptible, misaligned, then align to one grid
         tl.fromTo(rows,
-          { x: (i: number) => offsets[i] ?? 0, opacity: 0.5, scaleX: 0.92 },
-          { x: 0, opacity: 1, scaleX: 1, duration: 0.34, stagger: 0.03 }, 0.06)
-          // one relationship stays unresolved → amber → resolves
-          .to(q(".pl-record.pending"), { backgroundColor: "#f0bf6c", duration: 0.12 }, 0.42)
-          .to(q(".pl-record.pending"), { backgroundColor: "", duration: 0.16 }, 0.6)
-          // green signal passes through
-          .fromTo(signal, { xPercent: -120, opacity: 0.9 }, { xPercent: 120, opacity: 0.9, duration: 0.34, ease: "power1.inOut" }, 0.56)
-          .to(signal, { opacity: 0, duration: 0.1 }, 0.9)
-          // converge to one line
-          .to(rows, { opacity: 0, y: 0, duration: 0.22 }, 0.72)
-          .fromTo(line, { scaleX: 0.2, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.3 }, 0.74)
-          // line expands toward the hero, overlay lifts
-          .to(line, { scaleX: 1.6, xPercent: 26, duration: 0.34, ease: "power2.in" }, 0.98)
-          .to(root, { autoAlpha: 0, duration: 0.28, ease: "power1.in" }, 1.02);
+          { x: (i: number) => offsets[i] ?? 0, opacity: 0.45, scaleX: 0.9 },
+          { x: 0, opacity: 1, scaleX: 1, duration: 0.36, stagger: 0.035 }, 0.05)
+          // one identity remains unresolved (amber)
+          .fromTo(exception, { backgroundColor: "#c8cec9" }, { backgroundColor: "#f0bf6c", duration: 0.14 }, 0.40)
+          // ACT 4 — green signal passes across the system; the exception resolves
+          .fromTo(signal, { xPercent: -130, opacity: 0.9 }, { xPercent: 130, duration: 0.4, ease: "power1.inOut" }, 0.54)
+          .to(exception, { backgroundColor: "#90d26f", duration: 0.16 }, 0.66)
+          .to(signal, { opacity: 0, duration: 0.1 }, 0.94)
+          .fromTo(line, { scaleX: 0.15, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.26 }, 0.72)
+          // ACT 5 — geometry collapses into the Bredge mark
+          .to(rows, { opacity: 0, y: 6, duration: 0.24, stagger: 0.015 }, 0.82)
+          .to(line, { opacity: 0, duration: 0.2 }, 0.86)
+          .fromTo(mark, { opacity: 0, scale: 0.66, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.32, ease: "power3.out" }, 0.86)
+          // ACT 6 — the mark holds while the overlay lifts into the hero
+          .to(root, { autoAlpha: 0, duration: 0.3, ease: "power1.in" }, 1.16);
       }, root);
       ctx = c;
     })();
 
-    return () => {
-      killed = true;
-      window.clearTimeout(safety);
-      ctx?.revert();
-    };
+    return () => { killed = true; window.clearTimeout(safety); ctx?.revert(); };
   }, []);
 
   return (
@@ -79,11 +77,21 @@ export function Preloader() {
       <div className="pl-stage">
         <div className="pl-records">
           {sources.map((s, i) => (
-            <div key={s} className={`pl-record${i === 2 ? " pending" : ""}`} data-src={s}><i /><i /><i /></div>
+            <div key={s} className={`pl-record${i === 2 ? " pending" : ""}`}>
+              <span className="pl-label">{s}</span>
+              <span className="pl-dot" />
+              <i /><i />
+            </div>
           ))}
         </div>
         <div className="pl-line" />
         <div className="pl-signal" />
+        <svg className="pl-mark" width="72" height="72" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <rect width="100" height="100" rx="24" fill="#142321" />
+          <rect x="30" y="17" width="13" height="66" rx="6.5" fill="#90d26f" />
+          <circle cx="56" cy="59" r="22" fill="#90d26f" />
+          <circle cx="58" cy="61" r="9.5" fill="#142321" />
+        </svg>
       </div>
     </div>
   );

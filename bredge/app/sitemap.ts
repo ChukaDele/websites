@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { articles } from "../lib/insights";
+import { resources } from "../lib/resources";
 
 const base = "https://thebredge.com";
 
@@ -15,11 +16,13 @@ const routes: Array<[string, number, MetadataRoute.Sitemap[number]["changeFreque
   ["/how-we-work", 0.6, "monthly"],
   ["/about", 0.6, "monthly"],
   ["/insights", 0.7, "weekly"],
+  ["/resources", 0.6, "monthly"],
   ["/contact", 0.5, "monthly"],
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const pages = routes.map(([path, priority, changeFrequency]) => ({ url: `${base}${path}`, changeFrequency, priority }));
   const posts = articles.map((a) => ({ url: `${base}/insights/${a.slug}`, changeFrequency: "yearly" as const, priority: 0.6 }));
-  return [...pages, ...posts];
+  const res = resources.map((r) => ({ url: `${base}/resources/${r.slug}`, changeFrequency: "yearly" as const, priority: 0.5 }));
+  return [...pages, ...posts, ...res];
 }

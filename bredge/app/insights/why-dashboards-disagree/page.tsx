@@ -92,13 +92,13 @@ export default function Page() {
         <section id="usual">
           <h2>What this usually looks like</h2>
           <p>It usually starts in a monthly meeting. The revenue on the board pack does not match the number the sales director quotes from the CRM. Someone opens Finance&rsquo;s workbook and finds a third figure. Each person is certain their number is correct, because within their own system it is.</p>
-          <p>The commercial team counts a deal when it is signed. Finance counts revenue when it can be recognised &mdash; spread across the months in which the service is actually delivered. Billing counts money when it raises an invoice. A refund is a negative order in one system and a deleted order in another. A single customer is one account in the CRM, two billing entities, and three logins in the product.</p>
+          <p>The commercial team counts a deal when it is signed. Finance counts revenue when it can be recognised, spread across the months in which the service is actually delivered. Billing counts money when it raises an invoice. A refund is a negative order in one system and a deleted order in another. A single customer is one account in the CRM, two billing entities, and three logins in the product.</p>
           <p>So the meeting turns into archaeology. People screenshot tiles, export spreadsheets, and argue from totals. An hour later everyone agrees to &ldquo;look into it&rdquo;, and the same gap reappears next month. The pattern is familiar: the numbers are close enough to feel like they should match, and far enough apart to matter.</p>
         </section>
 
         <section id="try-first">
           <h2>Before you rebuild anything</h2>
-          <p>You can usually locate the cause yourself in an afternoon, without touching the BI tool. The goal is not to force the numbers to match. It is to explain the gap &mdash; to break it into named, understood parts. A reconciliation is finished when every pound of difference has a reason, not when the difference happens to be small.</p>
+          <p>You can usually locate the cause yourself in an afternoon, without touching the BI tool. The goal is not to force the numbers to match. It is to explain the gap: to break it into named, understood parts. A reconciliation is finished when every pound of difference has a reason, not when the difference happens to be small.</p>
           <p>Work from records, not totals. Two totals can match by accident, built from errors that cancel out. Two totals can differ for a reason that is entirely correct. Only the underlying rows tell you which.</p>
           <TryThisFirst title="Before you rebuild anything">
             <ol>
@@ -117,13 +117,13 @@ export default function Page() {
           <h2>What the result tells you</h2>
           <p>Each class points at a different cause, and each cause has a different owner. Read your gap like this.</p>
           <ul>
-            <li><strong>Timing</strong> &mdash; the sources were measured at different moments, or over slightly different windows. Likely cause: different refresh schedules, or one number includes late-arriving transactions the other has not seen yet.</li>
-            <li><strong>Identity</strong> &mdash; the same real-world customer appears as more than one record, or two different customers share an identifier. Likely cause: no shared customer key across systems.</li>
-            <li><strong>Scope</strong> &mdash; the sources include different populations. Likely cause: one figure excludes a region, a legal entity, intercompany trade (sales between parts of the same group), or test accounts that the other keeps.</li>
-            <li><strong>Duplication</strong> &mdash; a single transaction is counted more than once. Likely cause: a re-import, or a join that fans out (see grain and cardinality below).</li>
-            <li><strong>Currency</strong> &mdash; figures are held in different currencies, or converted on different dates at different rates.</li>
-            <li><strong>Grain</strong> &mdash; the sources count different units, such as orders versus order lines. Likely cause: summing a table without checking what one row represents.</li>
-            <li><strong>Definition</strong> &mdash; the systems mean different things by the word. Likely cause: Finance recognises revenue over time; Sales books it at signature.</li>
+            <li><strong>Timing</strong>: the sources were measured at different moments, or over slightly different windows. Likely cause: different refresh schedules, or one number includes late-arriving transactions the other has not seen yet.</li>
+            <li><strong>Identity</strong>: the same real-world customer appears as more than one record, or two different customers share an identifier. Likely cause: no shared customer key across systems.</li>
+            <li><strong>Scope</strong>: the sources include different populations. Likely cause: one figure excludes a region, a legal entity, intercompany trade (sales between parts of the same group), or test accounts that the other keeps.</li>
+            <li><strong>Duplication</strong>: a single transaction is counted more than once. Likely cause: a re-import, or a join that fans out (see grain and cardinality below).</li>
+            <li><strong>Currency</strong>: figures are held in different currencies, or converted on different dates at different rates.</li>
+            <li><strong>Grain</strong>: the sources count different units, such as orders versus order lines. Likely cause: summing a table without checking what one row represents.</li>
+            <li><strong>Definition</strong>: the systems mean different things by the word. Likely cause: Finance recognises revenue over time; Sales books it at signature.</li>
           </ul>
           <p>The last one matters most. A definition difference is not something engineering can fix on its own. Someone has to decide which definition is canonical for the board pack, and then everyone has to use it.</p>
         </section>
@@ -132,10 +132,10 @@ export default function Page() {
           <h2>What is happening underneath</h2>
           <p>Underneath the reconciliation, four technical ideas explain almost every gap.</p>
           <p><strong>Grain</strong> is the level of detail that one row represents. An orders table has one row per order; an order-lines table has one row per line within an order. Sum the wrong one and you double-count. Every table should have one clearly stated grain, and any join that crosses grains should fan out on purpose, not by accident.</p>
-          <p><strong>Source freshness</strong> is how recently a source was last updated. If one dataset refreshes hourly and another nightly, the two will disagree every morning &mdash; and both will be correct. Always check the refresh timestamp before you suspect the logic.</p>
-          <p><strong>Entity identity</strong> is deciding when two records describe the same real-world customer. Source systems mint their own keys, so one company can be three account IDs in the CRM, two in billing, and one in the warehouse. Identity resolution &mdash; matching those records to a single canonical customer &mdash; is the deepest and most common cause of disagreement, and it belongs upstream of anything a stakeholder sees. It is the same problem as <a href="/insights/one-customer-view">building one reliable customer view</a>, and it rarely solves itself.</p>
-          <p><strong>Join cardinality</strong> is how many rows on one side of a join match rows on the other. A one-to-many join &mdash; one customer to many invoices &mdash; will multiply a figure the moment you sum across it. Duplicated revenue almost always traces back to a join that fanned out, or a source imported twice.</p>
-          <p>Two short queries take most of the guesswork out. The first sums each source over an identical window, so any remaining gap cannot be blamed on the date range. It uses a half-open range &mdash; on or after the first of June, and strictly before the first of July &mdash; which counts every day of the month exactly once and never spills into the next.</p>
+          <p><strong>Source freshness</strong> is how recently a source was last updated. If one dataset refreshes hourly and another nightly, the two will disagree every morning, and both will be correct. Always check the refresh timestamp before you suspect the logic.</p>
+          <p><strong>Entity identity</strong> is deciding when two records describe the same real-world customer. Source systems mint their own keys, so one company can be three account IDs in the CRM, two in billing, and one in the warehouse. Identity resolution (matching those records to a single canonical customer) is the deepest and most common cause of disagreement, and it belongs upstream of anything a stakeholder sees. It is the same problem as <a href="/insights/one-customer-view">building one reliable customer view</a>, and it rarely solves itself.</p>
+          <p><strong>Join cardinality</strong> is how many rows on one side of a join match rows on the other. A one-to-many join (one customer to many invoices) will multiply a figure the moment you sum across it. Duplicated revenue almost always traces back to a join that fanned out, or a source imported twice.</p>
+          <p>Two short queries take most of the guesswork out. The first sums each source over an identical window, so any remaining gap cannot be blamed on the date range. It uses a half-open range (on or after the first of June, and strictly before the first of July), which counts every day of the month exactly once and never spills into the next.</p>
           <pre>{`-- 1. Sum each source over exactly the same window
 select 'finance' as source, sum(amount_gbp) as revenue
 from   finance.recognised_revenue
@@ -146,7 +146,7 @@ select 'billing' as source, sum(amount_gbp) as revenue
 from   billing.invoice_lines
 where  invoice_date >= date '2026-06-01'
   and  invoice_date <  date '2026-07-01';`}</pre>
-          <p>If the totals still differ, the second query looks for duplication. It groups the billing lines by invoice and keeps only the invoices that appear more than once. Any row it returns is a duplicate inflating the total &mdash; the signature of a fan-out join or a double import.</p>
+          <p>If the totals still differ, the second query looks for duplication. It groups the billing lines by invoice and keeps only the invoices that appear more than once. Any row it returns is a duplicate inflating the total: the signature of a fan-out join or a double import.</p>
           <pre>{`-- 2. Find duplicated invoices inflating the billing total
 select invoice_id, count(*) as line_rows
 from   billing.invoice_lines
@@ -154,7 +154,7 @@ where  invoice_date >= date '2026-06-01'
   and  invoice_date <  date '2026-07-01'
 group  by invoice_id
 having count(*) > 1;`}</pre>
-          <p>Between them, these two checks separate a timing gap from a grain or duplication gap in minutes. What they cannot resolve is a definition difference, because that is a decision about the business. That decision needs a home, and the home is a <strong>semantic layer</strong> &mdash; one governed place where a metric such as revenue or active customer is defined once and reused by every report. Without it, each analyst re-implements the metric in their own query, and the definitions drift apart within weeks.</p>
+          <p>Between them, these two checks separate a timing gap from a grain or duplication gap in minutes. What they cannot resolve is a definition difference, because that is a decision about the business. That decision needs a home, and the home is a <strong>semantic layer</strong>: one governed place where a metric such as revenue or active customer is defined once and reused by every report. Without it, each analyst re-implements the metric in their own query, and the definitions drift apart within weeks.</p>
         </section>
 
         <section id="good">
@@ -164,7 +164,7 @@ having count(*) > 1;`}</pre>
             <li>One governed definition per metric, written in plain English, owned by a named person, and used by every report &mdash; the semantic layer, not forty copies scattered across forty queries.</li>
             <li>Sources reconciled on a routine, especially finance against the warehouse, so the gap is a monitored check rather than a monthly fire drill.</li>
             <li>Automated tests that fail loudly when a source double-counts, a join fans out, or a total moves more than expected.</li>
-            <li>Lineage you can follow &mdash; the ability to trace any figure on a dashboard back through the model to the source row it came from.</li>
+            <li>Lineage you can follow: the ability to trace any figure on a dashboard back through the model to the source row it came from.</li>
           </ul>
           <p>When these are in place, a disagreement becomes information. It tells you two definitions have diverged, and you can say exactly where and why &mdash; in minutes, not in another meeting.</p>
         </section>
@@ -183,7 +183,7 @@ having count(*) > 1;`}</pre>
 
         <section id="boundary">
           <h2>When DIY stops being sensible</h2>
-          <p>The afternoon reconciliation is worth doing, and often it is enough. It stops being enough when the same reconciliation has to run reliably every day, across systems that each define a customer differently, with nobody clearly responsible for the result. At that point you are no longer explaining a one-off gap. You are running a system &mdash; at every monthly close, when the accounts are finalised &mdash; and it needs to be built like one.</p>
+          <p>The afternoon reconciliation is worth doing, and often it is enough. It stops being enough when the same reconciliation has to run reliably every day, across systems that each define a customer differently, with nobody clearly responsible for the result. At that point you are no longer explaining a one-off gap. You are running a system (at every monthly close, when the accounts are finalised), and it needs to be built like one.</p>
           <SystemBoundary
             conditions={[
               "The same customer has to be resolved across CRM, billing, product, finance and support, rather than matched by hand each time.",

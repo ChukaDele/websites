@@ -31,7 +31,7 @@ export default function Page() {
         heroDiagram={
           <Diagram
             title="From business constraints to the right first data role"
-            caption="The first data role should follow the constraint that is actually blocking decisions — not a generic org chart. The green path is one example: disputed numbers point to an analytics engineer, not more dashboards."
+            caption="The first data role should follow the constraint that is actually blocking decisions, not a generic org chart. The green path is one example: disputed numbers point to an analytics engineer, not more dashboards."
           >
             <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" style={{ fontFamily: "var(--font-mono), ui-monospace, monospace", fontSize: "12px" }} fill="#2c3a36" textAnchor="middle">
               <defs>
@@ -102,7 +102,7 @@ export default function Page() {
           <p>Before you write a job advert, work through a short decision tree. Each answer points to a role or a delivery model, not straight to a hire.</p>
           <TryThisFirst title="Start with these questions">
             <ol>
-              <li><strong>What is actually blocked?</strong> If people cannot get answers at all, the gap is analysis. If answers exist but the numbers are disputed and undefined, the gap is modelling — the work of making data trustworthy. If data arrives late, breaks, or never joins up across systems, the gap is engineering.</li>
+              <li><strong>What is actually blocked?</strong> If people cannot get answers at all, the gap is analysis. If answers exist but the numbers are disputed and undefined, the gap is modelling (the work of making data trustworthy). If data arrives late, breaks, or never joins up across systems, the gap is engineering.</li>
               <li><strong>Which gap blocks you most often?</strong> Fix the binding constraint first. Building the other layers will not clear a queue they are not causing.</li>
               <li><strong>Is the need continuous, or a defined project?</strong> A one-off build with a clear end is a project. Work that recurs every week is a standing capability, and those are different commitments.</li>
               <li><strong>Is the shape of the work clear yet?</strong> If you cannot yet say which permanent roles you need, an embedded or fractional team lets you find out before you commit to a salary.</li>
@@ -169,7 +169,7 @@ having max(order_date) >= current_date - interval '90 days'
           <SystemBoundary
             conditions={[
               "The same cross-system work recurs every week, rather than arriving once and finishing.",
-              "Reliability now needs monitoring — someone has to know when a pipeline fails, not discover it in a board meeting.",
+              "Reliability now needs monitoring: someone has to know when a pipeline fails, not discover it in a board meeting.",
               "Several stakeholders depend on the numbers, and they disagree on the definitions.",
               "One person has become a single point of failure, and their absence stops reporting.",
               "The work has outgrown a single generalist, and no one owns the layer beneath the reports.",

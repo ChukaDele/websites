@@ -97,7 +97,7 @@ export default function Page() {
           <h2>The short answer</h2>
           <p>A single customer view is one reliable record of each customer, assembled from every system that holds part of the picture. Most teams treat it as a reporting task. Build a customer 360 dashboard, the thinking goes, and the problem is solved. It is not. A single customer view is an identity problem first, and a reporting problem last.</p>
           <p>Each system mints its own customer identifier. Your CRM (the sales system) knows a customer one way. Your billing platform knows the same customer another way. Your product database, your finance ledger and your support desk each hold a third, fourth and fifth identifier. None of them agree, because none of them were built to.</p>
-          <p>Before any dashboard can be trusted, you have to decide which records across these systems describe the same real customer. Then you map them to one <strong>canonical customer ID</strong> — the single identifier that everything else points to. This work is called <strong>identity resolution</strong>. Do it well and the dashboard is straightforward. Skip it and the dashboard is confidently wrong. A 360 view rendered on top of unresolved identities does not fix the identities; it hides them behind a clean chart.</p>
+          <p>Before any dashboard can be trusted, you have to decide which records across these systems describe the same real customer. Then you map them to one <strong>canonical customer ID</strong>: the single identifier that everything else points to. This work is called <strong>identity resolution</strong>. Do it well and the dashboard is straightforward. Skip it and the dashboard is confidently wrong. A 360 view rendered on top of unresolved identities does not fix the identities; it hides them behind a clean chart.</p>
         </section>
 
         <section id="usual">
@@ -112,12 +112,12 @@ export default function Page() {
           <TryThisFirst title="You can test this yourself">
             <p>You do not need a warehouse to find out how bad the identity problem is. You need a spreadsheet and an hour. Work through this Customer Identity Mapping Worksheet in order.</p>
             <ol>
-              <li>List each source system in a row: CRM, billing, product, finance, support. Beside each, write the name of its customer key — the field it uses to identify a customer.</li>
-              <li>Pick one system as the <strong>source of record for identity</strong> — the system you trust most to say a customer exists. This is your starting point, not the winner for every attribute.</li>
-              <li>Define your <strong>deterministic match rules</strong> — exact, rule-based matches on a shared key. For example: &ldquo;billing customer matches CRM account when the company registration numbers are identical.&rdquo; Write the rules down. If two systems share no reliable key, record that; it is a finding.</li>
+              <li>List each source system in a row: CRM, billing, product, finance, support. Beside each, write the name of its customer key, the field it uses to identify a customer.</li>
+              <li>Pick one system as the <strong>source of record for identity</strong>: the system you trust most to say a customer exists. This is your starting point, not the winner for every attribute.</li>
+              <li>Define your <strong>deterministic match rules</strong>: exact, rule-based matches on a shared key. For example: &ldquo;billing customer matches CRM account when the company registration numbers are identical.&rdquo; Write the rules down. If two systems share no reliable key, record that; it is a finding.</li>
               <li>Take a sample of customers from your source of record — a hundred is enough. For each one, apply your rules and try to find the matching record in every other system.</li>
               <li>Count how many match cleanly on a shared key in every system. These are your resolved customers.</li>
-              <li>Put every customer that did not match cleanly into an exception list — no match, an ambiguous match, or more than one candidate match.</li>
+              <li>Put every customer that did not match cleanly into an exception list: no match, an ambiguous match, or more than one candidate match.</li>
               <li>Divide the exception count by the sample size. That is your <strong>exception rate</strong>. Write it at the top of the sheet.</li>
             </ol>
           </TryThisFirst>
@@ -128,19 +128,19 @@ export default function Page() {
           <p>The exception rate is the headline number. It is the share of customers that did not resolve cleanly to a single identity across your systems.</p>
           <p>A low rate means your systems already share enough reliable identifiers. Most records line up on a shared key, and only a handful need a human to look at them. In that case a single customer view is mostly a modelling exercise, and it is well worth doing.</p>
           <p>A high rate means the problem is upstream, in the systems themselves. They were never designed to reference each other. No amount of dashboard work will close that gap, because the gap is in the data, not the display.</p>
-          <p>Match quality matters as much as the count. A clean match on a shared, stable key — a company registration number, or an account ID that one system passes to another — is trustworthy. A match on a name, or on a similarity score, is a guess with a probability attached. Two teams can report a 90% match rate and still be standing on almost entirely guesses. So count the matches, but grade them too. A worksheet that separates &ldquo;matched on a shared key&rdquo; from &ldquo;matched on a name&rdquo; tells you far more than a single percentage.</p>
+          <p>Match quality matters as much as the count. A clean match on a shared, stable key (a company registration number, or an account ID that one system passes to another) is trustworthy. A match on a name, or on a similarity score, is a guess with a probability attached. Two teams can report a 90% match rate and still be standing on almost entirely guesses. So count the matches, but grade them too. A worksheet that separates &ldquo;matched on a shared key&rdquo; from &ldquo;matched on a name&rdquo; tells you far more than a single percentage.</p>
         </section>
 
         <section id="underneath">
           <h2>What is happening underneath</h2>
           <p>The worksheet is a manual version of what a real system does continuously. Here are the parts, in plain English first and then precisely.</p>
           <p><strong>Deterministic matching</strong> is exact, rule-based matching on a shared key. If the CRM account and the billing customer carry the same company registration number, they are the same customer. There is no judgement involved. Deterministic matching is fast, explainable and safe. Its only limit is that it needs a shared key to exist.</p>
-          <p><strong>Probabilistic matching</strong>, also called fuzzy matching, is what you use when no shared key exists. It scores how similar two records are — on name, address, domain and other fields — and treats a high enough score as a match. It is useful, and it is dangerous. A high score is a probability, not a fact. The characteristic failure is the <strong>false merge</strong>: two genuinely different customers scored as one, silently collapsed into a single record. A false merge is hard to spot and expensive to unpick, because once two customers share a canonical ID, every downstream figure blends them. Probabilistic matching should raise candidates for review, not decide silently.</p>
+          <p><strong>Probabilistic matching</strong>, also called fuzzy matching, is what you use when no shared key exists. It scores how similar two records are (on name, address, domain and other fields) and treats a high enough score as a match. It is useful, and it is dangerous. A high score is a probability, not a fact. The characteristic failure is the <strong>false merge</strong>: two genuinely different customers scored as one, silently collapsed into a single record. A false merge is hard to spot and expensive to unpick, because once two customers share a canonical ID, every downstream figure blends them. Probabilistic matching should raise candidates for review, not decide silently.</p>
           <p>The <strong>canonical customer ID</strong> is the one identifier that every source record maps to. It does not belong to any source system. It is issued and owned by the model that resolves identity, so that no single operational tool can redefine who a customer is.</p>
           <p><strong>Source precedence</strong> is the rule for which system wins for which attribute. It is decided attribute by attribute, not once for the whole record. Finance may be the authority for legal entity name and billing address. The CRM may be the authority for account owner and industry. The product system may be the authority for last active date. Precedence is a business decision written down as configuration, not a default left to whichever system loaded last.</p>
-          <p><strong>Duplicate handling</strong> is what you do when one system holds two records for the same customer. You keep both source records — you never delete operational data — and you point both at the same canonical ID, marking one as the survivor for display.</p>
+          <p><strong>Duplicate handling</strong> is what you do when one system holds two records for the same customer. You keep both source records (you never delete operational data) and you point both at the same canonical ID, marking one as the survivor for display.</p>
           <p>The <strong>exception queue</strong> is a monitored list of records that did not resolve: no match, an ambiguous match, or a probabilistic match below your confidence threshold. It is not a dumping ground. It is a work list that a named person triages on a schedule, and its size is a health metric in its own right.</p>
-          <p><strong>History and grain</strong> decide what a row means over time. Grain is the level of detail one row represents — one row per customer, or one row per customer per day. If you need to answer &ldquo;who was this customer merged with last quarter&rdquo;, the identity map needs history, so that a resolution decision can be reconstructed for a past date rather than only shown as it stands today.</p>
+          <p><strong>History and grain</strong> decide what a row means over time. Grain is the level of detail one row represents: one row per customer, or one row per customer per day. If you need to answer &ldquo;who was this customer merged with last quarter&rdquo;, the identity map needs history, so that a resolution decision can be reconstructed for a past date rather than only shown as it stands today.</p>
           <p><strong>Quality checks</strong> run on every refresh: no canonical ID with conflicting legal names, no source key mapped to two canonical IDs, an exception rate within an agreed band. <strong>Lineage</strong> is the recorded path from a resolved customer back to the exact source rows that formed it, so any figure can be traced and defended. <strong>Ongoing ownership</strong> is the person accountable for the rules, the thresholds and the queue after launch, because identity resolution is a system to run, not a project to finish.</p>
           <p>In practice, the core of the model is a single mapping table: one row per source key, each pointing at a canonical customer ID with a recorded method and confidence. The query below keeps one best row per source key, then routes the rest to review.</p>
           <pre>{`-- 1. Pick one row per source key, keeping the highest-confidence match.
@@ -177,8 +177,8 @@ SELECT
 FROM ranked
 WHERE rn = 1
   AND (canonical_customer_id IS NULL OR match_confidence < 0.90);`}</pre>
-          <p>The first query does one job. A source key — say a CRM account — can throw up several candidate matches: one deterministic, one or two fuzzy. <code>ROW_NUMBER() OVER (PARTITION BY source_system, source_customer_id ORDER BY match_confidence DESC)</code> numbers those candidates per source key, best confidence first. Keeping only <code>rn = 1</code> leaves exactly one row per source key. The confidence threshold then admits only matches you actually trust. The result is a clean identity map: every source key that cleared the bar, mapped to one canonical customer.</p>
-          <p>The second query is the honest half. It takes the same best-per-key rows and selects the ones that did not clear the bar — no canonical ID at all, or a confidence below the threshold — and marks them for review. This is the exception queue. It is a deliberate, visible destination for uncertainty. The threshold of 0.90 is illustrative; you set it against your own tolerance for a false merge, and you monitor how many records fall each side of it.</p>
+          <p>The first query does one job. A source key (say a CRM account) can throw up several candidate matches: one deterministic, one or two fuzzy. <code>ROW_NUMBER() OVER (PARTITION BY source_system, source_customer_id ORDER BY match_confidence DESC)</code> numbers those candidates per source key, best confidence first. Keeping only <code>rn = 1</code> leaves exactly one row per source key. The confidence threshold then admits only matches you actually trust. The result is a clean identity map: every source key that cleared the bar, mapped to one canonical customer.</p>
+          <p>The second query is the honest half. It takes the same best-per-key rows and selects the ones that did not clear the bar (no canonical ID at all, or a confidence below the threshold) and marks them for review. This is the exception queue. It is a deliberate, visible destination for uncertainty. The threshold of 0.90 is illustrative; you set it against your own tolerance for a false merge, and you monitor how many records fall each side of it.</p>
         </section>
 
         <section id="good">
@@ -209,7 +209,7 @@ WHERE rn = 1
           <SystemBoundary
             conditions={[
               "The same customer identity has to be resolved consistently across several systems, not reconciled once.",
-              "The definition of a customer differs by function — an account in sales, a paying entity in billing, a login in product.",
+              "The definition of a customer differs by function: an account in sales, a paying entity in billing, a login in product.",
               "Matching has to run reliably on every refresh, without a person redoing it by hand.",
               "Unresolved records need a monitored queue and a triage routine, not a silent gap in the numbers.",
               "Ownership of the rules, thresholds and canonical IDs is unclear or shared by everyone, which means no one.",
@@ -231,7 +231,7 @@ WHERE rn = 1
             <tbody>
               <tr>
                 <td>Deterministic (exact key)</td>
-                <td>A shared, stable key exists across systems — a registration number, or an ID one system passes to another.</td>
+                <td>A shared, stable key exists across systems: a registration number, or an ID one system passes to another.</td>
                 <td>Low. Misses customers who have no shared key, so it under-matches rather than mis-matching.</td>
               </tr>
               <tr>

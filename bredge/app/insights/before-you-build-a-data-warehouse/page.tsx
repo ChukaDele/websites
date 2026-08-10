@@ -30,7 +30,7 @@ export default function Page() {
         toc={TOC}
         heroDiagram={
           <Diagram
-            title="Sources to consumers: where a warehouse fits — and where it does not yet"
+            title="Sources to consumers: where a warehouse fits, and where it does not yet"
             caption="A warehouse is the transformation and modelling layer between raw sources and the tools people use. It is worth building only once specific conditions hold."
           >
             <svg
@@ -161,7 +161,7 @@ export default function Page() {
           <TryThisFirst title="Data Warehouse Readiness Checklist">
             <ol>
               <li>
-                <strong>How many sources must be combined?</strong> Count the systems a single important answer has to cross — not
+                <strong>How many sources must be combined?</strong> Count the systems a single important answer has to cross, not
                 the systems you happen to own.
               </li>
               <li>
@@ -173,8 +173,8 @@ export default function Page() {
                 the tools that would read the result.
               </li>
               <li>
-                <strong>Do the definitions need to be governed once?</strong> Is there a metric — &ldquo;active customer&rdquo;,
-                &ldquo;gross margin&rdquo;, &ldquo;churn&rdquo; — that must mean the same thing everywhere, arbitrated by a named
+                <strong>Do the definitions need to be governed once?</strong> Is there a metric (&ldquo;active customer&rdquo;,
+                &ldquo;gross margin&rdquo;, &ldquo;churn&rdquo;) that must mean the same thing everywhere, arbitrated by a named
                 owner?
               </li>
               <li>
@@ -225,18 +225,18 @@ export default function Page() {
             commodity.
           </p>
           <p>
-            There are two orders for the first two stages. ETL — extract, transform, load — reshapes the data before it lands. ELT
-            — extract, load, transform — lands the raw data first, then transforms it inside the warehouse using SQL. Modern cloud
+            There are two orders for the first two stages. ETL (extract, transform, load) reshapes the data before it lands. ELT
+            (extract, load, transform) lands the raw data first, then transforms it inside the warehouse using SQL. Modern cloud
             warehouses are cheap and fast enough that ELT has become the default: you keep the raw data, and your transformations
             are version-controlled SQL you can test, review and rerun.
           </p>
           <p>
-            The assembled toolkit for this has a name — the <em>modern data stack</em>: managed connectors for ingestion, a cloud
+            The assembled toolkit for this has a name, the <em>modern data stack</em>: managed connectors for ingestion, a cloud
             warehouse to hold the data, a transformation tool to model it, and a BI (business intelligence) tool to serve it. None
             of it is exotic, and most of it you rent rather than build.
           </p>
           <p>
-            The one idea worth understanding in depth is the <em>incremental model</em> — processing only new or changed rows on
+            The one idea worth understanding in depth is the <em>incremental model</em>: processing only new or changed rows on
             each run, instead of rebuilding every table from scratch. It is what keeps cost roughly flat as data grows. A simple
             incremental pattern uses a high-water mark: find the newest row you have already loaded, then load only the rows newer
             than that.
@@ -252,7 +252,7 @@ export default function Page() {
             On the first run the modelled table is empty, so every row loads. On every run afterwards, the subquery finds the latest
             <code> updated_at</code> already stored, and the <code>WHERE</code> clause lets through only rows newer than that. You
             process a day of changes, not the whole of history. In production you would usually <em>merge</em> rather than append,
-            so an update to an existing order replaces the old row instead of duplicating it — but the high-water-mark idea is the
+            so an update to an existing order replaces the old row instead of duplicating it, but the high-water-mark idea is the
             same. This is the difference between a warehouse that costs about the same each month and one whose bill climbs with
             every row you have ever collected.
           </p>
@@ -273,14 +273,14 @@ export default function Page() {
           <h3>Growing: several systems, daily decisions</h3>
           <p>
             A boring, sound shape. Managed connectors land raw data in a cloud warehouse. A transformation layer turns raw tables
-            into staging models close to the source, then business-level models with a clearly stated <em>grain</em> — the one
+            into staging models close to the source, then business-level models with a clearly stated <em>grain</em>: the one
             thing each row represents, such as one order or one order line. A semantic layer defines each metric once, and a BI tool
             sits on top. Incremental models keep the cost flat. This is the sweet spot the modern data stack was built for.
           </p>
           <h3>Larger: many teams, strict governance</h3>
           <p>
             The same shape, hardened: tests that run on every change, documented lineage so any figure traces back to its source
-            row, access controls, and a named team that operates it. Nothing exotic — the growing-company stack, owned and
+            row, access controls, and a named team that operates it. Nothing exotic: the growing-company stack, owned and
             defended.
           </p>
           <p>
@@ -309,7 +309,7 @@ export default function Page() {
             </li>
             <li>
               <strong>Moving the mess in unchanged.</strong> Loading messy source data into a warehouse and pointing dashboards at
-              it just relocates the mess and adds a bill. The value is in the modelling — resolving identity, fixing grain, agreeing
+              it just relocates the mess and adds a bill. The value is in the modelling: resolving identity, fixing grain, agreeing
               definitions. Skip that and you have paid for storage, not clarity.
             </li>
           </ul>
@@ -318,7 +318,7 @@ export default function Page() {
         <section id="boundary">
           <h2>When you genuinely need one</h2>
           <p>
-            There is a real line, and it is worth stating plainly. A warehouse becomes the right answer — not a premature one — when
+            There is a real line, and it is worth stating plainly. A warehouse becomes the right answer, not a premature one, when
             the work has genuinely become a system rather than a task. The clearest example is when you must combine several systems
             and resolve them into one trustworthy result, repeatedly. Building <a href="/insights/one-customer-view">a single
             customer view</a> across CRM, billing and product data is exactly this kind of problem: it does not stay solved without
@@ -327,10 +327,10 @@ export default function Page() {
           </p>
           <SystemBoundary
             conditions={[
-              "Several sources must be joined and modelled together to answer your most important questions — not simply stored side by side.",
+              "Several sources must be joined and modelled together to answer your most important questions, not simply stored side by side.",
               "Many consumers rely on the result, repeatedly, and re-deriving it by hand no longer scales.",
               "Definitions must be governed centrally, so one metric means one thing across every report.",
-              "The result must refresh reliably on a schedule — typically daily — without someone running it by hand.",
+              "The result must refresh reliably on a schedule (typically daily) without someone running it by hand.",
               "Someone owns it: a named person or team keeps it running, tested and trusted after launch.",
             ]}
           />
@@ -354,7 +354,7 @@ export default function Page() {
               <tr>
                 <td>One slow or wrong report, from a single source</td>
                 <td>A query or logic problem</td>
-                <td>Better SQL — fix the query and pin down its definition</td>
+                <td>Better SQL: fix the query and pin down its definition</td>
               </tr>
               <tr>
                 <td>The data exists in one tool, but not in the tool that reports on it</td>
@@ -364,7 +364,7 @@ export default function Page() {
               <tr>
                 <td>Numbers reconcile in the data, but one metric is defined differently everywhere</td>
                 <td>A definitions problem</td>
-                <td>A semantic model — define it once, reuse it everywhere</td>
+                <td>A semantic model: define it once, reuse it everywhere</td>
               </tr>
               <tr>
                 <td>A few sources, modest volume, growing cross-system questions</td>

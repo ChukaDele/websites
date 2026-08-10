@@ -12,6 +12,7 @@ const columns: Array<[string, Array<[string, string] | [string, string, "soon"]>
     ["About", "/about"],
     ["How we work", "/how-we-work"],
     ["Insights", "/insights"],
+    ["Resources", "/resources"],
     ["Work", "", "soon"],
   ]],
   ["Connect", [

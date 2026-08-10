@@ -29,7 +29,16 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: { card: "summary_large_image", title: "The Bredge", description: "Data systems for decisions people can trust.", images: ["/og.png"] },
     robots: isPreview ? { index: false, follow: false } : { index: true, follow: true },
     verification: verification ? { google: verification } : undefined,
-    icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
+    manifest: "/site.webmanifest",
+    icons: {
+      icon: [
+        { url: "/favicon.svg", type: "image/svg+xml" },
+        { url: "/icon-32.png", type: "image/png", sizes: "32x32" },
+        { url: "/icon-16.png", type: "image/png", sizes: "16x16" },
+      ],
+      shortcut: "/favicon.ico",
+      apple: "/apple-touch-icon.png",
+    },
   };
 }
 
@@ -72,6 +81,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta name="theme-color" content="#142321" />
         <script dangerouslySetInnerHTML={{ __html: preloadInit }} />
         <script dangerouslySetInnerHTML={{ __html: `window.__BREDGE_CFG=${JSON.stringify(analyticsCfg)};` }} />
       </head>
