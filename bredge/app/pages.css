@@ -490,6 +490,8 @@
 .insights-hero .lede { max-width:58ch; color:#46534f; font-size:var(--body-lg); }
 .insights-index { padding:0; }
 .insight-cat { display:inline-block; margin-bottom:14px; color:#5a6964; font:600 10px/1 var(--font-mono); letter-spacing:.12em; text-transform:uppercase; }
+/* eyebrow must sit on its own line above the (inline, underline-animated) title */
+.insight-featured .insight-cat, .insight-card .insight-cat { display:block; }
 /* Featured: two columns — copy left, bespoke diagram right — so the wide region has a reason to be wide. */
 .insight-featured { display:grid; grid-template-columns:1.12fr .88fr; gap:52px; align-items:center; border-top:1px solid var(--ink); padding:28px 0 0; margin-bottom:32px; }  /* owns featured → secondary (32px) */
 .insight-featured-copy { min-width:0; }
