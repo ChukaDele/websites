@@ -432,8 +432,13 @@
 /* ---------- Invisible 90% — scroll-authored SQL ---------- */
 .iq { position:relative; background:#0f1815; color:#eef3ee; }
 .iq-scene { min-height:100vh; display:flex; align-items:center; padding:70px 0; }
-.iq-grid { display:grid; grid-template-columns:340px 1fr; gap:56px; align-items:center; width:min(1380px, calc(100% - 80px)); }
-.iq-side h2 { margin:0 0 18px; color:#f4f1e9; }
+.iq-grid { display:grid; grid-template-columns:minmax(320px, 400px) minmax(0, 1fr); gap:56px; align-items:center; width:min(1380px, calc(100% - 80px)); }
+/* Own, bounded headline size — do NOT inherit the global viewport-scaled h2
+   (clamp .. 5.9rem), which grew past the left column under browser zoom and
+   overlapped the SQL terminal. Capped so the longest word fits its column at
+   every zoom; min-width:0 lets the grid column shrink instead of overflowing. */
+.iq-side { min-width:0; }
+.iq-side h2 { margin:0 0 18px; color:#f4f1e9; font-size:clamp(2.5rem, 4.6vw, 4.2rem); line-height:1; overflow-wrap:break-word; }
 .iq-side .iq-lead { max-width:34ch; color:#b9c6bf; line-height:1.5; }
 .iq-stages { list-style:none; margin:34px 0 0; padding:0; display:grid; gap:2px; }
 .iq-stage { display:flex; align-items:baseline; gap:14px; padding:9px 0; color:#6f827a; font-size:1.05rem; letter-spacing:-.01em; border-top:1px solid rgba(244,241,233,.1); transition:color var(--motion-base) var(--ease-out); }

@@ -114,18 +114,26 @@ h3 { line-height:1; }
 @media (max-width:650px) { .hero { padding-top:108px; }.hero-system { height:350px; }.pipeline-demo::after,.pipeline-source::after { animation:none; }.outcome-grid { gap:12px; }.outcome-card { min-height:290px; padding:25px 22px; }.outcome-card h3 { margin-top:42px; }.outcome-card p { margin-bottom:20px; }.work-intro { padding-bottom:24px; }.reference-case { box-shadow:8px 10px 0 rgba(20,35,33,.11); }.engagement-card { grid-template-columns:1fr; }.engagement-card > p,.engagement-card h3,.engagement-card > div { grid-column:auto; grid-row:auto; }.footer-bottom { margin-top:84px; } }
 @media (min-width:651px) { .reference-case .pipeline-demo { width:100%; min-height:0; margin:0; grid-template-columns:1fr; gap:22px; padding:34px 30px 54px; }.reference-case .pipeline-core { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }.reference-case .pipeline-column { width:auto; height:130px; }.reference-case .pipeline-column:not(:last-child)::after { content:none; }.reference-case .pipeline-output { width:100%; } }
 
-/* Reference Work — natural-flow case sequence at ALL widths (single source of
-   truth: base grid + this margin). The previous desktop treatment made each of
-   the three ~600px cards its own position:sticky element at staggered tops; with
-   the Invisible 90% GSAP pin owning the viewport right after, the two scroll
-   systems desynced under browser zoom / viewport-height changes and overlapped
-   (Reference cards + SQL scene visible together). One pinned scene (Invisible
-   90%) now owns that region; Reference Work reads as a clean vertical sequence
-   that cannot collide with it. */
-@media (min-width:1001px) {
-  .reference-work { display:grid; gap:34px; }
-  .reference-case { position:relative; top:auto; margin-bottom:0; }
-}
+/* Reference Work — ONE controlled scroll scene (single source of truth).
+   Base = natural flow (SSR default, mobile/tablet, reduced motion, short/zoomed
+   viewports): .reference-sticky is transparent so the three cards flow as the
+   grid's own items. The old design made each ~600px card its OWN position:sticky
+   at staggered tops; alongside the Invisible-90% GSAP pin that created two
+   viewport-owning systems that desynced under zoom and overlapped. */
+.reference-sticky { display:contents; }
+@media (min-width:1001px) { .reference-work { gap:34px; } }
+
+/* Enhanced: JS toggles .rw-enhanced only when the viewport can host it
+   (width >= 1001 AND height >= 720 AND motion allowed). ONE sticky viewport owns
+   the scene; the three cards transition inside it (active rises, previous
+   recedes). The bounded stage height means the single sticky releases cleanly
+   BEFORE Invisible 90% pins — no competing scroll systems, no zoom overlap. */
+.reference-work.rw-enhanced { display:block; position:relative; height:300vh; gap:0; }
+.rw-enhanced .reference-sticky { display:grid; position:sticky; top:0; height:100vh; align-items:center; overflow:hidden; }
+.rw-enhanced .reference-case { position:absolute; inset:0; margin:0; min-height:0; align-content:center; opacity:0; transform:translateY(3.5%) scale(.985); transition:opacity .5s ease, transform .55s ease; will-change:opacity, transform; }
+.rw-enhanced .reference-case.is-active { opacity:1; transform:none; z-index:3; }
+.rw-enhanced .reference-case.is-prev { opacity:.24; transform:translateY(-1.5%) scale(.93); z-index:1; }
+.rw-enhanced .reference-case.is-next { opacity:0; transform:translateY(4%) scale(.985); z-index:2; }
 
 /* ---------- Team Experience — "Experience brought forward" ---------- */
 .xp { padding:120px 0; }
