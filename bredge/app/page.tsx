@@ -66,7 +66,7 @@ export default function Home() {
 
       <HeroMorph />
 
-      <ExperienceRows motion />
+      <ExperienceRows />
 
       <section className="reassurance section-wrap">
         <p className="eyebrow">THE OPERATING MODEL</p>

@@ -139,14 +139,20 @@ h3 { line-height:1; }
 .xp-track span { display:flex; align-items:center; min-height:34px; color:#2c3a36; font-size:1.02rem; letter-spacing:-.02em; line-height:1.15; }
 .xp-note { max-width:70ch; margin:40px 0 0; color:var(--muted); font-size:.78rem; line-height:1.5; }
 
-/* Desktop enhancement: two wide rows, natural width, edge-faded, opposing drift. */
-@media (min-width:801px) {
+/* Desktop, motion allowed: two wide edge-faded rows, scroll-linked (JS sets the
+   transform to the measured overflow so every name is revealed; opposing rows). */
+@media (min-width:801px) and (prefers-reduced-motion:no-preference) {
   .xp-rows { gap:0; }
-  .xp-row { overflow:hidden; padding:22px 0; border-top:1px solid var(--line); }
+  .xp-row { overflow:hidden; padding:22px 0; border-top:1px solid var(--line); -webkit-mask-image:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
   .xp-row:last-child { border-bottom:1px solid var(--line); }
-  .xp-motion .xp-row { -webkit-mask-image:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
   .xp-track { display:flex; width:max-content; gap:clamp(34px, 4.5vw, 72px); white-space:nowrap; will-change:transform; transition:transform .12s linear; }
-  .xp-row-b .xp-track { padding-left:8%; }
   .xp-track span { min-height:0; font-size:clamp(1.1rem, 1.7vw, 1.7rem); color:#33413c; }
 }
-@media (prefers-reduced-motion:reduce) { .xp-track { transition:none; } }
+/* Desktop, reduced motion: fully readable static grid — never max-content/overflow. */
+@media (min-width:801px) and (prefers-reduced-motion:reduce) {
+  .xp-rows { gap:22px; }
+  .xp-row { padding:20px 0; border-top:1px solid var(--line); }
+  .xp-row:last-child { border-bottom:1px solid var(--line); }
+  .xp-track { display:grid; grid-template-columns:repeat(4, auto); justify-content:start; gap:14px 44px; width:auto; white-space:normal; }
+  .xp-track span { min-height:0; font-size:1.05rem; color:#33413c; }
+}

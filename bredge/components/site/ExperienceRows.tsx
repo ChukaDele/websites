@@ -3,47 +3,63 @@
 import { useEffect, useRef } from "react";
 
 /* "Experience brought forward" — organisations Bredge team members have worked
- * with. Typographic marks (no recreated logos). Mobile base is an open two-column
- * composition; desktop adds a restrained opposing horizontal drift tied to scroll
- * (≤6% travel, not an infinite marquee). Reduced motion / mobile = static. */
+ * with. Typographic marks (no recreated logos). One behaviour everywhere:
+ * desktop rows are SCROLL-LINKED (opposing directions, translated by the real
+ * measured overflow so every name is revealed during the section's passage);
+ * reduced-motion and tablet/mobile fall back to a fully-readable static grid. */
 
 const ROW_A = ["Moniepoint", "Pedabo", "SWCA Environmental Consultants", "CHCP — College of Health Care Professions", "WECTEC Staffing Services", "UVM — University of Vermont", "TriWest Healthcare Alliance", "Nutrafol"];
 const ROW_B = ["Westinghouse", "CoventBridge", "Penn Foster", "Connected.co", "Fullscript", "Tillster", "Sedgwick", "Aella"];
 
 const DISCLAIMER = "Company names and marks reflect prior experience of individual Bredge team members and do not imply endorsement or a current client relationship with The Bredge.";
 
-export function ExperienceRows({ motion = false }: { motion?: boolean }) {
+export function ExperienceRows() {
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (!motion) return;
     const root = ref.current;
     if (!root) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    if (window.matchMedia("(max-width: 800px)").matches) return; // mobile = static
+    const mq = window.matchMedia("(min-width: 801px) and (prefers-reduced-motion: no-preference)");
 
     const a = root.querySelector<HTMLElement>(".xp-row-a .xp-track");
     const b = root.querySelector<HTMLElement>(".xp-row-b .xp-track");
+    const rowA = a?.parentElement;
+    const rowB = b?.parentElement;
     let raf = 0;
+
+    const clear = () => { if (a) a.style.transform = ""; if (b) b.style.transform = ""; };
+
     const update = () => {
       raf = 0;
+      if (!mq.matches) { clear(); return; }        // static grid handles small screens / reduced motion
+      if (!a || !b || !rowA || !rowB) return;
+      // real overflow beyond the visible row (font-metrics accurate, recomputed live)
+      const overA = Math.max(0, a.scrollWidth - rowA.clientWidth);
+      const overB = Math.max(0, b.scrollWidth - rowB.clientWidth);
       const r = root.getBoundingClientRect();
       const vh = window.innerHeight;
-      // progress -1..1 as the section passes through the viewport
-      const p = Math.max(-1, Math.min(1, (vh / 2 - (r.top + r.height / 2)) / (vh / 2 + r.height / 2)));
-      const travel = 6; // percent, max
-      if (a) a.style.transform = `translate3d(${(-p * travel).toFixed(2)}%,0,0)`;
-      if (b) b.style.transform = `translate3d(${(p * travel).toFixed(2)}%,0,0)`;
+      // 0 as the section enters from the bottom → 1 as it leaves past the top
+      const p = Math.min(1, Math.max(0, (vh - r.top) / (vh + r.height)));
+      // Row A: reveal the end as you scroll down. Row B: opposite (starts at its end, returns to its start).
+      a.style.transform = `translate3d(${(-p * overA).toFixed(1)}px,0,0)`;
+      b.style.transform = `translate3d(${(-(1 - p) * overB).toFixed(1)}px,0,0)`;
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+
     update();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
-    return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); cancelAnimationFrame(raf); };
-  }, [motion]);
+    mq.addEventListener?.("change", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      mq.removeEventListener?.("change", onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
 
   return (
-    <section ref={ref} className={`xp section-wrap${motion ? " xp-motion" : ""}`} aria-label="Team experience">
+    <section ref={ref} className="xp section-wrap" aria-label="Team experience">
       <p className="eyebrow">TEAM EXPERIENCE</p>
       <h2>Experience brought forward.</h2>
       <p className="xp-intro">Our team brings experience from organisations including:</p>
