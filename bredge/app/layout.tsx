@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL("https://thebredge.com"),
     title: "The Bredge | Data Engineering, Analytics & BI Partner",
-    description: "The Bredge is a data engineering, analytics and business intelligence partner. We build reliable data foundations, reporting automation and AI-ready data systems for growing and mid-market companies.",
+    description: "Data engineering, analytics and BI partner for growing and mid-market companies — reliable data foundations, reporting automation and AI-ready data systems.",
     alternates: { canonical: "/" },
     openGraph: { title: "The Bredge | Data Engineering, Analytics & BI Partner", description: "Data engineering, analytics and AI-ready data foundations for growing and mid-market companies.", type: "website", url: "/", images: [{ url: "/og.png", width: 1200, height: 630, alt: "The Bredge data systems for decisions people can trust" }] },
     twitter: { card: "summary_large_image", title: "The Bredge", description: "Data systems for decisions people can trust.", images: ["/og.png"] },

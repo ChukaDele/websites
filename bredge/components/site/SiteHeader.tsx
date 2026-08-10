@@ -67,7 +67,7 @@ export function SiteHeader({ variant = "solid" }: { variant?: "solid" | "overlay
   return (
     <>
     <header ref={headerRef} className={`site-header${variant === "solid" ? " site-header--solid" : ""} is-${appliedState}`}>
-      <a className="brand" href="/" aria-label="The Bredge home"><img src="/brand/bredge-logo.svg" alt="The Bredge" /></a>
+      <a className="brand" href="/" aria-label="The Bredge home"><img src="/brand/bredge-logo.svg" alt="The Bredge" width="80" height="31" /></a>
 
       <nav className="site-nav" aria-label="Primary navigation">
         <div

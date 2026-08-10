@@ -79,10 +79,19 @@ export function ArticleLayout({ slug, toc, heroDiagram, children }: { slug: stri
     datePublished: meta.date, dateModified: meta.updated || meta.date,
     mainEntityOfPage: `https://thebredge.com/insights/${slug}`, articleSection: meta.category,
   };
+  const breadcrumbLd = {
+    "@context": "https://schema.org", "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://thebredge.com/" },
+      { "@type": "ListItem", position: 2, name: "Insights", item: "https://thebredge.com/insights" },
+      { "@type": "ListItem", position: 3, name: meta.title, item: `https://thebredge.com/insights/${slug}` },
+    ],
+  };
 
   return (
     <div className="ax">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <div className="ax-progress" aria-hidden="true"><span style={{ transform: `scaleX(${progress / 100})` }} /></div>
 
       <header className="ax-hero section-wrap">

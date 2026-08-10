@@ -6,7 +6,7 @@ import { pageMetadata, serviceJsonLd } from "../../lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "Data Engineering, Analytics & BI Services | The Bredge",
-  description: "The Bredge helps growing companies connect fragmented data, build reliable data foundations, automate reporting and make better decisions through data engineering, analytics and business intelligence.",
+  description: "Connect fragmented data, build reliable foundations and automate reporting — data engineering, analytics and BI for growing and mid-market companies.",
   path: "/services",
 });
 

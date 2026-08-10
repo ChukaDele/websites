@@ -54,7 +54,7 @@ export function SiteFooter() {
         </div>
 
         <div className="footer-bottom">
-          <img src="/brand/bredge-logo.svg" alt="The Bredge" />
+          <img src="/brand/bredge-logo.svg" alt="The Bredge" width="80" height="31" />
           <p>Data systems for decisions people can trust.</p>
           <small>© {year} The Bredge · <a href="/privacy">Privacy</a> · <a href="/cookies">Cookies</a> · <a href="/terms">Terms</a> · <CookieSettings /></small>
         </div>
