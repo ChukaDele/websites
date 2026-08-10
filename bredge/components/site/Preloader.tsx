@@ -86,12 +86,8 @@ export function Preloader() {
         </div>
         <div className="pl-line" />
         <div className="pl-signal" />
-        <svg className="pl-mark" width="72" height="72" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-          <rect width="100" height="100" rx="24" fill="#142321" />
-          <rect x="30" y="17" width="13" height="66" rx="6.5" fill="#90d26f" />
-          <circle cx="56" cy="59" r="22" fill="#90d26f" />
-          <circle cx="58" cy="61" r="9.5" fill="#142321" />
-        </svg>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="pl-mark" src="/favicon.svg" width={72} height={72} alt="" aria-hidden="true" />
       </div>
     </div>
   );
