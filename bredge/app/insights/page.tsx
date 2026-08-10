@@ -1,28 +1,42 @@
 import type { Metadata } from "next";
 import { PageShell } from "../../components/site/PageShell";
 import { pageMetadata } from "../../lib/seo";
+import { articles } from "../../lib/insights";
 
-// Route kept for internal development only. Not linked from nav or footer, and
-// noindexed — we don't publicly expose an unfinished publication. Real editorial
-// design ships once at least three substantive pieces are written
-// (see integrations/insights/README when content is ready).
-export const metadata: Metadata = {
-  ...pageMetadata({
-    title: "Insights | The Bredge",
-    description: "Practical writing about data engineering, analytics, BI and the organisational problems that make otherwise good data work fail.",
-    path: "/insights",
-  }),
-  robots: { index: false, follow: false },
-};
+export const metadata: Metadata = pageMetadata({
+  title: "Insights | Data engineering, analytics & BI thinking | The Bredge",
+  description: "Practical, senior writing on data engineering, analytics, BI and the organisational problems that make otherwise good data work fail.",
+  path: "/insights",
+});
 
 export default function InsightsPage() {
+  const [featured, ...rest] = articles;
   return (
     <PageShell>
-      <section className="section-wrap page-hero">
+      <section className="section-wrap insights-hero">
         <p className="eyebrow">BREDGE INSIGHTS</p>
-        <h1 style={{ maxWidth: "18ch" }}>The problems behind the dashboard.</h1>
-        <p className="lede">Practical writing on data engineering, analytics and the organisational problems that make otherwise good data work fail — publishing soon.</p>
-        <div className="hero-cta-row"><a className="button" href="/contact">Talk to a data lead <span className="arrow" aria-hidden="true">↗</span></a></div>
+        <h1>The problems behind the dashboard.</h1>
+        <p className="lede">Practical writing on data engineering, analytics and the organisational reasons good data work still fails — and what to do about it.</p>
+      </section>
+
+      <section className="section-wrap insights-index">
+        <a className="insight-featured" href={`/insights/${featured.slug}`}>
+          <span className="insight-cat">{featured.category}</span>
+          <h2>{featured.title}</h2>
+          <p>{featured.blurb}</p>
+          <span className="insight-meta">{featured.read} <span className="arrow" aria-hidden="true">↗</span></span>
+        </a>
+
+        <div className="insight-secondary">
+          {rest.map((a) => (
+            <a className="insight-card" key={a.slug} href={`/insights/${a.slug}`}>
+              <span className="insight-cat">{a.category}</span>
+              <h3>{a.title}</h3>
+              <p>{a.blurb}</p>
+              <span className="insight-meta">{a.read} <span className="arrow" aria-hidden="true">↗</span></span>
+            </a>
+          ))}
+        </div>
       </section>
     </PageShell>
   );

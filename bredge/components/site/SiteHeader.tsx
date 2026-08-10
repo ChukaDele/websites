@@ -13,6 +13,7 @@ const services = [
 
 const primary = [
   ["How we work", "/how-we-work"],
+  ["Insights", "/insights"],
   ["About", "/about"],
 ];
 

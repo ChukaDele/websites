@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageShell, Breadcrumbs } from "../../../components/site/PageShell";
 import { ElasticTeam } from "../../../components/interactions/ElasticTeam";
-import { pageMetadata } from "../../../lib/seo";
+import { pageMetadata, serviceJsonLd } from "../../../lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "Embedded & Fractional Data Teams | The Bredge",
@@ -36,6 +36,7 @@ export default function EmbeddedPage() {
     <PageShell>
       <section className="section-wrap page-hero">
         <Breadcrumbs trail={[["Services", "/services"], ["Embedded Data Team", "/services/embedded-data-team"]]} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd("Embedded Data Team", "An embedded, fractional senior data team giving companies ongoing engineering, analytics and BI capacity without hiring every specialist role internally.", "/services/embedded-data-team")) }} />
         <p className="eyebrow">EMBEDDED DATA TEAM</p>
         <h1>Your data team, without building one from scratch.</h1>
         <p className="lede">Get ongoing engineering, analytics and BI capability working inside the rhythm of your business. We take ownership of an agreed data backlog, work closely with your teams and keep improving the systems behind your decisions.</p>

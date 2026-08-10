@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { TURNSTILE_SITE_KEY } from "../../lib/config";
 import { PhoneField, type PhoneValue } from "./PhoneField";
+import { trackEvent, trackOnce } from "../../lib/analytics";
 
 const NEED_OPTIONS = [
   "Data engineering",
@@ -55,6 +56,8 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
   }, []);
 
   function toggleNeed(n: string) {
+    trackOnce("contact_form_start", { page_path: typeof window !== "undefined" ? location.pathname : "" });
+    trackEvent("contact_need_selected", {});
     setNeeds((prev) => {
       if (n === NOT_SURE) return prev.includes(NOT_SURE) ? [] : [NOT_SURE];
       const next = prev.includes(n) ? prev.filter((x) => x !== n) : [...prev.filter((x) => x !== NOT_SURE), n];
@@ -102,16 +105,20 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
     if (TURNSTILE_SITE_KEY && !payload.turnstileToken) { setState({ kind: "error", message: "Please complete the verification and try again." }); return; }
 
     setState({ kind: "sending" });
+    trackEvent("contact_submit", { selected_needs_count: needs.length, intent: payload.intent, page_path: payload.page });
     try {
       const res = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       if (res.ok) {
         lastLead.current = { name: payload.name, email: payload.email, phone: payload.phoneE164 };
+        trackEvent("contact_success", { selected_needs_count: needs.length, intent: payload.intent });
         setState({ kind: "ok" });
       } else {
         const b = await res.json().catch(() => ({}));
+        trackEvent("contact_error", { page_path: payload.page });
         setState({ kind: "error", message: b.error || "That didn’t send. Please try again." });
       }
     } catch {
+      trackEvent("contact_error", { page_path: payload.page });
       setState({ kind: "error", message: "That didn’t send. Please try again, or email hello@thebredge.com." });
     }
   }
@@ -123,7 +130,7 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
 
   if (state.kind === "ok") {
     return (
-      <div className="contact-form form-success" role="status">
+      <div className="contact-form form-success" role="status" data-clarity-mask="true">
         <span className="success-mark" aria-hidden="true">✓</span>
         <h2>Thanks — we’ve got it.</h2>
         <p>Your note has been sent to the Bredge team. We’ll review the context and reply by email.</p>
@@ -141,7 +148,7 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
       : "Messy is fine. A few sentences is enough.";
 
   return (
-    <form className="contact-form" ref={formRef} onSubmit={onSubmit} noValidate>
+    <form className="contact-form" ref={formRef} onSubmit={onSubmit} noValidate data-clarity-mask="true">
       <div className="field">
         <label htmlFor="name">Name <i aria-hidden="true">*</i></label>
         <input id="name" name="name" autoComplete="name" required />

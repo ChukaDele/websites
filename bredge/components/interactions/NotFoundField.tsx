@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { trackOnce } from "../../lib/analytics";
 
 // Cell coordinates spelling "404" on a grid. 1 = filled cell.
 const GLYPHS = [
@@ -26,6 +27,8 @@ export function NotFoundField() {
   }, []);
   const cols = GLYPHS[0].length;
   const rows = GLYPHS.length;
+
+  useEffect(() => { trackOnce("404_view", { page_path: typeof window !== "undefined" ? location.pathname : "" }); }, []);
 
   // Pointer-driven cell displacement (desktop) + gentle record attraction/lag.
   useEffect(() => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { trackOnce } from "../../lib/analytics";
 
 const CAL_LINK = "dele-oyeleru-chukwuka-mcdavies-qcy0z9/30min";
 const CAL_URL = "https://cal.com/dele-oyeleru-chukwuka-mcdavies-qcy0z9/30min";
@@ -19,6 +20,7 @@ export function CalEmbed() {
 
   useEffect(() => {
     let cancelled = false;
+    trackOnce("schedule_view", {});
     let prefill: Record<string, string> = {};
     try {
       const raw = sessionStorage.getItem("bredge_schedule_prefill");

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageShell } from "../../components/site/PageShell";
 import { DiagnosticScan } from "../../components/interactions/DiagnosticScan";
-import { pageMetadata } from "../../lib/seo";
+import { pageMetadata, serviceJsonLd } from "../../lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "Data Diagnostic & Analytics Audit | The Bredge",
@@ -35,6 +35,7 @@ const deliverables = ["Current-state architecture", "Key reliability risks", "Re
 export default function DiagnosticPage() {
   return (
     <PageShell>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd("Data Diagnostic", "A data audit and maturity diagnostic: a mapped assessment of the current data environment that prioritises the changes most likely to improve decision-making.", "/data-diagnostic")) }} />
       <section className="section-wrap page-hero">
         <p className="eyebrow">DATA DIAGNOSTIC</p>
         <h1>Know something is wrong. Not sure what to fix first?</h1>

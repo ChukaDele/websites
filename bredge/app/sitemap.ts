@@ -1,7 +1,11 @@
 import type { MetadataRoute } from "next";
+import { articles } from "../lib/insights";
 
 const base = "https://thebredge.com";
 
+// Canonical, indexable public pages only. /schedule and /contact are conversion
+// utilities (excluded/low intent); API, 404 and previews are never listed. No
+// per-request lastModified — we don't fake freshness.
 const routes: Array<[string, number, MetadataRoute.Sitemap[number]["changeFrequency"]]> = [
   ["/", 1, "weekly"],
   ["/services", 0.9, "monthly"],
@@ -10,15 +14,12 @@ const routes: Array<[string, number, MetadataRoute.Sitemap[number]["changeFreque
   ["/data-diagnostic", 0.8, "monthly"],
   ["/how-we-work", 0.6, "monthly"],
   ["/about", 0.6, "monthly"],
-  ["/contact", 0.7, "monthly"],
+  ["/insights", 0.7, "weekly"],
+  ["/contact", 0.5, "monthly"],
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const lastModified = new Date();
-  return routes.map(([path, priority, changeFrequency]) => ({
-    url: `${base}${path}`,
-    lastModified,
-    changeFrequency,
-    priority,
-  }));
+  const pages = routes.map(([path, priority, changeFrequency]) => ({ url: `${base}${path}`, changeFrequency, priority }));
+  const posts = articles.map((a) => ({ url: `${base}/insights/${a.slug}`, changeFrequency: "yearly" as const, priority: 0.6 }));
+  return [...pages, ...posts];
 }

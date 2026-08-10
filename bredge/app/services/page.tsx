@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PageShell } from "../../components/site/PageShell";
 import { MicroIllustration } from "../../components/site/MicroIllustration";
 import { DecisionTree } from "../../components/interactions/DecisionTree";
-import { pageMetadata } from "../../lib/seo";
+import { pageMetadata, serviceJsonLd } from "../../lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "Data Engineering, Analytics & BI Services | The Bredge",
@@ -21,6 +21,7 @@ const capabilities: Array<{ n: string; kind: "engineering" | "analytics" | "bi" 
 export default function ServicesPage() {
   return (
     <PageShell>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd("Data engineering, analytics & BI consulting", "Data engineering, analytics and business intelligence consulting — reliable data foundations, reporting automation, data quality and reconciliation.", "/services")) }} />
       <section className="section-wrap page-hero">
         <p className="eyebrow">SERVICES</p>
         <h1>From messy source systems to decisions your team can trust.</h1>

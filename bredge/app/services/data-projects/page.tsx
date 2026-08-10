@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageShell, Breadcrumbs } from "../../../components/site/PageShell";
 import { RightSizedSolution } from "../../../components/interactions/RightSizedSolution";
-import { pageMetadata } from "../../../lib/seo";
+import { pageMetadata, serviceJsonLd } from "../../../lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "Data Engineering & Analytics Projects | The Bredge",
@@ -31,6 +31,7 @@ export default function ProjectsPage() {
     <PageShell>
       <section className="section-wrap page-hero">
         <Breadcrumbs trail={[["Services", "/services"], ["Data Projects", "/services/data-projects"]]} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd("Data Projects", "Defined-scope data projects: pipelines, warehouses and models, BI and reporting, reconciliation and automation — delivered without turning into a transformation programme.", "/services/data-projects")) }} />
         <p className="eyebrow">DATA PROJECTS</p>
         <h1>One problem. The right team. Delivered, not just advised.</h1>
         <p className="lede">Bring us a defined data challenge. We’ll understand what is broken, determine what needs to change and deliver the working system — without turning every problem into a transformation programme.</p>
