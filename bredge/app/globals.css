@@ -143,7 +143,7 @@ h3 { line-height:1; }
    transform to the measured overflow so every name is revealed; opposing rows). */
 @media (min-width:801px) and (prefers-reduced-motion:no-preference) {
   .xp-rows { gap:0; }
-  .xp-row { overflow:hidden; padding:22px 0; border-top:1px solid var(--line); -webkit-mask-image:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
+  .xp-row { overflow:hidden; padding:22px 0; border-top:1px solid var(--line); -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%); mask-image:linear-gradient(90deg, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%); }
   .xp-row:last-child { border-bottom:1px solid var(--line); }
   .xp-track { display:flex; width:max-content; gap:clamp(34px, 4.5vw, 72px); white-space:nowrap; will-change:transform; transition:transform .12s linear; }
   .xp-track span { min-height:0; font-size:clamp(1.1rem, 1.7vw, 1.7rem); color:#33413c; }

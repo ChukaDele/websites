@@ -8,8 +8,13 @@ import { useEffect, useRef } from "react";
  * measured overflow so every name is revealed during the section's passage);
  * reduced-motion and tablet/mobile fall back to a fully-readable static grid. */
 
-const ROW_A = ["Moniepoint", "Pedabo", "SWCA Environmental Consultants", "CHCP — College of Health Care Professions", "WECTEC Staffing Services", "UVM — University of Vermont", "TriWest Healthcare Alliance", "Nutrafol"];
-const ROW_B = ["Westinghouse", "CoventBridge", "Penn Foster", "Connected.co", "Fullscript", "Tillster", "Sedgwick", "Aella"];
+/* All 16 organisations are preserved. Membership is balanced BY WIDTH across the
+ * two rows (the longest name lives in B, the shortest in A) so both tracks
+ * overflow by a comparable amount at every desktop width — which is what lets
+ * the two rows reveal in genuine, gap-free opposing motion instead of one long
+ * row sweeping while a short row sits still. */
+const ROW_A = ["Moniepoint", "Pedabo", "SWCA Environmental Consultants", "WECTEC Staffing Services", "UVM — University of Vermont", "TriWest Healthcare Alliance", "Nutrafol", "Aella"];
+const ROW_B = ["Westinghouse", "CoventBridge", "CHCP — College of Health Care Professions", "Penn Foster", "Connected.co", "Fullscript", "Tillster", "Sedgwick"];
 
 const DISCLAIMER = "Company names and marks reflect prior experience of individual Bredge team members and do not imply endorsement or a current client relationship with The Bredge.";
 
