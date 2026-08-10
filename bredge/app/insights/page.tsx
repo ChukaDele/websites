@@ -23,10 +23,32 @@ export default function InsightsPage() {
 
       <section className="section-wrap insights-index">
         <a className="insight-featured" href={`/insights/${featured.slug}`}>
-          <span className="insight-cat">{featured.category}</span>
-          <h2>{featured.title}</h2>
-          <p>{featured.standfirst}</p>
-          <span className="insight-meta">{featured.read} <span className="arrow" aria-hidden="true">↗</span></span>
+          <div className="insight-featured-copy">
+            <span className="insight-cat">{featured.category}</span>
+            <h2>{featured.title}</h2>
+            <p>{featured.standfirst}</p>
+            <span className="insight-meta">{featured.read} <span className="arrow" aria-hidden="true">↗</span></span>
+          </div>
+          <div className="insight-featured-viz" aria-hidden="true">
+            <svg viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg" style={{ fontFamily: "var(--font-mono, monospace)" }}>
+              <g fontSize="11">
+                <rect x="0" y="8" width="320" height="34" fill="none" stroke="#f0bf6c" strokeWidth="1.5" />
+                <text x="14" y="30" fill="#2c3a36">CRM</text><text x="306" y="30" textAnchor="end" fill="#a9741f">£4.5m</text>
+                <rect x="0" y="50" width="320" height="34" fill="none" stroke="#f0bf6c" strokeWidth="1.5" />
+                <text x="14" y="72" fill="#2c3a36">FINANCE</text><text x="306" y="72" textAnchor="end" fill="#a9741f">£4.3m</text>
+                <rect x="0" y="92" width="320" height="34" fill="none" stroke="#f0bf6c" strokeWidth="1.5" />
+                <text x="14" y="114" fill="#2c3a36">BOARD PACK</text><text x="306" y="114" textAnchor="end" fill="#a9741f">£4.2m</text>
+              </g>
+              <line x1="160" y1="126" x2="160" y2="150" stroke="rgba(20,35,33,.4)" strokeWidth="1.5" markerEnd="url(#fa)" />
+              <defs><marker id="fa" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0 L5,3 L0,6 Z" fill="#2c3a36" /></marker></defs>
+              <rect x="40" y="150" width="240" height="60" fill="var(--surface, #e7e4db)" stroke="rgba(20,35,33,.25)" />
+              <text x="160" y="172" textAnchor="middle" fontSize="9" fill="#5a6964" letterSpacing="1">MATCH ON</text>
+              <text x="160" y="192" textAnchor="middle" fontSize="10" fill="#2c3a36">time · grain · identity · definition</text>
+              <line x1="160" y1="210" x2="160" y2="236" stroke="rgba(20,35,33,.4)" strokeWidth="1.5" markerEnd="url(#fa)" />
+              <rect x="0" y="236" width="320" height="46" fill="none" stroke="#90d26f" strokeWidth="2" />
+              <text x="14" y="264" fontSize="11" fill="#2c3a36">CANONICAL REVENUE</text><text x="306" y="264" textAnchor="end" fontSize="12" fill="#3c6b43">one figure</text>
+            </svg>
+          </div>
         </a>
 
         <div className="insight-secondary">

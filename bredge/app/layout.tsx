@@ -32,11 +32,12 @@ export async function generateMetadata(): Promise<Metadata> {
     manifest: "/site.webmanifest",
     icons: {
       icon: [
-        { url: "/favicon.svg", type: "image/svg+xml" },
+        { url: "/favicon-bredge-v3.svg", type: "image/svg+xml" },
+        { url: "/favicon-48x48.png", type: "image/png", sizes: "48x48" },
         { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
         { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
       ],
-      shortcut: "/favicon.ico",
+      shortcut: "/favicon-bredge-v3.ico",
       apple: "/apple-touch-icon.png",
     },
   };
