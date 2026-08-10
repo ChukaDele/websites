@@ -114,19 +114,17 @@ h3 { line-height:1; }
 @media (max-width:650px) { .hero { padding-top:108px; }.hero-system { height:350px; }.pipeline-demo::after,.pipeline-source::after { animation:none; }.outcome-grid { gap:12px; }.outcome-card { min-height:290px; padding:25px 22px; }.outcome-card h3 { margin-top:42px; }.outcome-card p { margin-bottom:20px; }.work-intro { padding-bottom:24px; }.reference-case { box-shadow:8px 10px 0 rgba(20,35,33,.11); }.engagement-card { grid-template-columns:1fr; }.engagement-card > p,.engagement-card h3,.engagement-card > div { grid-column:auto; grid-row:auto; }.footer-bottom { margin-top:84px; } }
 @media (min-width:651px) { .reference-case .pipeline-demo { width:100%; min-height:0; margin:0; grid-template-columns:1fr; gap:22px; padding:34px 30px 54px; }.reference-case .pipeline-core { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }.reference-case .pipeline-column { width:auto; height:130px; }.reference-case .pipeline-column:not(:last-child)::after { content:none; }.reference-case .pipeline-output { width:100%; } }
 
-/* Reference Work — desktop sticky card-stack (PayPal-style), CSS-only, no pin spacer.
-   Cards stick at increasing offsets so each rises and layers over the previous;
-   the last card is last in flow so document flow resumes immediately after it. */
+/* Reference Work — natural-flow case sequence at ALL widths (single source of
+   truth: base grid + this margin). The previous desktop treatment made each of
+   the three ~600px cards its own position:sticky element at staggered tops; with
+   the Invisible 90% GSAP pin owning the viewport right after, the two scroll
+   systems desynced under browser zoom / viewport-height changes and overlapped
+   (Reference cards + SQL scene visible together). One pinned scene (Invisible
+   90%) now owns that region; Reference Work reads as a clean vertical sequence
+   that cannot collide with it. */
 @media (min-width:1001px) {
-  .reference-work { display:block; gap:0; }
-  .reference-case { position:sticky; margin-bottom:28px; will-change:transform; transition:box-shadow .3s; }
-  .reference-case:nth-child(1) { top:92px; }
-  .reference-case:nth-child(2) { top:114px; }
-  .reference-case:nth-child(3) { top:136px; }
-  .reference-case:last-child { margin-bottom:0; }
-}
-@media (min-width:1001px) and (prefers-reduced-motion:reduce) {
-  .reference-case { position:relative; top:auto; }
+  .reference-work { display:grid; gap:34px; }
+  .reference-case { position:relative; top:auto; margin-bottom:0; }
 }
 
 /* ---------- Team Experience — "Experience brought forward" ---------- */

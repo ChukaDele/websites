@@ -164,7 +164,12 @@ export function InvisibleQuery() {
         const st = ST.create({
           trigger: root,
           start: "top top",
-          end: "+=2800",
+          // Viewport-relative scroll runway (was a hard-coded +=2800px, which
+          // desynced under browser zoom / height changes). Re-measured on every
+          // refresh so zoom and resize recompute the pin distance. Narrative
+          // proportions below are progress-based (0..1) so they are unchanged.
+          end: () => "+=" + Math.round(window.innerHeight * 2.6),
+          invalidateOnRefresh: true,
           pin: ".iq-scene",
           scrub: 0.4,
           onUpdate: (self: { progress: number }) => {

@@ -28,6 +28,13 @@ export function PageMotion() {
       const mm = gsap.matchMedia();
       matchMedia = mm;
       mm.add(DESKTOP_MOTION, () => {
+        // Unified refresh: browser zoom / visualViewport changes don't reliably
+        // fire a normal window 'resize', so pin distances can go stale. Nudge
+        // ScrollTrigger (debounced) so every pinned scene re-measures.
+        let rt = 0;
+        const nudge = () => { window.clearTimeout(rt); rt = window.setTimeout(() => ScrollTrigger.refresh(), 200); };
+        window.visualViewport?.addEventListener("resize", nudge);
+
         gsap.to(".pipeline-core", { y: -8, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: -1 });
 
         const counters = gsap.utils.toArray<HTMLElement>("[data-count]");
@@ -54,6 +61,8 @@ export function PageMotion() {
         ScrollTrigger.refresh();
 
         return () => {
+          window.visualViewport?.removeEventListener("resize", nudge);
+          window.clearTimeout(rt);
           // GSAP reverts inline styles but not textContent overwritten mid count-up.
           counters.forEach((counter) => {
             counter.textContent = `${Number(counter.dataset.count ?? 0).toLocaleString()} records`;
