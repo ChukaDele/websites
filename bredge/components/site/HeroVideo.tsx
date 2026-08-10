@@ -20,7 +20,7 @@ export function HeroVideo() {
     if (!video) return;
 
     const mobile = window.matchMedia("(max-width: 1000px)").matches;
-    const base = mobile ? "/media/bredge-hero-mobile" : "/media/bredge-hero-final";
+    const base = mobile ? "/media/bredge-hero-mobile" : "/media/bredge-hero-final-v2";
     video.poster = `${base}-poster.webp`; // correct aspect per viewport
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -54,7 +54,7 @@ export function HeroVideo() {
         loop
         playsInline
         preload="none"
-        poster="/media/bredge-hero-final-poster.webp"
+        poster="/media/bredge-hero-final-v2-poster.webp"
       />
     </div>
   );
