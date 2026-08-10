@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-label="When to make your first data hire: backlog signals feed one question, what is actually blocked, which maps to analyst, analytics engineer, data engineer or an embedded team.">
+  <title>Your first data hire: match the blocked gap to the right role</title>
+  <style>
+    text{fill:#142321;font-family:"Instrument Sans","Instrument Sans Variable",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+    .mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;}
+    .eyebrow{font-size:22px;letter-spacing:3px;fill:#5a6964;font-weight:600;}
+    .h{font-size:56px;font-weight:600;letter-spacing:-2.5px;fill:#142321;}
+    .slbl{font-size:19px;letter-spacing:1px;fill:#5a6964;font-weight:600;}
+    .sym{font-size:19px;fill:#142321;}
+    .meter{font-size:15px;letter-spacing:1px;fill:#a9741f;}
+    .band-k{font-size:24px;letter-spacing:3px;font-weight:700;fill:#90d26f;}
+    .band-t{font-size:21px;letter-spacing:0.5px;fill:#f4f1e9;}
+    .role{font-size:26px;font-weight:700;letter-spacing:0px;fill:#142321;}
+    .fix{font-size:22px;fill:#3f4f4a;}
+    .tag{font-size:16px;letter-spacing:1.5px;font-weight:600;}
+    .foot{font-size:20px;letter-spacing:1px;fill:#5a6964;}
+  </style>
+  <defs>
+    <marker id="ar" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0,0 L7,5 L0,10" fill="none" stroke="#142321" stroke-width="1.6"/></marker>
+  </defs>
+
+  <rect width="1080" height="1080" fill="#f4f1e9"/>
+
+  <text class="mono eyebrow" x="80" y="112">TEAM · WHEN TO HIRE</text>
+  <text class="h" x="80" y="176">Your first data hire.</text>
+  <line x1="80" y1="210" x2="1000" y2="210" stroke="#142321" stroke-opacity="0.16" stroke-width="1"/>
+
+  <!-- backlog signals -->
+  <text class="mono slbl" x="80" y="252" style="fill:#5a6964">THE BACKLOG</text>
+  <g>
+    <!-- box template: x, width 215 -->
+    <g>
+      <rect x="80" y="266" width="215" height="140" fill="#efece3" stroke="#142321" stroke-opacity="0.4" stroke-width="1.2"/>
+      <text class="mono slbl" x="100" y="300">ANALYST</text>
+      <text class="mono sym" x="100" y="334">question queue</text>
+      <text class="mono meter" x="100" y="374">LOAD</text>
+      <rect x="100" y="384" width="175" height="9" fill="#e7ddc6"/><rect x="100" y="384" width="158" height="9" fill="#f0bf6c"/>
+    </g>
+    <g>
+      <rect x="315" y="266" width="215" height="140" fill="#efece3" stroke="#142321" stroke-opacity="0.4" stroke-width="1.2"/>
+      <text class="mono slbl" x="335" y="300">SPREADSHEETS</text>
+      <text class="mono sym" x="335" y="334">endless rebuilds</text>
+      <text class="mono meter" x="335" y="374">LOAD</text>
+      <rect x="335" y="384" width="175" height="9" fill="#e7ddc6"/><rect x="335" y="384" width="166" height="9" fill="#f0bf6c"/>
+    </g>
+    <g>
+      <rect x="550" y="266" width="215" height="140" fill="#efece3" stroke="#142321" stroke-opacity="0.4" stroke-width="1.2"/>
+      <text class="mono slbl" x="570" y="300">REPORTS</text>
+      <text class="mono sym" x="570" y="334">arrive too late</text>
+      <text class="mono meter" x="570" y="374">LOAD</text>
+      <rect x="570" y="384" width="175" height="9" fill="#e7ddc6"/><rect x="570" y="384" width="149" height="9" fill="#f0bf6c"/>
+    </g>
+    <g>
+      <rect x="785" y="266" width="215" height="140" fill="#efece3" stroke="#142321" stroke-opacity="0.4" stroke-width="1.2"/>
+      <text class="mono slbl" x="805" y="300">DEFINITIONS</text>
+      <text class="mono sym" x="805" y="334">figures disagree</text>
+      <text class="mono meter" x="805" y="374">LOAD</text>
+      <rect x="805" y="384" width="175" height="9" fill="#e7ddc6"/><rect x="805" y="384" width="172" height="9" fill="#f0bf6c"/>
+    </g>
+  </g>
+
+  <line x1="540" y1="406" x2="540" y2="452" stroke="#142321" stroke-opacity="0.55" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- ask band -->
+  <rect x="80" y="456" width="920" height="66" fill="#142321"/>
+  <text class="mono band-k" x="106" y="497">ASK</text>
+  <text class="mono band-t" x="200" y="497">what is actually blocked — continuous, or one project?</text>
+
+  <!-- role grid 2x2 -->
+  <!-- Analyst -->
+  <rect x="80" y="556" width="448" height="158" fill="#efece3" stroke="#142321" stroke-opacity="0.4" stroke-width="1.2"/>
+  <text class="role" x="106" y="612">Data analyst</text>
+  <text class="fix" x="106" y="652">answers the questions</text>
+  <text class="mono tag" x="502" y="600" text-anchor="end" style="fill:#5a6964">CONTINUOUS</text>
+
+  <!-- Analytics engineer (recommended) -->
+  <rect x="564" y="568" width="448" height="158" fill="#142321"/>
+  <rect x="552" y="556" width="448" height="158" fill="#e3f2d7" stroke="#3c6b43" stroke-width="1.5"/>
+  <circle cx="580" cy="586" r="6" fill="#3c6b43"/>
+  <text class="mono tag" x="600" y="592" style="fill:#3c6b43">RECOMMENDED — SIGNALS POINT HERE</text>
+  <text class="role" x="578" y="648">Analytics engineer</text>
+  <text class="fix" x="578" y="686">makes the data trustworthy</text>
+
+  <!-- Data engineer -->
+  <rect x="80" y="742" width="448" height="158" fill="#efece3" stroke="#142321" stroke-opacity="0.4" stroke-width="1.2"/>
+  <text class="role" x="106" y="798">Data engineer</text>
+  <text class="fix" x="106" y="838">moves data reliably</text>
+  <text class="mono tag" x="502" y="786" text-anchor="end" style="fill:#5a6964">CONTINUOUS</text>
+
+  <!-- Embedded / fractional -->
+  <rect x="552" y="742" width="448" height="158" fill="#f8ecd2" stroke="#a9741f" stroke-width="1.5"/>
+  <text class="role" x="578" y="798">Embedded / fractional</text>
+  <text class="fix" x="578" y="838">a team for a defined project</text>
+  <text class="mono tag" x="974" y="786" text-anchor="end" style="fill:#a9741f">PROJECT</text>
+
+  <line x1="80" y1="1000" x2="1000" y2="1000" stroke="#142321" stroke-opacity="0.16" stroke-width="1"/>
+  <text class="mono foot" x="80" y="1036">The Bredge · thebredge.com</text>
+  <text class="mono foot" x="1000" y="1036" text-anchor="end" style="font-size:18px">insights/when-to-hire-a-data-team</text>
+</svg>

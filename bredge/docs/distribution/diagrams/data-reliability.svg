@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-label="A data reliability check stack: completeness, uniqueness, validity, referential integrity, freshness and reconciliation all pass, with an owner assigned, gating a trusted badge.">
+  <title>Data reliability: the check stack that gates a trusted badge</title>
+  <style>
+    text{fill:#f4f1e9;font-family:"Instrument Sans","Instrument Sans Variable",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+    .mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;}
+    .eyebrow{font-size:22px;letter-spacing:3px;fill:#a6d68c;font-weight:600;}
+    .h{font-size:56px;font-weight:600;letter-spacing:-2.5px;fill:#f4f1e9;}
+    .cmd{font-size:24px;fill:#cad7d0;}
+    .chk{font-size:25px;fill:#e6efe8;}
+    .rule{font-size:21px;fill:#8da49a;}
+    .pass{font-size:22px;letter-spacing:1px;font-weight:700;fill:#aee993;}
+    .own{font-size:22px;fill:#8da49a;}
+    .foot{font-size:20px;letter-spacing:1px;fill:#8da49a;}
+  </style>
+  <defs>
+    <pattern id="grid" width="38" height="38" patternUnits="userSpaceOnUse">
+      <path d="M38,0 L0,0 L0,38" fill="none" stroke="#d3e8df" stroke-width="1" stroke-opacity="0.05"/>
+    </pattern>
+    <marker id="arg" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0,0 L7,5 L0,10" fill="none" stroke="#90d26f" stroke-width="2"/></marker>
+  </defs>
+
+  <rect width="1080" height="1080" fill="#142321"/>
+  <rect width="1080" height="1080" fill="url(#grid)"/>
+
+  <text class="mono eyebrow" x="80" y="112">DATA RELIABILITY · CHECKS</text>
+  <text class="h" x="80" y="176">Is the number trustworthy?</text>
+  <line x1="80" y1="210" x2="1000" y2="210" stroke="#f4f1e9" stroke-opacity="0.16" stroke-width="1"/>
+
+  <!-- terminal panel with green block backing -->
+  <rect x="90" y="250" width="910" height="512" fill="#3c6b43"/>
+  <rect x="80" y="240" width="910" height="512" fill="#0e1815" stroke="#f4f1e9" stroke-opacity="0.18" stroke-width="1.2"/>
+
+  <!-- traffic lights -->
+  <circle cx="118" cy="280" r="7" fill="#c27059"/>
+  <circle cx="142" cy="280" r="7" fill="#d6b96a"/>
+  <circle cx="166" cy="280" r="7" fill="#77bf6f"/>
+
+  <text class="mono cmd" x="116" y="342"><tspan style="fill:#90d26f">$</tspan> bredge reliability --asset revenue</text>
+
+  <!-- check rows -->
+  <g>
+    <text class="mono chk" x="116" y="398"><tspan style="fill:#90d26f">&#10003;</tspan> completeness</text>
+    <text class="mono rule" x="470" y="398">0 nulls in keys</text>
+    <text class="mono pass" x="960" y="398" text-anchor="end">PASS</text>
+
+    <text class="mono chk" x="116" y="452"><tspan style="fill:#90d26f">&#10003;</tspan> uniqueness</text>
+    <text class="mono rule" x="470" y="452">1 row per invoice</text>
+    <text class="mono pass" x="960" y="452" text-anchor="end">PASS</text>
+
+    <text class="mono chk" x="116" y="506"><tspan style="fill:#90d26f">&#10003;</tspan> validity</text>
+    <text class="mono rule" x="470" y="506">amounts &#8805; 0</text>
+    <text class="mono pass" x="960" y="506" text-anchor="end">PASS</text>
+
+    <text class="mono chk" x="116" y="560"><tspan style="fill:#90d26f">&#10003;</tspan> referential</text>
+    <text class="mono rule" x="470" y="560">every order &#8594; customer</text>
+    <text class="mono pass" x="960" y="560" text-anchor="end">PASS</text>
+
+    <text class="mono chk" x="116" y="614"><tspan style="fill:#90d26f">&#10003;</tspan> freshness</text>
+    <text class="mono rule" x="470" y="614">loaded &lt; 24h ago</text>
+    <text class="mono pass" x="960" y="614" text-anchor="end">PASS</text>
+
+    <text class="mono chk" x="116" y="668"><tspan style="fill:#90d26f">&#10003;</tspan> reconciliation</text>
+    <text class="mono rule" x="470" y="668">ledger &#8722; source = £0</text>
+    <text class="mono pass" x="960" y="668" text-anchor="end">PASS</text>
+  </g>
+
+  <line x1="116" y1="700" x2="964" y2="700" stroke="#f4f1e9" stroke-opacity="0.16" stroke-width="1"/>
+  <text class="mono own" x="116" y="738">owner: <tspan style="fill:#e6efe8">finance-data</tspan></text>
+  <text class="mono own" x="960" y="738" text-anchor="end"><tspan style="fill:#aee993">6/6</tspan> checks green</text>
+
+  <!-- gate arrow to trusted badge -->
+  <line x1="540" y1="762" x2="540" y2="806" stroke="#90d26f" stroke-width="2" marker-end="url(#arg)"/>
+
+  <rect x="330" y="822" width="420" height="118" fill="#b6ef9d"/>
+  <text class="mono" x="360" y="878" style="font-size:38px;fill:#142321"><tspan style="fill:#3c6b43">&#10003;</tspan> TRUSTED</text>
+  <text class="mono" x="360" y="912" style="font-size:19px;fill:#3c6b43">all checks green · owner assigned</text>
+
+  <line x1="80" y1="1000" x2="1000" y2="1000" stroke="#f4f1e9" stroke-opacity="0.16" stroke-width="1"/>
+  <text class="mono foot" x="80" y="1036">The Bredge · thebredge.com</text>
+  <text class="mono foot" x="1000" y="1036" text-anchor="end" style="font-size:18px">insights/is-our-data-reliable</text>
+</svg>

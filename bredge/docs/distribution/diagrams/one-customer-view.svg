@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-label="Fragmented customer identities across CRM, billing and support resolved to one canonical customer id by matching on name, email domain and company number.">
+  <title>One customer view: fragmented identities resolved to one canonical id</title>
+  <style>
+    text{fill:#142321;font-family:"Instrument Sans","Instrument Sans Variable",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+    .mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;}
+    .eyebrow{font-size:22px;letter-spacing:3px;fill:#5a6964;font-weight:600;}
+    .h{font-size:56px;font-weight:600;letter-spacing:-2.5px;fill:#142321;}
+    .lbl{font-size:21px;letter-spacing:2px;fill:#5a6964;font-weight:600;}
+    .name{font-size:27px;font-weight:600;letter-spacing:-0.5px;fill:#142321;}
+    .key{font-size:20px;fill:#7a5312;}
+    .id{font-size:20px;fill:#5a6964;}
+    .band-k{font-size:24px;letter-spacing:3px;font-weight:700;fill:#90d26f;}
+    .band-t{font-size:23px;letter-spacing:1px;fill:#f4f1e9;}
+    .foot{font-size:20px;letter-spacing:1px;fill:#5a6964;}
+    .approx{font-size:34px;fill:#a9741f;font-weight:600;}
+  </style>
+  <defs>
+    <marker id="ar" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0,0 L7,5 L0,10" fill="none" stroke="#142321" stroke-width="1.6"/></marker>
+    <marker id="arg" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0,0 L7,5 L0,10" fill="none" stroke="#3c6b43" stroke-width="1.8"/></marker>
+  </defs>
+
+  <rect width="1080" height="1080" fill="#f4f1e9"/>
+
+  <text class="mono eyebrow" x="80" y="112">IDENTITY · RESOLVED</text>
+  <text class="h" x="80" y="176">One customer.</text>
+  <text class="h" x="80" y="238">Three systems, three spellings.</text>
+  <line x1="80" y1="272" x2="1000" y2="272" stroke="#142321" stroke-opacity="0.16" stroke-width="1"/>
+
+  <!-- fragmented identity records -->
+  <g>
+    <!-- CRM -->
+    <rect x="80" y="300" width="290" height="182" fill="#fbf3df" stroke="#a9741f" stroke-width="1.5"/>
+    <circle cx="104" cy="326" r="5" fill="#f0bf6c"/><circle cx="104" cy="326" r="9" fill="none" stroke="#f0bf6c" stroke-opacity="0.5"/>
+    <text class="mono lbl" x="124" y="332">CRM</text>
+    <text class="name" x="100" y="382">Acme Corp Ltd</text>
+    <text class="mono key" x="100" y="418">jane@acme.co</text>
+    <text class="mono id" x="100" y="456">id CRM-4821</text>
+
+    <!-- BILLING -->
+    <rect x="395" y="300" width="290" height="182" fill="#fbf3df" stroke="#a9741f" stroke-width="1.5"/>
+    <circle cx="419" cy="326" r="5" fill="#f0bf6c"/><circle cx="419" cy="326" r="9" fill="none" stroke="#f0bf6c" stroke-opacity="0.5"/>
+    <text class="mono lbl" x="439" y="332">BILLING</text>
+    <text class="name" x="415" y="382">ACME CORPORATION</text>
+    <text class="mono key" x="415" y="418">VAT GB-8842197</text>
+    <text class="mono id" x="415" y="456">id BL-0099</text>
+
+    <!-- SUPPORT -->
+    <rect x="710" y="300" width="290" height="182" fill="#fbf3df" stroke="#a9741f" stroke-width="1.5"/>
+    <circle cx="734" cy="326" r="5" fill="#f0bf6c"/><circle cx="734" cy="326" r="9" fill="none" stroke="#f0bf6c" stroke-opacity="0.5"/>
+    <text class="mono lbl" x="754" y="332">SUPPORT</text>
+    <text class="name" x="730" y="382">acme</text>
+    <text class="mono key" x="730" y="418">j.doe@acme.co</text>
+    <text class="mono id" x="730" y="456">id SUP-7731</text>
+
+    <text class="mono approx" x="382" y="398" text-anchor="middle">&#8776;</text>
+    <text class="mono approx" x="697" y="398" text-anchor="middle">&#8776;</text>
+  </g>
+
+  <line x1="225" y1="486" x2="225" y2="556" stroke="#142321" stroke-opacity="0.55" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="540" y1="486" x2="540" y2="556" stroke="#142321" stroke-opacity="0.55" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="855" y1="486" x2="855" y2="556" stroke="#142321" stroke-opacity="0.55" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- MATCH ON band -->
+  <rect x="80" y="560" width="920" height="70" fill="#142321"/>
+  <text class="mono band-k" x="106" y="603">MATCH ON</text>
+  <text class="mono band-t" x="320" y="603">name&#160;&#160;·&#160;&#160;email domain&#160;&#160;·&#160;&#160;company no.</text>
+
+  <line x1="540" y1="634" x2="540" y2="694" stroke="#3c6b43" stroke-width="2" marker-end="url(#arg)"/>
+
+  <!-- canonical customer record -->
+  <rect x="292" y="712" width="500" height="228" fill="#142321"/>
+  <rect x="280" y="700" width="500" height="228" fill="#b6ef9d" stroke="#3c6b43" stroke-width="1.5"/>
+  <circle cx="310" cy="730" r="6" fill="#3c6b43"/>
+  <text class="mono lbl" x="330" y="736" style="fill:#3c6b43">CANONICAL CUSTOMER</text>
+  <text class="mono" x="306" y="806" style="font-size:58px;font-weight:600;letter-spacing:-2px;fill:#142321">CUST-00317</text>
+  <text class="name" x="306" y="850" style="font-size:28px">Acme Corporation Ltd</text>
+  <text class="mono" x="306" y="890" style="font-size:20px;fill:#3c6b43">CRM-4821 · BL-0099 · SUP-7731</text>
+
+  <line x1="80" y1="1000" x2="1000" y2="1000" stroke="#142321" stroke-opacity="0.16" stroke-width="1"/>
+  <text class="mono foot" x="80" y="1036">The Bredge · thebredge.com</text>
+  <text class="mono foot" x="1000" y="1036" text-anchor="end" style="font-size:18px">insights/one-customer-view</text>
+</svg>
