@@ -36,6 +36,7 @@ function sameRow(a: NonNullable<Box>, b: NonNullable<Box>): boolean {
 async function ready(page: Page) {
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await page.evaluate(async () => { await document.fonts.ready; }).catch(() => {});
+  await page.locator(".preloader").waitFor({ state: "hidden", timeout: 2_000 });
   // Let the client scene controllers hydrate and run their first measure.
   await page.waitForTimeout(600);
 }
@@ -55,12 +56,14 @@ test.describe("responsive-motion invariants", () => {
       return {
         readyState: video.readyState,
         ready: video.classList.contains("is-ready"),
+        opacity: getComputedStyle(video).opacity,
         posterVisible: !!document.querySelector(".hero-poster img"),
       };
     });
     expect(handoff.posterVisible, "a responsive poster is always available for LCP").toBe(true);
     expect(handoff.readyState, "the selected video should load enough to play").toBeGreaterThanOrEqual(3);
     expect(handoff.ready, "the video must become visible after it can play").toBe(true);
+    expect(handoff.opacity, "the playable video must finish its fade-in").toBe("1");
   });
 
   test("no horizontal overflow anywhere on the page", async ({ page }) => {
