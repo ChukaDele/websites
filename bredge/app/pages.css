@@ -31,8 +31,6 @@
 .nav-dropdown a:hover { background:var(--surface); }
 .nav-dropdown b { font-size:13px; font-weight:500; letter-spacing:-.01em; }
 .nav-dropdown small { color:var(--muted); font-size:11px; }
-.nav-soon { display:inline-flex; align-items:center; gap:7px; color:#8b968f; cursor:default; }
-.nav-soon em { padding:2px 6px; border:1px solid var(--line); border-radius:2px; color:#7d8a83; font:8px/1 var(--font-mono); font-style:normal; letter-spacing:.08em; text-transform:uppercase; }
 .nav-toggle { display:none; }
 
 @media (max-width:1000px) {
@@ -48,8 +46,6 @@
   .mobile-menu a { padding:11px 0; border-bottom:1px solid var(--line); font-size:19px; letter-spacing:-.02em; }
   .mobile-eyebrow { margin:22px 0 4px; color:#5a6964; font:600 10px/1.2 var(--font-mono); letter-spacing:.12em; }
   .mobile-eyebrow:first-child { margin-top:0; }
-  .mobile-soon { display:flex; align-items:center; gap:9px; padding:11px 0; border-bottom:1px solid var(--line); color:#8b968f; font-size:19px; }
-  .mobile-soon em { padding:2px 7px; border:1px solid var(--line); color:#7d8a83; font:8px/1 var(--font-mono); font-style:normal; letter-spacing:.08em; text-transform:uppercase; }
   .mobile-cta { justify-content:space-between; margin-top:26px; }
 }
 
@@ -392,6 +388,7 @@
 .pl-records { display:grid; gap:15px; }
 .pl-record { position:relative; display:flex; gap:10px; align-items:center; height:16px; }
 .pl-label { flex:none; width:64px; color:#8a978f; font:8px/1 var(--font-mono); letter-spacing:.11em; }
+.pl-label::before { content:attr(data-label); }
 .pl-dot { flex:none; width:8px; height:8px; border-radius:50%; background:#c8cec9; }
 .pl-record i { display:block; height:2px; background:#3c4b46; border-radius:2px; }
 .pl-record i:nth-of-type(1) { width:44px; }

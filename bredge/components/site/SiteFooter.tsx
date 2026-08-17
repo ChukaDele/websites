@@ -13,7 +13,6 @@ const columns: Array<[string, Array<[string, string] | [string, string, "soon"]>
     ["How we work", "/how-we-work"],
     ["Insights", "/insights"],
     ["Resources", "/resources"],
-    ["Work", "", "soon"],
   ]],
   ["Connect", [
     ["Schedule a call", "/schedule"],
@@ -28,11 +27,11 @@ export function SiteFooter() {
     <footer id="contact-footer" className="footer-experience">
       <div className="footer-grid" aria-hidden="true">{Array.from({ length: 90 }, (_, index) => <i key={index} />)}</div>
       <div className="section-wrap footer-content">
-        <p className="eyebrow light">START A CONVERSATION</p>
         <h2>Got a data problem nobody wants to own?<br /><em>Start there.</em></h2>
         <p>Conflicting numbers. Manual reporting. A dashboard nobody trusts. A pipeline that breaks at the worst possible time. Bring us the messy version.</p>
         <div className="footer-actions">
           <a className="button footer-button" href="/contact">Tell us what’s broken <span aria-hidden="true">→</span></a>
+          <a className="footer-alt" href="/schedule">or book 30 minutes <span aria-hidden="true">→</span></a>
           <a className="footer-mail" href="mailto:hello@thebredge.com">hello@thebredge.com</a>
         </div>
 
