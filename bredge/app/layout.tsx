@@ -5,6 +5,7 @@ import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
 import "./globals.css";
 import "./pages.css";
+import "./qa-fixes.css";
 import { Preloader } from "../components/site/Preloader";
 import { Analytics } from "../components/site/Analytics";
 
@@ -22,10 +23,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const verification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
   return {
     metadataBase: new URL("https://thebredge.com"),
+    applicationName: "The Bredge",
     title: "The Bredge | Data Engineering, Analytics & BI Partner",
     description: "Data engineering, analytics and BI partner for growing and mid-market companies — reliable data foundations, reporting automation and AI-ready data systems.",
     alternates: { canonical: "/" },
-    openGraph: { title: "The Bredge | Data Engineering, Analytics & BI Partner", description: "Data engineering, analytics and AI-ready data foundations for growing and mid-market companies.", type: "website", url: "/", images: [{ url: "/og.png", width: 1200, height: 630, alt: "The Bredge data systems for decisions people can trust" }] },
+    openGraph: { siteName: "The Bredge", title: "The Bredge | Data Engineering, Analytics & BI Partner", description: "Data engineering, analytics and AI-ready data foundations for growing and mid-market companies.", type: "website", url: "/", images: [{ url: "/og.png", width: 1200, height: 630, alt: "The Bredge data systems for decisions people can trust" }] },
     twitter: { card: "summary_large_image", title: "The Bredge", description: "Data systems for decisions people can trust.", images: ["/og.png"] },
     robots: isPreview ? { index: false, follow: false } : { index: true, follow: true },
     verification: verification ? { google: verification } : undefined,
@@ -56,6 +58,7 @@ const structuredData = {
       logo: "https://thebredge.com/brand/bredge-logo.svg",
       image: "https://thebredge.com/og.png",
       email: "hello@thebredge.com",
+      sameAs: ["https://www.linkedin.com/company/thebredge"],
       description: "The Bredge is a data engineering, analytics and business intelligence partner. We help growing and mid-market companies connect fragmented systems, build reliable data foundations, automate reporting and turn complex data into answers teams can act on.",
       knowsAbout: ["Data engineering", "Data analytics", "Business intelligence", "Data quality", "Data governance", "Reporting automation", "Data reconciliation", "Power BI", "PostgreSQL", "Python", "SQL"],
       makesOffer: [

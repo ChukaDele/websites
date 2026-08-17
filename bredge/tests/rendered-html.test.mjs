@@ -1,91 +1,58 @@
 import assert from "node:assert/strict";
-import { access, readFile, readdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const developmentPreviewMeta =
-  /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
-const templateRoot = new URL("../", import.meta.url);
-const previewRoot = new URL("../app/_sites-preview/", import.meta.url);
+const root = new URL("../", import.meta.url);
+const read = (path) => readFile(new URL(path, root), "utf8");
 
-async function render() {
-  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
-  const { default: worker } = await import(workerUrl.href);
-
-  return worker.fetch(
-    new Request("http://localhost/", {
-      headers: { accept: "text/html" },
-    }),
-    {
-      ASSETS: {
-        fetch: async () => new Response("Not found", { status: 404 }),
-      },
-    },
-    {
-      waitUntil() {},
-      passThroughOnException() {},
-    },
-  );
-}
-
-test("server-renders the starter loading skeleton", async () => {
-  const response = await render();
-  assert.equal(response.status, 200);
-  assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
-
-  const html = await response.text();
-  assert.match(html, developmentPreviewMeta);
-  assert.match(html, /<title>Your site is taking shape<\/title>/i);
-  assert.match(html, /Building your site/);
-  assert.match(html, /Your site is taking shape/);
-  assert.match(
-    html,
-    /Your first version will appear here automatically when it’s ready\./,
-  );
-  assert.doesNotMatch(html, /Codex/);
-  assert.match(html, /react-loading-skeleton/);
-  assert.match(html, /role="status"/);
-});
-
-test("keeps the loading skeleton scoped and disposable", async () => {
-  const [preview, css, page, layout, packageJson, files] = await Promise.all([
-    readFile(new URL("SkeletonPreview.tsx", previewRoot), "utf8"),
-    readFile(new URL("preview.css", previewRoot), "utf8"),
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../package.json", import.meta.url), "utf8"),
-    readdir(previewRoot),
+test("Invisible 90% uses one bounded CSS sticky system, never a GSAP pin", async () => {
+  const [component, css] = await Promise.all([
+    read("components/landing/InvisibleQuery.tsx"),
+    read("app/qa-fixes.css"),
   ]);
 
-  assert.deepEqual(files.sort(), ["SkeletonPreview.tsx", "preview.css"]);
-  assert.match(preview, /from "react-loading-skeleton"/);
-  assert.match(preview, /baseColor="#eceae7"/);
-  assert.match(preview, /highlightColor="#f9f8f6"/);
-  assert.match(preview, /duration=\{2\.8\}/);
-  assert.match(preview, /sites-skeleton-search-placeholder/);
-  assert.match(packageJson, /"react-loading-skeleton": "3\.5\.0"/);
+  assert.doesNotMatch(component, /\bpin\s*:/, "GSAP pinning must not return to InvisibleQuery");
+  assert.match(component, /end:\s*"bottom bottom"/);
+  assert.match(component, /min-height:\s*720px/);
+  assert.match(css, /\.iq\s*\{\s*min-height:360svh;/);
+  assert.match(css, /\.iq-scene\s*\{[^}]*position:sticky;/s);
+  assert.match(css, /prefers-reduced-motion:no-preference/);
+});
 
-  const shellIndex = preview.indexOf('className="sites-skeleton-shell"');
-  const statusIndex = preview.indexOf('className="sites-skeleton-status"');
-  assert.ok(shellIndex >= 0 && statusIndex > shellIndex);
-  assert.match(css, /position:\s*fixed/);
-  assert.match(css, /inset:\s*0/);
-  assert.match(css, /opacity:\s*0\.52/);
-  assert.match(css, /prefers-reduced-motion:\s*reduce/);
-  assert.doesNotMatch(css, /#020617|canvas|pets|progress/i);
-  assert.doesNotMatch(
-    preview,
-    /loading-spinner|status-mark|status-progress|canvas|cookie|random/i,
-  );
+test("brand and commercial SEO signals are explicit and canonical", async () => {
+  const [layout, services, sitemap, robots, insights] = await Promise.all([
+    read("app/layout.tsx"),
+    read("app/services/page.tsx"),
+    read("app/sitemap.ts"),
+    read("app/robots.ts"),
+    read("app/insights/page.tsx"),
+  ]);
 
-  assert.match(page, /export const metadata:\s*Metadata/);
-  assert.match(page, /"codex-preview": "development"/);
-  assert.match(page, /<SkeletonPreview \/>/);
-  assert.match(layout, /title:\s*"Starter Project"/);
-  assert.doesNotMatch(layout, /codex-preview|_sites-preview|themeColor|\bViewport\b/);
-  assert.doesNotMatch(css, /(^|\s)(html|body)\s*\{/m);
+  assert.match(layout, /applicationName:\s*"The Bredge"/);
+  assert.match(layout, /siteName:\s*"The Bredge"/);
+  assert.match(layout, /"@type":\s*"WebSite"/);
+  assert.match(layout, /sameAs:\s*\["https:\/\/www\.linkedin\.com\/company\/thebredge"\]/);
+  assert.match(services, /data engineering, analytics and business intelligence consulting for growing and mid-market companies/i);
+  assert.match(sitemap, /https:\/\/thebredge\.com/);
+  assert.match(robots, /sitemap:\s*"https:\/\/thebredge\.com\/sitemap\.xml"/);
+  assert.match(insights, /"@type":\s*"CollectionPage"/);
+  assert.match(insights, /"@type":\s*"ItemList"/);
+});
 
-  await assert.rejects(
-    access(new URL("public/_sites-preview", templateRoot)),
-  );
+test("security hardening is applied at the Worker boundary", async () => {
+  const worker = await read("worker/index.ts");
+  assert.match(worker, /X-Content-Type-Options/);
+  assert.match(worker, /X-Frame-Options/);
+  assert.match(worker, /Referrer-Policy/);
+  assert.match(worker, /Permissions-Policy/);
+  assert.match(worker, /Strict-Transport-Security/);
+  assert.match(worker, /Content-Security-Policy-Report-Only/);
+});
+
+test("blog spacing and responsive reading safeguards remain scoped", async () => {
+  const css = await read("app/qa-fixes.css");
+  assert.match(css, /\.insight-featured\s*\{\s*padding-top:44px;\s*margin-bottom:40px;/);
+  assert.match(css, /\.ax-body\s+table\.article-table\s*\{[^}]*overflow-x:auto;/s);
+  assert.match(css, /max-width:1000px/);
+  assert.match(css, /max-width:560px/);
 });

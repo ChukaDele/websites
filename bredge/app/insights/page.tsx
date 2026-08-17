@@ -10,11 +10,30 @@ export const metadata: Metadata = pageMetadata({
   path: "/insights",
 });
 
+const insightsCollectionLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "The Bredge Insights",
+  url: "https://thebredge.com/insights",
+  description: "Practical writing on data engineering, analytics, business intelligence, data reliability and reporting systems.",
+  isPartOf: { "@id": "https://thebredge.com/#website" },
+  mainEntity: {
+    "@type": "ItemList",
+    itemListElement: articles.map((article, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `https://thebredge.com/insights/${article.slug}`,
+      name: article.title,
+    })),
+  },
+};
+
 export default function InsightsPage() {
   const [featured, secondaryA, secondaryB] = articles;
   const secondary = [secondaryA, secondaryB];
   return (
     <PageShell>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(insightsCollectionLd) }} />
       <section className="section-wrap insights-hero">
         <p className="eyebrow">BREDGE INSIGHTS</p>
         <h1>The problems behind the dashboard.</h1>

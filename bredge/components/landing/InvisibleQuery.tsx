@@ -146,7 +146,7 @@ export function InvisibleQuery() {
           else s.textContent = full.slice(0, n - acc);
           acc = end;
         }
-        // keep the writing edge in view
+        // Keep the writing edge in view without moving layout.
         if (codeEl && cursor) {
           const target = cursor.offsetTop - codeEl.clientHeight * 0.6;
           codeEl.scrollTop = Math.max(0, target);
@@ -157,20 +157,30 @@ export function InvisibleQuery() {
         root.querySelectorAll<HTMLElement>(".iq-stage").forEach((el, i) => el.classList.toggle("active", i === idx));
       };
 
-      // DESKTOP — pinned, scrubbed authoring
-      m.add("(min-width: 1001px) and (prefers-reduced-motion: no-preference)", () => {
+      const renderFinished = () => {
+        setVisibleChars(total);
+        setStage(5);
+        root.classList.remove("iq-testing");
+        root.classList.add("iq-done");
+        if (cursor) cursor.style.opacity = "0";
+      };
+
+      // DESKTOP — CSS owns the sticky viewport and ScrollTrigger only maps
+      // bounded section progress to the typing state. We deliberately do NOT
+      // use GSAP pinning here: a descendant pin created a second pin spacer next
+      // to the Reference Work sticky scene, which could overlap the previous
+      // section and leave a large blank runway after zoom/resize refreshes.
+      m.add("(min-width: 1001px) and (min-height: 720px) and (prefers-reduced-motion: no-preference)", () => {
+        root.classList.remove("iq-testing", "iq-done");
         setVisibleChars(0);
         setStage(0);
+        if (cursor) cursor.style.opacity = "1";
+
         const st = ST.create({
           trigger: root,
           start: "top top",
-          // Viewport-relative scroll runway (was a hard-coded +=2800px, which
-          // desynced under browser zoom / height changes). Re-measured on every
-          // refresh so zoom and resize recompute the pin distance. Narrative
-          // proportions below are progress-based (0..1) so they are unchanged.
-          end: () => "+=" + Math.round(window.innerHeight * 2.6),
+          end: "bottom bottom",
           invalidateOnRefresh: true,
-          pin: ".iq-scene",
           scrub: 0.4,
           onUpdate: (self: { progress: number }) => {
             const p = self.progress;
@@ -188,23 +198,25 @@ export function InvisibleQuery() {
             if (cursor) cursor.style.opacity = p >= 0.82 ? "0" : "1";
           },
         });
-        // The pin start/end are measured now, but fonts, the hero video and the
-        // preloader all shift layout after this tick — refresh once they settle,
-        // or the trigger's active range goes stale (scene never pins).
+
+        // There is no pin geometry to repair anymore, but trigger boundaries can
+        // still move while webfonts settle. One bounded refresh is enough.
         const refresh = () => ST.refresh();
-        refresh();
         document.fonts?.ready?.then(refresh).catch(() => {});
-        window.addEventListener("load", refresh);
-        const t1 = window.setTimeout(refresh, 1500);
-        return () => { window.clearTimeout(t1); window.removeEventListener("load", refresh); st.kill(); };
+        const t1 = window.setTimeout(refresh, 500);
+        return () => { window.clearTimeout(t1); st.kill(); };
       });
 
-      // REDUCED MOTION (desktop) — show the finished model + result, no typing
+      // Short desktop viewports: do not force a 100vh narrative into a window
+      // that cannot host it. Show the complete model in natural document flow.
+      m.add("(min-width: 1001px) and (max-height: 719px) and (prefers-reduced-motion: no-preference)", () => {
+        renderFinished();
+        return () => {};
+      });
+
+      // Reduced motion: same complete model, no scroll-authored typing.
       m.add("(min-width: 1001px) and (prefers-reduced-motion: reduce)", () => {
-        setVisibleChars(total);
-        setStage(5);
-        root.classList.add("iq-done");
-        if (cursor) cursor.style.opacity = "0";
+        renderFinished();
         return () => {};
       });
 
@@ -252,7 +264,7 @@ export function InvisibleQuery() {
         </div>
       </div>
 
-      {/* Mobile: three legible excerpts, no desktop pin */}
+      {/* Mobile: three legible excerpts, no desktop sticky scene. */}
       <div className="iq-mobile section-wrap">
         <h2>The dashboard is the last 10%.</h2>
         <MobileExcerpt label="IDENTITY" code={`identity AS (

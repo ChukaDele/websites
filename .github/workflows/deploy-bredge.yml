@@ -31,8 +31,52 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
+      - name: Lint
+        run: npm run lint
+
+      - name: Build and source regression tests
+        run: npm test
+
+      - name: Install browser QA runtime
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Browser QA against exact production build
+        env:
+          QA_BASE_URL: http://127.0.0.1:8787
+        run: |
+          set -euo pipefail
+          nohup npx wrangler dev -c dist/server/wrangler.json --ip 127.0.0.1 --port 8787 > /tmp/bredge-wrangler.log 2>&1 &
+          WRANGLER_PID=$!
+          trap 'kill "$WRANGLER_PID" 2>/dev/null || true' EXIT
+
+          ready=0
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8787/__build >/dev/null; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then
+            cat /tmp/bredge-wrangler.log
+            exit 1
+          fi
+
+          if ! node tests/browser-qa.mjs; then
+            cat /tmp/bredge-wrangler.log
+            exit 1
+          fi
+
+      - name: Upload QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bredge-browser-qa
+          path: bredge/qa-artifacts
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Deploy to Cloudflare Workers
         run: npx wrangler deploy -c dist/server/wrangler.json
