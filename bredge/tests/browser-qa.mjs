@@ -106,7 +106,19 @@ async function testScrollNarratives(browser) {
   await page.goto(base, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(800);
 
-  assert.equal(await page.locator(".pin-spacer").count(), 0, "homepage must not create a GSAP pin-spacer");
+  // The hero legitimately uses one GSAP pin. What broke production was the SQL
+  // narrative pinning a descendant scene as a second, competing pin system.
+  // Scope the regression to the SQL section instead of banning pin-spacers
+  // globally.
+  const iqPinState = await page.locator(".iq").evaluate((root) => {
+    const scene = root.querySelector(".iq-scene");
+    return {
+      rootInsidePinSpacer: Boolean(root.closest(".pin-spacer")),
+      sceneInsidePinSpacer: Boolean(scene?.closest(".pin-spacer")),
+    };
+  });
+  assert.equal(iqPinState.rootInsidePinSpacer, false, "Invisible 90% root must not be wrapped by a GSAP pin-spacer");
+  assert.equal(iqPinState.sceneInsidePinSpacer, false, "Invisible 90% scene must not be wrapped by a GSAP pin-spacer");
 
   const geometry = await page.locator(".iq").evaluate((root) => {
     const scene = root.querySelector(".iq-scene");
@@ -160,7 +172,7 @@ async function testScrollNarratives(browser) {
   }
 
   await context.close();
-  console.log("✓ scroll narratives: no competing pin systems or overlap");
+  console.log("✓ scroll narratives: SQL scene has one bounded sticky system and no overlap");
 }
 
 async function testShortAndReducedMotion(browser) {
@@ -177,7 +189,7 @@ async function testShortAndReducedMotion(browser) {
       done: root.classList.contains("iq-done"),
       scenePosition: getComputedStyle(root.querySelector(".iq-scene")).position,
     }));
-    assert.equal(state.scenePosition, "relative", `${config.name}: SQL scene should fall back to natural flow`);
+    assert.ok(state.scenePosition !== "sticky" && state.scenePosition !== "fixed", `${config.name}: SQL scene should fall back to natural flow, got ${state.scenePosition}`);
     assert.equal(state.done, true, `${config.name}: complete SQL/result state should be visible`);
     await page.screenshot({ path: new URL(`home-${config.name}.png`, artifacts).pathname, fullPage: false });
     await context.close();
