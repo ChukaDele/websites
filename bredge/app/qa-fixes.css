@@ -36,6 +36,15 @@
 }
 
 /* --------------------------------------------------------------------------
+   Contact layout
+   --------------------------------------------------------------------------
+   40% + 60% + a 64px grid gap exceeded the container width. Fractions subtract
+   the gap before allocating tracks, which keeps the intended 40/60 relationship
+   without creating page-level horizontal scroll. */
+.contact-layout { grid-template-columns:minmax(0, 2fr) minmax(0, 3fr); }
+.contact-intro, .contact-form, .contact-next { min-width:0; }
+
+/* --------------------------------------------------------------------------
    Insights / blog rhythm
    -------------------------------------------------------------------------- */
 .insights-hero { padding-bottom:32px; }
