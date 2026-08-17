@@ -19,6 +19,16 @@ test("Invisible 90% uses one bounded CSS sticky system, never a GSAP pin", async
   assert.match(css, /prefers-reduced-motion:no-preference/);
 });
 
+test("hero video subscribes before loading its source", async () => {
+  const component = await read("components/site/HeroVideo.tsx");
+  const listener = component.indexOf('video.addEventListener("canplay", onCanPlay, { once: true });');
+  const load = component.indexOf("video.load();");
+
+  assert.ok(listener >= 0, "hero video must subscribe to canplay");
+  assert.ok(load >= 0, "hero video must load its selected source");
+  assert.ok(listener < load, "hero video must subscribe before load() so a warm cache cannot lose canplay");
+});
+
 test("brand and commercial SEO signals are explicit and canonical", async () => {
   const [layout, services, sitemap, robots, insights] = await Promise.all([
     read("app/layout.tsx"),
