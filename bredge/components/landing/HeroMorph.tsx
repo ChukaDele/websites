@@ -143,9 +143,8 @@ export function HeroMorph() {
       </svg>
       <div className="section-wrap hero-morph-content">
         <div className="hero-morph-tease">
-          <p className="eyebrow">THE FULL PICTURE</p>
-          <h2>Five systems are telling five stories.</h2>
-          <p>Product, Billing and CRM disagree — and Support and Finance have versions of their own. Scroll to bring the picture into focus.</p>
+          <h2>Five systems. Five customer counts. One board meeting.</h2>
+          <p>Product says 1,842. Billing says 1,731. Nobody in the room can tell you which is right, so the meeting becomes an argument about the number instead of a decision about the business.</p>
         </div>
         <div className="morph-cards" aria-hidden="true">
           {sources.map(([source, count], index) => (
@@ -161,8 +160,8 @@ export function HeroMorph() {
         <div className="morph-exceptions" aria-hidden="true">
           {exceptions.map((label, index) => <p className={`morph-exception exception-${index + 1}`} key={label}>{label}</p>)}
         </div>
-        <div className="morph-result"><span>RECONCILED MODEL</span><strong>1 trusted view</strong><small>Definitions, checks and ownership included.</small></div>
-        <div className="morph-decision"><span>THE NEXT PAGE</span><p>Now the question can move from “Which number?” to “What should we do?”</p></div>
+        <div className="morph-result"><span>ONE RECONCILED MODEL</span><strong>1,772</strong><small>real customers. 70 exceptions, each one traceable.</small></div>
+        <div className="morph-decision"><p>The 111-record gap wasn’t a rounding error. It was duplicate accounts, IDs that never matched, and invoices booked in a different month.</p></div>
       </div>
     </section>
   );

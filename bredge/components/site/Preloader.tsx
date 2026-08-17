@@ -78,7 +78,12 @@ export function Preloader() {
         <div className="pl-records">
           {sources.map((s, i) => (
             <div key={s} className={`pl-record${i === 2 ? " pending" : ""}`}>
-              <span className="pl-label">{s}</span>
+              {/* Drawn via CSS content, not a text node: the preloader renders
+                  before <main> in the DOM, so as real text these five source
+                  names were the first words a crawler met — ahead of the brand
+                  and the nav. Screen readers were already covered by the
+                  aria-hidden root. */}
+              <span className="pl-label" data-label={s} />
               <span className="pl-dot" />
               <i /><i />
             </div>

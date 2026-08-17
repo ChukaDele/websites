@@ -8,10 +8,10 @@ import { InvisibleQuery } from "../components/landing/InvisibleQuery";
 import { ExperienceRows } from "../components/site/ExperienceRows";
 
 const problems = [
-  ["01", "Your numbers disagree.", "Finance, sales and operations report different versions of the same metric. Every meeting starts by deciding which one is right."],
-  ["02", "Reporting runs on people.", "Analysts spend hours rebuilding recurring spreadsheets instead of answering new questions."],
-  ["03", "Dashboards exist. Decisions still take too long.", "Reporting tells you what happened, but teams still need another meeting to understand why and what to do."],
-  ["04", "The backlog keeps growing.", "Your internal team is overloaded, or there is no data team yet. Important work keeps waiting."],
+  ["01", "Your numbers disagree.", "Finance, sales and ops report different versions of the same metric. Every meeting starts by deciding which one is right. (“What’s our actual MRR?” “Which customers are we counting?”)"],
+  ["02", "Your reporting is a person, not a system.", "Someone rebuilds the same spreadsheet every Monday. When they’re on leave, the report doesn’t happen."],
+  ["03", "You have dashboards. You still need a meeting.", "The chart tells you revenue dropped. It doesn’t tell you which segment, when it started, or who to call."],
+  ["04", "The data backlog never moves.", "Your team is at capacity, or there isn’t a team yet. The important work keeps getting pushed behind the urgent work."],
 ];
 
 const outcomes = [
@@ -22,20 +22,21 @@ const outcomes = [
 ];
 
 const capabilities = [
-  ["Data foundations", "Build a foundation your reporting can actually stand on.", "Pipelines · Warehouses · APIs · SQL · Python · Transformation · Data modelling"],
-  ["Analytics & decision support", "Move from describing the business to understanding what needs attention.", "KPI frameworks · Funnel analysis · Cohorts · Segmentation · Root-cause analysis"],
-  ["BI & reporting", "Give each team the information they need without creating another reporting burden.", "Power BI · Executive reporting · Operational dashboards · Self-service analytics"],
-  ["Data quality & governance", "Make important numbers defined, traceable and testable.", "Reconciliation · Metric definitions · Quality tests · Data lineage · Documentation"],
-  ["Automation & data operations", "Keep the system useful after launch.", "Scheduled reporting · Refresh monitoring · Automated workflows · Runbooks · Ongoing improvements"],
+  ["Data foundations", "Get your data into one place, on a schedule, without anyone babysitting it.", "Pipelines · Warehouses · APIs · SQL · Python · Transformation · Data modelling"],
+  ["Analytics", "Work out why a number moved, not just that it moved.", "KPI frameworks · Funnel analysis · Cohorts · Segmentation · Root-cause analysis"],
+  ["BI & reporting", "Dashboards people open more than once.", "Power BI · Executive reporting · Operational dashboards · Self-service analytics"],
+  ["Data quality & governance", "Make the important numbers defined, traceable and testable.", "Reconciliation · Metric definitions · Quality tests · Data lineage · Documentation"],
+  ["Automation & data ops", "Something is watching the pipeline at 6am so you don’t find out at 10.", "Scheduled reporting · Refresh monitoring · Automated workflows · Runbooks · Ongoing improvements"],
 ];
 
+// Four, not six. 05 (Direct access) now lives in the "Who you'll work with"
+// block above, where it has context; 06 (Built to transfer) folded into 04 —
+// honesty about limits and honesty about lock-in are the same promise.
 const principles = [
-  ["01", "Traceable metrics", "Important numbers should have a source and definition."],
-  ["02", "Reconciled systems", "When sources disagree, the discrepancy becomes work, not something hidden."],
-  ["03", "Tests before presentation", "Beautiful reporting is worthless if the underlying logic is wrong."],
-  ["04", "Known limitations", "We document where data stops being reliable instead of pretending every answer has equal confidence."],
-  ["05", "Direct access", "No account-manager buffer. Questions go to the person who built the system."],
-  ["06", "Built to transfer", "Documentation and structure should make the system understandable beyond the original builder."],
+  ["01", "Traceable metrics", "Every number traces back to a source row and a written definition. If you ask where it came from, you get an answer, not a shrug."],
+  ["02", "Reconciled systems", "When two systems disagree, the gap becomes a ticket. It doesn’t get quietly averaged away."],
+  ["03", "Tests before presentation", "Beautiful reporting is worthless if the logic underneath is wrong."],
+  ["04", "Documented, and yours", "We write down where the data stops being reliable instead of pretending every answer has equal confidence. And we document the build well enough that you could replace us."],
 ];
 
 function Arrow() {
@@ -56,10 +57,10 @@ export default function Home() {
       <section className="hero section-wrap" id="top">
         <div className="hero-copy">
           <p className="eyebrow">DATA ENGINEERING <i /> ANALYTICS <i /> BUSINESS INTELLIGENCE</p>
-          <h1>We build the data systems behind better business decisions.</h1>
-          <p className="hero-summary">The Bredge is the data team that growing and mid-market companies plug into. We connect fragmented systems, build reliable data foundations, automate reporting and turn complex data into answers people can act on.</p>
-          <div className="hero-actions"><a className="button" href="/schedule">Schedule a call <Arrow /></a><a className="text-link" href="#story">See how we work <span>↓</span></a></div>
-          <p className="microcopy">Embedded data teams · Defined projects · Ongoing data operations</p>
+          <h1>When your numbers disagree, we find out why.</h1>
+          <p className="hero-summary">The Bredge is the experienced data team you hire by the project or by the month. We connect the systems you already have, reconcile the numbers, and build reporting your team stops arguing with.</p>
+          <div className="hero-actions"><a className="button" href="/schedule">Book a 30-minute call <Arrow /></a><a className="text-link" href="#story">See how the work looks <span>↓</span></a></div>
+          <p className="microcopy">Most engagements ship something usable inside the first month.</p>
         </div>
         <HeroVideo />
       </section>
@@ -69,30 +70,30 @@ export default function Home() {
       <ExperienceRows />
 
       <section className="reassurance section-wrap">
-        <p className="eyebrow">THE OPERATING MODEL</p>
-        <div><h2>Senior capability.<br />Lean delivery.</h2><p>Whether you are a growing company building your first reliable data foundation or an established team adding specialist capacity, you work directly with the people solving your problem — and expand only when the value is clear.</p></div>
+        <p className="eyebrow">WHO YOU’LL WORK WITH</p>
+        <div><h2>You work with the person who builds it.</h2><p>There’s no account manager between you and the person writing the SQL. When you ask why a number looks wrong, the answer comes from whoever built it. We bring in specialists when a project needs them, and you’ll know who they are and what they’re doing.</p></div>
       </section>
 
       <section className="problem-section section-wrap">
-        <div className="section-heading"><p className="eyebrow">THE PROBLEM</p><h2>Your data should answer questions. Not create more of them.</h2></div>
+        <div className="section-heading"><h2>Four versions of this show up in almost every call.</h2></div>
         <div className="problem-grid">{problems.map(([number, title, description]) => <article key={number} className="problem-card"><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div>
       </section>
 
-      <section className="outcomes section-wrap"><div className="section-heading"><p className="eyebrow">BUSINESS OUTCOMES</p><h2>Start with the decision. Work backwards to the data.</h2></div><div className="outcome-grid">{outcomes.map(([name, question, details], index) => <article className={`outcome-card outcome-${index + 1}`} key={name}><span>0{index + 1}</span><h3>{name}</h3><p>{question}</p><small>{details}</small><OutcomeArt index={index} /></article>)}</div></section>
+      <section className="outcomes section-wrap"><div className="section-heading"><h2>The questions each team actually asks.</h2></div><div className="outcome-grid">{outcomes.map(([name, question, details], index) => <article className={`outcome-card outcome-${index + 1}`} key={name}><span>0{index + 1}</span><h3>{name}</h3><p>{question}</p><small>{details}</small><OutcomeArt index={index} /></article>)}</div></section>
 
-      <section id="services" className="capabilities section-wrap"><div className="capability-intro"><p className="eyebrow">SERVICES</p><h2>One data partner. From source to decision.</h2></div><div className="capability-list">{capabilities.map(([title, description, items], index) => <article key={title}><span>0{index + 1}</span><div><h3>{title}</h3><p>{description}</p></div><small>{items}</small></article>)}</div></section>
+      <section id="services" className="capabilities section-wrap"><div className="capability-intro"><h2>What we actually do.</h2></div><div className="capability-list">{capabilities.map(([title, description, items], index) => <article key={title}><span>0{index + 1}</span><div><h3>{title}</h3><p>{description}</p></div><small>{items}</small></article>)}</div></section>
 
-      <section id="work" className="work-section section-wrap"><div className="section-heading work-intro"><p className="eyebrow">REFERENCE WORK</p><h2>See the work behind the answer.</h2><p>Reference builds show how we connect sources, define metrics and deliver a trusted view.</p></div><ReferenceDashboards /></section>
+      <section id="work" className="work-section section-wrap"><div className="section-heading work-intro"><p className="eyebrow">SYNTHETIC DATA</p><h2>We can’t show you a client’s dashboard. So we built our own.</h2><p>Client work is under NDA. These are the same patterns on synthetic data, with the SQL and the tests left visible, so you can judge the thinking instead of the screenshot.</p></div><ReferenceDashboards /></section>
 
       <InvisibleQuery />
 
-      <section className="trust section-wrap"><div className="section-heading"><p className="eyebrow">OUR PRINCIPLES</p><h2>Don’t take the dashboard on trust.</h2><p>We make the logic behind it visible.</p></div><div className="principles">{principles.map(([number, title, description]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div><p className="trust-statement">Stay because we’re useful, not because only we understand what we built.</p></section>
+      <section className="trust section-wrap"><div className="section-heading"><p className="eyebrow">OUR PRINCIPLES</p><h2>Don’t take the dashboard on trust.</h2></div><div className="principles">{principles.map(([number, title, description]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div><p className="trust-statement">Stay because we’re useful, not because only we understand what we built.</p></section>
 
-      <section className="engagements section-wrap"><div className="section-heading"><p className="eyebrow">WAYS TO WORK WITH BREDGE</p><h2>Bring us a problem. Or plug in a team.</h2></div><div className="engagement-stack"><article className="engagement-card ongoing"><p>ONGOING</p><h3>Your data team, without building one from scratch.</h3><div><span>Embedded Data Team</span><p>An embedded, fractional senior data capability for companies that need consistent progress across engineering, analytics and reporting without hiring every role internally.</p><ul><li>Ongoing delivery</li><li>Engineering + analytics + BI</li><li>Shared backlog and priorities</li><li>Capacity that flexes with the business</li></ul><small>Best when data is an ongoing business capability rather than a one-off deliverable.</small><a className="engagement-link" href="/services/embedded-data-team">Explore embedded teams <Arrow /></a></div></article><article className="engagement-card projects"><p>DEFINED SCOPE</p><h3>One problem. The right team. Delivered.</h3><div><span>Data Projects</span><p>Bring us a defined data challenge. We scope the outcome, assemble the capability required and deliver the solution without turning it into a six-month consulting programme.</p><ul><li>Data pipelines</li><li>Warehouses and models</li><li>BI and reporting</li><li>Reconciliation and automation</li></ul><small>Best when the problem is clear and the outcome can be defined.</small><a className="engagement-link" href="/services/data-projects">Explore data projects <Arrow /></a></div></article></div></section>
+      <section className="engagements section-wrap"><div className="section-heading"><h2>Two ways to hire us.</h2></div><div className="engagement-stack"><article className="engagement-card ongoing"><p>ONGOING</p><h3>Your data team, without building one from scratch.</h3><div><span>Embedded data team</span><p>A senior engineer and analyst working your backlog every week, for less than one full-time hire. You get the range of a whole team without recruiting four people who each do one thing.</p><ul><li>Ongoing delivery</li><li>Engineering, analytics and BI</li><li>Shared backlog</li><li>Scale hours up or down monthly</li></ul><small>Best when data is a standing part of how you run the business.</small><a className="engagement-link" href="/services/embedded-data-team">Explore embedded teams <Arrow /></a></div></article><article className="engagement-card projects"><p>DEFINED SCOPE</p><h3>One problem. The right team. Delivered.</h3><div><span>Data projects</span><p>Tell us the problem. We scope it, quote it, build it, and hand it over documented. No six-month consulting programme.</p><ul><li>Pipelines</li><li>Warehouses and models</li><li>BI and reporting</li><li>Reconciliation and automation</li></ul><small>Best when you know what’s broken.</small><a className="engagement-link" href="/services/data-projects">Explore data projects <Arrow /></a></div></article></div></section>
 
-      <section className="diagnostic section-wrap"><p className="eyebrow">DATA DIAGNOSTIC</p><div><h2>Not sure what needs fixing first?</h2><p>Start with a Data Diagnostic. We map the current environment, identify reliability and workflow gaps, and prioritise the changes most likely to improve decision-making.</p><small>Useful on its own. A clear starting point if more work follows.</small><a className="text-link" href="/data-diagnostic">Start with a diagnostic <Arrow /></a></div></section>
+      <section className="diagnostic section-wrap"><p className="eyebrow">DATA DIAGNOSTIC</p><div><h2>Not sure what needs fixing first?</h2><p>Start with a Data Diagnostic. We map what you’ve got, test the numbers you already rely on, and give you a written list of what’s broken, ranked by what it’s costing you.</p><small>You keep the document either way. If you want us to fix any of it, we’ll quote it. If you’d rather hand it to your own team, that works too.</small><a className="text-link" href="/data-diagnostic">Start with a diagnostic <Arrow /></a></div></section>
 
-      <section id="practice" className="technology"><div className="section-wrap"><p className="eyebrow light">THE PRACTICE</p><h2>Tools change. Sound data practice doesn’t.</h2><p>We work with the environment you have, recommend complexity only when it earns its place, and build foundations that are AI-ready when you are.</p><div className="tech-line"><span>PYTHON</span><i /> <span>SQL</span><i /> <span>POSTGRESQL</span><i /> <span>POWER BI</span><i /> <span>GITHUB</span></div></div></section>
+      <section id="practice" className="technology"><div className="section-wrap"><h2>We work with whatever you already have.</h2><p>We won’t sell you Snowflake if Postgres is fine.</p><div className="tech-line"><span>PYTHON</span><i /> <span>SQL</span><i /> <span>POSTGRESQL</span><i /> <span>POWER BI</span><i /> <span>GITHUB</span></div></div></section>
       <SiteFooter />
     </main>
   );

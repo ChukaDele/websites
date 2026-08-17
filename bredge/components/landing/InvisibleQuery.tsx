@@ -219,9 +219,8 @@ export function InvisibleQuery() {
       <div className="iq-scene">
         <div className="section-wrap iq-grid">
           <div className="iq-side">
-            <p className="eyebrow light">THE INVISIBLE 90%</p>
             <h2>The dashboard is the last 10%.</h2>
-            <p className="iq-lead">Before a number reaches a chart, it is modelled, reconciled and tested. Watch one reliable metric get built.</p>
+            <p className="iq-lead">Before a number reaches a chart it gets modelled, reconciled and tested. Here’s one being built, step by step.</p>
             <ol className="iq-stages">
               {STAGES.map((s, i) => (
                 <li key={s} className="iq-stage"><span>{String(i + 1).padStart(2, "0")}</span>{s}</li>
@@ -255,7 +254,6 @@ export function InvisibleQuery() {
 
       {/* Mobile: three legible excerpts, no desktop pin */}
       <div className="iq-mobile section-wrap">
-        <p className="eyebrow light">THE INVISIBLE 90%</p>
         <h2>The dashboard is the last 10%.</h2>
         <MobileExcerpt label="IDENTITY" code={`identity AS (
   SELECT canonical_customer_id

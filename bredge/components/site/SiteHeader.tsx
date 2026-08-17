@@ -5,10 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 const services = [
-  ["Services overview", "/services", "Everything we do, from source to decision"],
-  ["Embedded Data Team", "/services/embedded-data-team", "Ongoing capability inside your business"],
+  ["Services overview", "/services", "Everything we do, pipelines through to dashboards"],
+  ["Embedded Data Team", "/services/embedded-data-team", "A senior data team working inside your business"],
   ["Data Projects", "/services/data-projects", "One defined problem, delivered in full"],
-  ["Data Diagnostic", "/data-diagnostic", "Find the highest-leverage place to start"],
+  ["Data Diagnostic", "/data-diagnostic", "Find out what to fix first"],
 ];
 
 const primary = [
@@ -85,7 +85,6 @@ export function SiteHeader({ variant = "solid" }: { variant?: "solid" | "overlay
           </div>
         </div>
         {primary.map(([label, href]) => <a key={href} className={`nav-item${pathname === href ? " active" : ""}`} href={href} aria-current={pathname === href ? "page" : undefined}>{label}</a>)}
-        <span className="nav-item nav-soon" aria-disabled="true" title="Coming soon">Work <em>Soon</em></span>
       </nav>
 
       <a className="button button-small header-cta" href="/schedule">Schedule a call <Arrow /></a>
@@ -101,7 +100,6 @@ export function SiteHeader({ variant = "solid" }: { variant?: "solid" | "overlay
         {services.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}
         <p className="mobile-eyebrow">COMPANY</p>
         {primary.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}
-        <span className="mobile-soon">Work <em>Coming soon</em></span>
         <a className="button mobile-cta" href="/schedule" onClick={() => setMenuOpen(false)}>Schedule a call <Arrow /></a>
       </div>
     )}
