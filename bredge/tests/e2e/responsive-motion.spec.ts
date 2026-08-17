@@ -43,6 +43,26 @@ async function ready(page: Page) {
 test.describe("responsive-motion invariants", () => {
   test.beforeEach(async ({ page }) => ready(page));
 
+  test("hero poster hands off to a playable video without a blank frame", async ({ page }) => {
+    const handoff = await page.locator(".hero-video").evaluate(async (element) => {
+      const video = element as HTMLVideoElement;
+      if (video.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) {
+        await new Promise<void>((resolve) => {
+          const timer = window.setTimeout(resolve, 5_000);
+          video.addEventListener("canplay", () => { window.clearTimeout(timer); resolve(); }, { once: true });
+        });
+      }
+      return {
+        readyState: video.readyState,
+        ready: video.classList.contains("is-ready"),
+        posterVisible: !!document.querySelector(".hero-poster img"),
+      };
+    });
+    expect(handoff.posterVisible, "a responsive poster is always available for LCP").toBe(true);
+    expect(handoff.readyState, "the selected video should load enough to play").toBeGreaterThanOrEqual(3);
+    expect(handoff.ready, "the video must become visible after it can play").toBe(true);
+  });
+
   test("no horizontal overflow anywhere on the page", async ({ page }) => {
     const overflow = await page.evaluate(() => {
       const de = document.documentElement;

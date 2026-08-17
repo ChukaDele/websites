@@ -24,12 +24,11 @@ export function HeroVideo() {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
     if (reduced || saveData) return; // poster only
+    const onCanPlay = () => { setReady(true); void video.play().catch(() => {}); };
+    video.addEventListener("canplay", onCanPlay, { once: true });
     const canWebm = video.canPlayType('video/webm; codecs="vp9"') !== "";
     video.src = canWebm ? `${base}.webm` : `${base}.mp4`;
     video.load();
-
-    const onCanPlay = () => { setReady(true); void video.play().catch(() => {}); };
-    video.addEventListener("canplay", onCanPlay, { once: true });
 
     const io = new IntersectionObserver(
       ([e]) => { if (e.isIntersecting) void video.play().catch(() => {}); else video.pause(); },
