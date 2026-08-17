@@ -37,7 +37,7 @@
 
 @media (max-width:1000px) {
   .site-header .site-nav, .site-header .header-cta { display:none; }
-  .nav-toggle { position:relative; z-index:40; display:flex; align-items:center; justify-content:center; width:42px; height:42px; margin-left:auto; border:1px solid var(--line); background:var(--paper); cursor:pointer; }
+  .nav-toggle { position:relative; z-index:40; display:flex; align-items:center; justify-content:center; width:44px; height:44px; margin-left:auto; border:1px solid var(--line); background:var(--paper); cursor:pointer; }
   .nav-toggle span, .nav-toggle span::before, .nav-toggle span::after { position:absolute; width:18px; height:1.5px; background:var(--ink); transition:transform .25s, opacity .2s; content:""; }
   .nav-toggle span::before { transform:translateY(-5px); }
   .nav-toggle span::after { transform:translateY(5px); }

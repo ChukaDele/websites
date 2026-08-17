@@ -72,6 +72,15 @@ test.describe("responsive-motion invariants", () => {
     expect(overflow, "document.scrollWidth should not exceed the viewport").toBeLessThanOrEqual(2);
   });
 
+  test("mobile navigation provides a 44px touch target", async ({ page }) => {
+    const viewportWidth = await page.evaluate(() => window.innerWidth);
+    test.skip(viewportWidth > 1000, "desktop navigation is shown at this viewport");
+    const toggle = await box(page, ".nav-toggle");
+    expect(toggle?.visible, "the mobile menu control is visible").toBe(true);
+    expect(toggle?.w, "the mobile menu control is at least 44px wide").toBeGreaterThanOrEqual(44);
+    expect(toggle?.h, "the mobile menu control is at least 44px high").toBeGreaterThanOrEqual(44);
+  });
+
   test("exactly three WORK cards and no card is its own sticky owner", async ({ page }) => {
     const positions = await page.evaluate(() =>
       Array.from(document.querySelectorAll(".reference-case")).map((el) => getComputedStyle(el as HTMLElement).position),
