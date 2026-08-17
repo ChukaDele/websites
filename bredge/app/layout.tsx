@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import "@fontsource-variable/instrument-sans";
 import "@fontsource/ibm-plex-mono/400.css";
@@ -12,6 +12,8 @@ import { Analytics } from "../components/site/Analytics";
 // preloader overlay is present on the very first frame — no flash for returning
 // visitors, and it decides synchronously so there's no layout jump.
 const preloadInit = `(function(){try{if(!sessionStorage.getItem('bredge_preloaded')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('preload-active');}}catch(e){}})();`;
+
+export const viewport: Viewport = { width: "device-width", initialScale: 1 };
 
 // Host-aware: the workers.dev preview host is noindexed so it can't compete with
 // the canonical thebredge.com. Keywords meta intentionally removed (no ranking value).

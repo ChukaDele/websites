@@ -35,6 +35,7 @@ test("server-renders the current B2B data proposition with canonical metadata", 
   assert.match(html, /Finance, sales and operations report different versions of the same metric\./);
   assert.match(html, /https:\/\/thebredge\.com\/#organization/);
   assert.match(html, /rel="canonical" href="https:\/\/thebredge\.com"/);
+  assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1"/);
   assert.doesNotMatch(html, /Land the Data Job|Tired of Upwork|high-paying data roles/i);
 });
 
