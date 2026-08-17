@@ -312,7 +312,7 @@
 .chip-check.on { border-color:var(--brand); background:color-mix(in srgb, var(--brand) 16%, var(--paper)); color:var(--ink); }
 .chip-check::before { content:""; width:13px; height:13px; border:1.5px solid var(--line); border-radius:3px; transition:background var(--motion-fast) var(--ease-out), border-color var(--motion-fast) var(--ease-out); }
 .chip-check.on::before { border-color:var(--brand); background:var(--brand); }
-.group-label .opt { margin-left:6px; color:var(--muted); font:9px var(--font-mono); letter-spacing:.06em; text-transform:uppercase; }
+.field .opt { margin-left:6px; color:var(--muted); font:9px var(--font-mono); letter-spacing:.06em; text-transform:uppercase; }
 .hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
 .form-success { display:flex; flex-direction:column; gap:14px; align-items:flex-start; animation:success-in .5s ease both; }
 .form-success .success-mark { display:flex; align-items:center; justify-content:center; width:46px; height:46px; border-radius:50%; background:var(--brand); color:var(--ink); font-size:22px; }
@@ -508,7 +508,6 @@
 .insight-card h3 { margin:0 0 12px; font-size:clamp(1.25rem,1.9vw,1.6rem); line-height:1.08; letter-spacing:-.03em; }
 .insight-card p { color:#55615c; line-height:1.5; }
 .insight-meta { display:inline-flex; align-items:center; gap:8px; margin-top:16px; color:var(--muted); font:11px var(--font-mono); letter-spacing:.04em; }
-.insight-featured:hover .arrow, .insight-card:hover .arrow { transform:translate(2px,-2px); }
 /* Tablet: stack copy → diagram with generous but controlled spacing. */
 @media (max-width:900px) {
   .insight-featured { grid-template-columns:1fr; gap:40px; padding-top:44px; margin-bottom:44px; }
@@ -644,29 +643,27 @@
 
 /* ---------- Insights index: hover microinteractions + category list ---------- */
 .insight-featured h2 { position:relative; display:inline; background-image:linear-gradient(currentColor,currentColor); background-size:0% 1.5px; background-repeat:no-repeat; background-position:0 100%; transition:background-size var(--motion-base) var(--ease-out); }
-.insight-featured:hover h2, .insight-featured:focus-visible h2 { background-size:100% 1.5px; }
 .insight-featured, .insight-card { transition:background var(--motion-fast) var(--ease-out); }
-.insight-featured:hover, .insight-card:hover { background:color-mix(in srgb, var(--brand) 6%, transparent); }
 .insight-card h3 { display:inline; background-image:linear-gradient(currentColor,currentColor); background-size:0% 1.5px; background-repeat:no-repeat; background-position:0 100%; transition:background-size var(--motion-base) var(--ease-out); }
-.insight-card:hover h3, .insight-card:focus-visible h3 { background-size:100% 1.5px; }
+.insight-featured:focus-visible h2, .insight-card:focus-visible h3 { background-size:100% 1.5px; }
+@media (hover:hover) and (pointer:fine) { .insight-featured:hover .arrow, .insight-card:hover .arrow { transform:translate(2px,-2px); }.insight-featured:hover h2, .insight-card:hover h3 { background-size:100% 1.5px; }.insight-featured:hover, .insight-card:hover { background:color-mix(in srgb, var(--brand) 6%, transparent); } }
 
 .insights-all { padding:56px 0 96px; }                  /* owns secondary → ALL INSIGHTS (~56px) */
 @media (max-width:1000px) { .insights-all { padding:48px 0 80px; } }
 @media (max-width:560px) { .insights-all { padding:36px 0 72px; } }
 .insights-all-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; margin-bottom:8px; }
 .insights-tabs { display:flex; flex-wrap:wrap; gap:6px; }
+.insights-filter-status { min-height:1.5em; margin:0 0 12px; color:var(--muted); font:11px var(--font-mono); letter-spacing:.03em; }
 .insights-tabs button { padding:7px 12px; border:1px solid var(--line); background:var(--paper); color:#55615c; font:11px var(--font-mono); letter-spacing:.02em; cursor:pointer; transition:background var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out), border-color var(--motion-fast) var(--ease-out); }
 .insights-tabs button:hover { color:var(--ink); }
 .insights-tabs button.on { border-color:var(--ink); background:var(--ink); color:var(--paper); }
 .insights-list { list-style:none; margin:0; padding:0; border-top:1px solid var(--line); }
 .insights-list li { border-bottom:1px solid var(--line); }
 .insights-list a { display:grid; grid-template-columns:180px 1fr auto; gap:24px; align-items:baseline; padding:22px 0; transition:background var(--motion-fast) var(--ease-out); }
-.insights-list a:hover { background:color-mix(in srgb, var(--brand) 6%, transparent); }
 .insights-list .insight-cat { margin:0; }
 .insights-list-title { font-size:clamp(1.05rem,1.5vw,1.35rem); letter-spacing:-.02em; line-height:1.2; background-image:linear-gradient(currentColor,currentColor); background-size:0% 1.5px; background-repeat:no-repeat; background-position:0 100%; transition:background-size var(--motion-base) var(--ease-out); }
-.insights-list a:hover .insights-list-title { background-size:100% 1.5px; }
-.insights-list a:hover .arrow { transform:translate(2px,-2px); }
 .insight-meta .arrow { transition:transform var(--motion-fast) var(--ease-out); }
+@media (hover:hover) and (pointer:fine) { .insights-tabs button:hover { color:var(--ink); }.insights-list a:hover { background:color-mix(in srgb, var(--brand) 6%, transparent); }.insights-list a:hover .insights-list-title { background-size:100% 1.5px; }.insights-list a:hover .arrow { transform:translate(2px,-2px); } }
 @media (max-width:760px) { .insights-list a { grid-template-columns:1fr; gap:6px; } }
 
 /* ---------- Linkable resources ---------- */

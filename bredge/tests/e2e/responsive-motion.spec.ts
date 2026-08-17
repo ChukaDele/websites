@@ -35,7 +35,7 @@ function sameRow(a: NonNullable<Box>, b: NonNullable<Box>): boolean {
 
 async function ready(page: Page) {
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  await page.evaluate(() => (document as any).fonts?.ready).catch(() => {});
+  await page.evaluate(async () => { await document.fonts.ready; }).catch(() => {});
   // Let the client scene controllers hydrate and run their first measure.
   await page.waitForTimeout(600);
 }

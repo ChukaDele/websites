@@ -18,9 +18,15 @@ export function DisciplineIntersections() {
     const mid = root.querySelector<HTMLElement>(".disc-mid");
     gsap.set(mid, { autoAlpha: 0, y: 8 });
     const tl = gsap.timeline({ scrollTrigger: { trigger: root, start: "top 70%", once: true } });
-    tl.add(() => cards.forEach((c, i) => setTimeout(() => c.classList.add("on"), i * 140)))
-      .to(mid, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.7);
-    return () => { tl.scrollTrigger?.kill(); tl.kill(); };
+    cards.forEach((card, index) => {
+      tl.call(() => card.classList.add("on"), undefined, index * 0.14);
+    });
+    tl.to(mid, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.7);
+    return () => {
+      cards.forEach((card) => card.classList.remove("on"));
+      tl.scrollTrigger?.kill();
+      tl.kill();
+    };
   });
 
   return (

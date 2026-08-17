@@ -102,7 +102,7 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
     if (!payload.name) { setState({ kind: "error", message: "Please add your name." }); focusField("#name"); return; }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payload.email)) { setState({ kind: "error", message: "That email doesn’t look right — please check it." }); focusField("#email"); return; }
     if (!payload.company) { setState({ kind: "error", message: "Please add your company or organisation." }); focusField("#company"); return; }
-    if (!phone.valid) { setPhoneTouched(true); setState({ kind: "error", message: "Check that phone number." }); focusField("#phone-input"); return; }
+    if (phone.display.trim() && !phone.valid) { setPhoneTouched(true); setState({ kind: "error", message: "Check that phone number." }); focusField("#phone-input"); return; }
     if (needs.length === 0) { setState({ kind: "error", message: "Please select at least one area we can help with." }); focusField("#needs-group"); return; }
     if (!payload.message) { setState({ kind: "error", message: "Tell us a little about what you’re trying to solve." }); focusField("#message"); return; }
     if (TURNSTILE_SITE_KEY && !payload.turnstileToken) { setState({ kind: "error", message: "Please complete the verification and try again." }); return; }

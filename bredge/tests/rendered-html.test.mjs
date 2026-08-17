@@ -1,20 +1,15 @@
 import assert from "node:assert/strict";
-import { access, readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
-const developmentPreviewMeta =
-  /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
-const templateRoot = new URL("../", import.meta.url);
-const previewRoot = new URL("../app/_sites-preview/", import.meta.url);
+const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
+const workerPromise = import(workerUrl.href).then(({ default: worker }) => worker);
 
-async function render() {
-  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
-  const { default: worker } = await import(workerUrl.href);
-
+async function render(path, host = "thebredge.com") {
+  const worker = await workerPromise;
   return worker.fetch(
-    new Request("http://localhost/", {
-      headers: { accept: "text/html" },
+    new Request(`https://${host}${path}`, {
+      headers: { accept: "text/html", host },
     }),
     {
       ASSETS: {
@@ -28,64 +23,52 @@ async function render() {
   );
 }
 
-test("server-renders the starter loading skeleton", async () => {
-  const response = await render();
+test("server-renders the current B2B data proposition with canonical metadata", async () => {
+  const response = await render("/");
   assert.equal(response.status, 200);
-  assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
+  assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+  assert.equal(response.headers.get("referrer-policy"), "strict-origin-when-cross-origin");
 
   const html = await response.text();
-  assert.match(html, developmentPreviewMeta);
-  assert.match(html, /<title>Your site is taking shape<\/title>/i);
-  assert.match(html, /Building your site/);
-  assert.match(html, /Your site is taking shape/);
-  assert.match(
-    html,
-    /Your first version will appear here automatically when it’s ready\./,
-  );
-  assert.doesNotMatch(html, /Codex/);
-  assert.match(html, /react-loading-skeleton/);
-  assert.match(html, /role="status"/);
+  assert.match(html, /<title>The Bredge \| Data Engineering, Analytics &amp; BI Partner<\/title>/);
+  assert.match(html, /We build the data systems behind better business decisions\./);
+  assert.match(html, /Finance, sales and operations report different versions of the same metric\./);
+  assert.match(html, /https:\/\/thebredge\.com\/#organization/);
+  assert.match(html, /rel="canonical" href="https:\/\/thebredge\.com"/);
+  assert.doesNotMatch(html, /Land the Data Job|Tired of Upwork|high-paying data roles/i);
 });
 
-test("keeps the loading skeleton scoped and disposable", async () => {
-  const [preview, css, page, layout, packageJson, files] = await Promise.all([
-    readFile(new URL("SkeletonPreview.tsx", previewRoot), "utf8"),
-    readFile(new URL("preview.css", previewRoot), "utf8"),
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../package.json", import.meta.url), "utf8"),
-    readdir(previewRoot),
+test("keeps the Cloudflare preview out of search", async () => {
+  const response = await render("/", "bredge.thebredge.workers.dev");
+  const html = await response.text();
+  assert.match(html, /<meta name="robots" content="noindex, nofollow"/);
+});
+
+test("ships canonical public routes, useful collection schema and a real 404", async () => {
+  const sitemapResponse = await render("/sitemap.xml");
+  assert.equal(sitemapResponse.status, 200);
+  const sitemap = await sitemapResponse.text();
+  assert.doesNotMatch(sitemap, /workers\.dev/);
+
+  const canonicalPaths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, url]) => new URL(url).pathname);
+  assert.ok(canonicalPaths.length >= 26, "sitemap should contain the commercial pages, insights and resources");
+
+  for (const path of [...canonicalPaths, "/privacy", "/cookies", "/terms", "/schedule"]) {
+    const response = await render(path);
+    assert.equal(response.status, 200, `${path} should render`);
+  }
+
+  const [insights, resources, missing, build] = await Promise.all([
+    render("/insights").then((response) => response.text()),
+    render("/resources").then((response) => response.text()),
+    render("/not-a-real-page"),
+    render("/__build"),
   ]);
-
-  assert.deepEqual(files.sort(), ["SkeletonPreview.tsx", "preview.css"]);
-  assert.match(preview, /from "react-loading-skeleton"/);
-  assert.match(preview, /baseColor="#eceae7"/);
-  assert.match(preview, /highlightColor="#f9f8f6"/);
-  assert.match(preview, /duration=\{2\.8\}/);
-  assert.match(preview, /sites-skeleton-search-placeholder/);
-  assert.match(packageJson, /"react-loading-skeleton": "3\.5\.0"/);
-
-  const shellIndex = preview.indexOf('className="sites-skeleton-shell"');
-  const statusIndex = preview.indexOf('className="sites-skeleton-status"');
-  assert.ok(shellIndex >= 0 && statusIndex > shellIndex);
-  assert.match(css, /position:\s*fixed/);
-  assert.match(css, /inset:\s*0/);
-  assert.match(css, /opacity:\s*0\.52/);
-  assert.match(css, /prefers-reduced-motion:\s*reduce/);
-  assert.doesNotMatch(css, /#020617|canvas|pets|progress/i);
-  assert.doesNotMatch(
-    preview,
-    /loading-spinner|status-mark|status-progress|canvas|cookie|random/i,
-  );
-
-  assert.match(page, /export const metadata:\s*Metadata/);
-  assert.match(page, /"codex-preview": "development"/);
-  assert.match(page, /<SkeletonPreview \/>/);
-  assert.match(layout, /title:\s*"Starter Project"/);
-  assert.doesNotMatch(layout, /codex-preview|_sites-preview|themeColor|\bViewport\b/);
-  assert.doesNotMatch(css, /(^|\s)(html|body)\s*\{/m);
-
-  await assert.rejects(
-    access(new URL("public/_sites-preview", templateRoot)),
-  );
+  assert.match(insights, /"@type":"Blog"/);
+  assert.match(insights, /"@type":"ItemList"/);
+  assert.match(resources, /"@type":"CollectionPage"/);
+  assert.match(resources, /"@type":"ItemList"/);
+  assert.equal(missing.status, 404);
+  assert.equal(build.status, 200);
+  assert.equal(build.headers.get("x-robots-tag"), "noindex, nofollow");
 });

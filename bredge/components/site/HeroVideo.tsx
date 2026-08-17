@@ -7,8 +7,8 @@ import { useEffect, useRef, useState } from "react";
  * Mobile-first: a near-square crop of the meaningful right-hand region sits below
  * the copy; desktop uses the full 16:9 plate absolutely behind the copy.
  *
- * Only ONE video variant is downloaded (JS chooses by viewport). The poster paints
- * immediately (LCP), the video fades in once it can play, playback pauses offscreen
+ * Only ONE video variant is downloaded (JS chooses by viewport). A responsive
+ * poster paints immediately (LCP), the video fades in once it can play, playback pauses offscreen
  * and when the tab is hidden, and reduced-motion / Save-Data shows the poster only.
  */
 export function HeroVideo() {
@@ -21,11 +21,8 @@ export function HeroVideo() {
 
     const mobile = window.matchMedia("(max-width: 1000px)").matches;
     const base = mobile ? "/media/bredge-hero-mobile" : "/media/bredge-hero-final-v2";
-    video.poster = `${base}-poster.webp`; // correct aspect per viewport
-
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    // @ts-expect-error saveData is non-standard
-    const saveData = navigator.connection?.saveData === true;
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
     if (reduced || saveData) return; // poster only
     const canWebm = video.canPlayType('video/webm; codecs="vp9"') !== "";
     video.src = canWebm ? `${base}.webm` : `${base}.mp4`;
@@ -47,6 +44,10 @@ export function HeroVideo() {
 
   return (
     <div className="hero-media" aria-hidden="true">
+      <picture className="hero-poster">
+        <source media="(max-width: 1000px)" srcSet="/media/bredge-hero-mobile-poster.webp" />
+        <img src="/media/bredge-hero-final-v2-poster.webp" alt="" fetchPriority="high" />
+      </picture>
       <video
         ref={ref}
         className={`hero-video${ready ? " is-ready" : ""}`}
@@ -54,7 +55,6 @@ export function HeroVideo() {
         loop
         playsInline
         preload="none"
-        poster="/media/bredge-hero-final-v2-poster.webp"
       />
     </div>
   );

@@ -9,9 +9,34 @@ export const metadata: Metadata = pageMetadata({
   path: "/resources",
 });
 
+const resourcesSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "CollectionPage",
+      "@id": "https://thebredge.com/resources",
+      name: "The Bredge resources",
+      url: "https://thebredge.com/resources",
+      description: "Free, practical data checklists and decision guides.",
+      mainEntity: { "@id": "https://thebredge.com/resources#items" },
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://thebredge.com/resources#items",
+      itemListElement: resources.map((resource, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: resource.title,
+        url: `https://thebredge.com/resources/${resource.slug}`,
+      })),
+    },
+  ],
+};
+
 export default function ResourcesIndex() {
   return (
     <PageShell>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(resourcesSchema) }} />
       <section className="section-wrap insights-hero">
         <p className="eyebrow">RESOURCES</p>
         <h1>Checklists you can use today.</h1>

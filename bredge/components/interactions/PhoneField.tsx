@@ -70,7 +70,7 @@ export function PhoneField({ onChange }: { onChange: (v: PhoneValue) => void }) 
 
   return (
     <div className="field">
-      <label htmlFor="phone-input">Phone <i aria-hidden="true">*</i></label>
+      <label htmlFor="phone-input">Phone <span className="opt">optional</span></label>
       <div className={`phone-control${invalid ? " invalid" : ""}`} ref={wrapRef}>
         <button type="button" className="phone-country" aria-label="Select country" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
           <span className="flag" aria-hidden="true">{flag(country)}</span>
