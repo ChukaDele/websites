@@ -39,6 +39,28 @@ const principles = [
   ["04", "Documented, and yours", "We write down where the data stops being reliable instead of pretending every answer has equal confidence. And we document the build well enough that you could replace us."],
 ];
 
+// This describes the content already rendered below. It gives crawlers a clear
+// page-level subject without altering the approved visitor-facing copy.
+const homepageStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "@id": "https://thebredge.com/#webpage",
+  url: "https://thebredge.com/",
+  name: "When your numbers disagree, we find out why. | The Bredge",
+  description: "The Bredge is the experienced data team you hire by the project or by the month. We connect the systems you already have, reconcile the numbers, and build reporting your team stops arguing with.",
+  inLanguage: "en",
+  isPartOf: { "@id": "https://thebredge.com/#website" },
+  mainEntity: { "@id": "https://thebredge.com/#organization" },
+  primaryImageOfPage: "https://thebredge.com/og.png",
+  about: [
+    { "@type": "Thing", name: "Data engineering" },
+    { "@type": "Thing", name: "Data analytics" },
+    { "@type": "Thing", name: "Business intelligence" },
+    { "@type": "Thing", name: "Data reconciliation" },
+    { "@type": "Thing", name: "Reporting automation" },
+  ],
+};
+
 function Arrow() {
   return <span aria-hidden="true" className="arrow">↗</span>;
 }
@@ -51,6 +73,7 @@ function OutcomeArt({ index }: { index: number }) {
 export default function Home() {
   return (
     <main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageStructuredData) }} />
       <PageMotion />
       <SiteHeader variant="overlay" />
 

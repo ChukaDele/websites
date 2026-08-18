@@ -14,6 +14,10 @@ import { Analytics } from "../components/site/Analytics";
 // visitors, and it decides synchronously so there's no layout jump.
 const preloadInit = `(function(){try{if(!sessionStorage.getItem('bredge_preloaded')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('preload-active');}}catch(e){}})();`;
 
+// Search and social descriptions deliberately summarise the visible homepage
+// proposition. They do not introduce claims that a visitor cannot verify.
+const siteDescription = "Data engineering, analytics and business intelligence for growing and mid-market companies. We connect your systems, reconcile your numbers, and build reporting your team can trust.";
+
 // Host-aware: the workers.dev preview host is noindexed so it can't compete with
 // the canonical thebredge.com. Keywords meta intentionally removed (no ranking value).
 export async function generateMetadata(): Promise<Metadata> {
@@ -25,11 +29,17 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL("https://thebredge.com"),
     applicationName: "The Bredge",
     title: "The Bredge | Data Engineering, Analytics & BI Partner",
-    description: "Data engineering, analytics and BI partner for growing and mid-market companies — reliable data foundations, reporting automation and AI-ready data systems.",
+    description: siteDescription,
     alternates: { canonical: "/" },
-    openGraph: { siteName: "The Bredge", title: "The Bredge | Data Engineering, Analytics & BI Partner", description: "Data engineering, analytics and AI-ready data foundations for growing and mid-market companies.", type: "website", url: "/", images: [{ url: "/og.png", width: 1200, height: 630, alt: "The Bredge data systems for decisions people can trust" }] },
-    twitter: { card: "summary_large_image", title: "The Bredge", description: "Data systems for decisions people can trust.", images: ["/og.png"] },
-    robots: isPreview ? { index: false, follow: false } : { index: true, follow: true },
+    openGraph: { siteName: "The Bredge", title: "The Bredge | Data Engineering, Analytics & BI Partner", description: siteDescription, type: "website", url: "/", images: [{ url: "/og.png", width: 1200, height: 630, alt: "The Bredge data systems for decisions people can trust" }] },
+    twitter: { card: "summary_large_image", title: "The Bredge | Data Engineering, Analytics & BI Partner", description: siteDescription, images: ["/og.png"] },
+    robots: isPreview
+      ? { index: false, follow: false }
+      : {
+        index: true,
+        follow: true,
+        googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+      },
     verification: verification ? { google: verification } : undefined,
     manifest: "/site.webmanifest",
     icons: {
@@ -59,7 +69,7 @@ const structuredData = {
       image: "https://thebredge.com/og.png",
       email: "hello@thebredge.com",
       sameAs: ["https://www.linkedin.com/company/thebredge"],
-      description: "The Bredge is a data engineering, analytics and business intelligence partner. We help growing and mid-market companies connect fragmented systems, build reliable data foundations, automate reporting and turn complex data into answers teams can act on.",
+      description: siteDescription,
       knowsAbout: ["Data engineering", "Data analytics", "Business intelligence", "Data quality", "Data governance", "Reporting automation", "Data reconciliation", "Power BI", "PostgreSQL", "Python", "SQL"],
       makesOffer: [
         { "@type": "Offer", itemOffered: { "@type": "Service", name: "Embedded Data Team", description: "An ongoing senior data capability across engineering, analytics and BI for companies that need consistent progress without hiring every role internally." } },
@@ -73,6 +83,8 @@ const structuredData = {
       url: "https://thebredge.com",
       name: "The Bredge",
       alternateName: ["Bredge", "thebredge.com"],
+      description: siteDescription,
+      inLanguage: "en",
       publisher: { "@id": "https://thebredge.com/#organization" },
     },
   ],
