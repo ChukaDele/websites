@@ -22,6 +22,15 @@ const ROW_B = ["University of Vermont", "Westinghouse", "Penn Foster", "Fullscri
 
 const DISCLAIMER = "These are places Bredge team members have worked. They aren’t clients and this isn’t an endorsement.";
 
+function TeamTrack({ names }: { names: string[] }) {
+  return (
+    <div className="xp-track">
+      {names.map((name) => <span key={name}>{name}</span>)}
+      {names.map((name) => <span key={`${name}-repeat`} aria-hidden="true">{name}</span>)}
+    </div>
+  );
+}
+
 export function ExperienceRows() {
   const ref = useRef<HTMLElement>(null);
 
@@ -82,8 +91,8 @@ export function ExperienceRows() {
       <h2>Where we’ve worked.</h2>
 
       <div className="xp-rows">
-        <div className="xp-row xp-row-a"><div className="xp-track">{ROW_A.map((n) => <span key={n}>{n}</span>)}</div></div>
-        <div className="xp-row xp-row-b"><div className="xp-track">{ROW_B.map((n) => <span key={n}>{n}</span>)}</div></div>
+        <div className="xp-row xp-row-a"><TeamTrack names={ROW_A} /></div>
+        <div className="xp-row xp-row-b"><TeamTrack names={ROW_B} /></div>
       </div>
 
       <p className="xp-note">{DISCLAIMER}</p>

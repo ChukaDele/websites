@@ -32,7 +32,8 @@ a { color:inherit; text-decoration:none; }
 .eyebrow i { width:3px; height:3px; border-radius:50%; background:var(--brand); }
 .eyebrow.light { color:#c1ceca; }
 h1,h2,h3,p { margin-top:0; }
-h1,h2,h3 { letter-spacing:-.065em; font-weight:500; }
+h1,h2,h3 { letter-spacing:-.065em; font-weight:500; text-wrap:balance; }
+p { text-wrap:pretty; }
 h2 { font-size:clamp(2.7rem, 5.4vw, 5.9rem); line-height:.95; }
 h3 { line-height:1; }
 /* Primary CTA: dependable, not performing for the mouse. No lift, no colour
@@ -150,6 +151,7 @@ h3 { line-height:1; }
 /* Base (mobile-first): open two-column composition — no marquee. */
 .xp-track { display:grid; grid-template-columns:1fr 1fr; gap:16px 26px; }
 .xp-track span { display:flex; align-items:center; min-height:34px; color:#2c3a36; font-size:1.02rem; letter-spacing:-.02em; line-height:1.15; }
+.xp-track span[aria-hidden="true"] { display:none; }
 .xp-note { max-width:70ch; margin:40px 0 0; color:var(--muted); font-size:.78rem; line-height:1.5; }
 
 /* Desktop, motion allowed: two wide edge-faded rows, scroll-linked (JS sets the
@@ -159,6 +161,7 @@ h3 { line-height:1; }
   .xp-row { overflow:hidden; padding:22px 0; border-top:1px solid var(--line); -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%); mask-image:linear-gradient(90deg, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%); }
   .xp-row:last-child { border-bottom:1px solid var(--line); }
   .xp-track { display:flex; width:max-content; gap:clamp(34px, 4.5vw, 72px); white-space:nowrap; will-change:transform; transition:transform .12s linear; }
+  .xp-track span[aria-hidden="true"] { display:flex; }
   /* Set by JS when the track fits: without it the stationary first name would
      sit permanently inside the leading fade. */
   .xp-row.no-overflow { -webkit-mask-image:none; mask-image:none; }

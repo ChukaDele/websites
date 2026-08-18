@@ -73,3 +73,18 @@ test("blog spacing and responsive reading safeguards remain scoped", async () =>
   assert.match(css, /max-width:1000px/);
   assert.match(css, /max-width:560px/);
 });
+
+test("team experience preserves desktop motion and mobile reading rhythm", async () => {
+  const [component, css] = await Promise.all([
+    read("components/site/ExperienceRows.tsx"),
+    read("app/globals.css"),
+  ]);
+
+  assert.match(component, /function TeamTrack/);
+  assert.match(component, /aria-hidden="true"/);
+  assert.match(component, /min-width: 801px/);
+  assert.match(css, /\.xp-track span\[aria-hidden="true"\]\s*\{\s*display:none;/);
+  assert.match(css, /@media \(min-width:801px\) and \(prefers-reduced-motion:no-preference\)[\s\S]*?\.xp-track span\[aria-hidden="true"\]\s*\{\s*display:flex;/);
+  assert.match(css, /h1,h2,h3\s*\{[^}]*text-wrap:balance;/s);
+  assert.match(css, /p\s*\{[^}]*text-wrap:pretty;/s);
+});

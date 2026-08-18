@@ -197,6 +197,53 @@ async function testShortAndReducedMotion(browser) {
   console.log("✓ short viewport + reduced-motion fallbacks");
 }
 
+async function testExperienceMotionAndMobileReading(browser) {
+  const desktop = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "no-preference" });
+  await desktop.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
+  const desktopPage = await desktop.newPage();
+  await desktopPage.goto(base, { waitUntil: "domcontentloaded" });
+  await desktopPage.waitForTimeout(500);
+  await desktopPage.locator(".xp").evaluate((root) => window.scrollTo(0, root.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.55));
+  await desktopPage.waitForTimeout(180);
+  const desktopState = await desktopPage.locator(".xp").evaluate((root) => {
+    const track = root.querySelector(".xp-track");
+    const clone = root.querySelector('.xp-track span[aria-hidden="true"]');
+    if (!track || !clone) return null;
+    const row = track.parentElement;
+    return {
+      overflow: track.scrollWidth - (row?.clientWidth || 0),
+      transform: getComputedStyle(track).transform,
+      cloneDisplay: getComputedStyle(clone).display,
+    };
+  });
+  assert.ok(desktopState, "team experience rows are missing");
+  assert.ok(desktopState.overflow > 0, "desktop experience rows must have scroll distance");
+  assert.equal(desktopState.cloneDisplay, "flex", "desktop repeat should maintain the motion track");
+  assert.notEqual(desktopState.transform, "none", "desktop experience row should respond to scrolling");
+  await desktop.close();
+
+  const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "no-preference" });
+  await mobile.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
+  const mobilePage = await mobile.newPage();
+  await mobilePage.goto(base, { waitUntil: "domcontentloaded" });
+  await mobilePage.waitForTimeout(500);
+  const mobileState = await mobilePage.evaluate(() => ({
+    overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    trackDisplay: getComputedStyle(document.querySelector(".xp-track")).display,
+    repeatDisplay: getComputedStyle(document.querySelector('.xp-track span[aria-hidden="true"]')).display,
+    headingWraps: [...document.querySelectorAll("h1,h2,h3")].map((node) => getComputedStyle(node).textWrap),
+    bodyWraps: [...document.querySelectorAll(".hero-summary,.section-heading > p,.case-copy > p")].map((node) => getComputedStyle(node).textWrap),
+  }));
+  assert.ok(mobileState.overflow <= 2, `mobile homepage horizontal overflow ${mobileState.overflow}px`);
+  assert.equal(mobileState.trackDisplay, "grid", "mobile experience section should use a static grid");
+  assert.equal(mobileState.repeatDisplay, "none", "mobile should show each organisation once");
+  assert.ok(mobileState.headingWraps.every((value) => value === "balance"), "headings should use balanced wraps");
+  assert.ok(mobileState.bodyWraps.every((value) => value === "pretty"), "body copy should avoid orphaned final words");
+  await mobilePage.screenshot({ path: new URL("home-mobile-reading.png", artifacts).pathname, fullPage: true });
+  await mobile.close();
+  console.log("✓ experience motion desktop + mobile reading rhythm");
+}
+
 async function testInsights(browser) {
   for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
     const context = await browser.newContext({ viewport });
@@ -241,6 +288,7 @@ try {
   await testInternalLinks(browser);
   await testScrollNarratives(browser);
   await testShortAndReducedMotion(browser);
+  await testExperienceMotionAndMobileReading(browser);
   await testInsights(browser);
   await testHeaders(browser);
   console.log("\nBredge browser QA: PASS");
