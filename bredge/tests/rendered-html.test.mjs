@@ -30,8 +30,9 @@ test("hero video subscribes before loading its source", async () => {
 });
 
 test("brand and commercial SEO signals are explicit and canonical", async () => {
-  const [layout, services, sitemap, robots, insights] = await Promise.all([
+  const [layout, home, services, sitemap, robots, insights] = await Promise.all([
     read("app/layout.tsx"),
+    read("app/page.tsx"),
     read("app/services/page.tsx"),
     read("app/sitemap.ts"),
     read("app/robots.ts"),
@@ -42,6 +43,12 @@ test("brand and commercial SEO signals are explicit and canonical", async () => 
   assert.match(layout, /siteName:\s*"The Bredge"/);
   assert.match(layout, /"@type":\s*"WebSite"/);
   assert.match(layout, /sameAs:\s*\["https:\/\/www\.linkedin\.com\/company\/thebredge"\]/);
+  assert.match(layout, /max-image-preview.*large/s);
+  assert.match(layout, /max-snippet.*-1/s);
+  assert.match(layout, /inLanguage:\s*"en"/);
+  assert.match(home, /"@type":\s*"WebPage"/);
+  assert.match(home, /"@id":\s*"https:\/\/thebredge\.com\/#webpage"/);
+  assert.match(home, /When your numbers disagree, we find out why\./);
   assert.match(services, /data engineering, analytics and business intelligence consulting for growing and mid-market companies/i);
   assert.match(sitemap, /https:\/\/thebredge\.com/);
   assert.match(robots, /sitemap:\s*"https:\/\/thebredge\.com\/sitemap\.xml"/);
@@ -65,4 +72,19 @@ test("blog spacing and responsive reading safeguards remain scoped", async () =>
   assert.match(css, /\.ax-body\s+table\.article-table\s*\{[^}]*overflow-x:auto;/s);
   assert.match(css, /max-width:1000px/);
   assert.match(css, /max-width:560px/);
+});
+
+test("team experience preserves desktop motion and mobile reading rhythm", async () => {
+  const [component, css] = await Promise.all([
+    read("components/site/ExperienceRows.tsx"),
+    read("app/globals.css"),
+  ]);
+
+  assert.match(component, /function TeamTrack/);
+  assert.match(component, /aria-hidden="true"/);
+  assert.match(component, /min-width: 801px/);
+  assert.match(css, /\.xp-track span\[aria-hidden="true"\]\s*\{\s*display:none;/);
+  assert.match(css, /@media \(min-width:801px\) and \(prefers-reduced-motion:no-preference\)[\s\S]*?\.xp-track span\[aria-hidden="true"\]\s*\{\s*display:flex;/);
+  assert.match(css, /h1,h2,h3\s*\{[^}]*text-wrap:balance;/s);
+  assert.match(css, /p\s*\{[^}]*text-wrap:pretty;/s);
 });
