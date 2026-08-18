@@ -27,12 +27,15 @@ export function HeroVideo() {
     // @ts-expect-error saveData is non-standard
     const saveData = navigator.connection?.saveData === true;
     if (reduced || saveData) return; // poster only
+
+    const onCanPlay = () => { setReady(true); void video.play().catch(() => {}); };
+    // Subscribe before assigning the source. A warm media cache can emit canplay
+    // synchronously during load(), before a later listener registration.
+    video.addEventListener("canplay", onCanPlay, { once: true });
+
     const canWebm = video.canPlayType('video/webm; codecs="vp9"') !== "";
     video.src = canWebm ? `${base}.webm` : `${base}.mp4`;
     video.load();
-
-    const onCanPlay = () => { setReady(true); void video.play().catch(() => {}); };
-    video.addEventListener("canplay", onCanPlay, { once: true });
 
     const io = new IntersectionObserver(
       ([e]) => { if (e.isIntersecting) void video.play().catch(() => {}); else video.pause(); },
