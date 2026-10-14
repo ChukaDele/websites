@@ -32,6 +32,7 @@ jobs:
       - name: Checkout site repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
       - name: Check standard is pinned
@@ -51,13 +52,27 @@ jobs:
           ref: ${{ inputs.standard_ref }}
           path: .website-quality-standard
           persist-credentials: false
+          fetch-depth: 0
+
+      - name: Reject stale or unapproved standard
+        shell: bash
+        env:
+          STANDARD_REF: ${{ inputs.standard_ref }}
+        run: |
+          set -euo pipefail
+          git -C .website-quality-standard fetch --no-tags origin main
+          approved_head="$(git -C .website-quality-standard rev-parse FETCH_HEAD)"
+          if [[ "$STANDARD_REF" != "$approved_head" ]]; then
+            echo "::error::Standard must match the currently approved main branch commit"
+            exit 1
+          fi
 
       - name: Contract validation
         env:
           PHASE: ${{ inputs.phase }}
           SITE_PROFILE: ${{ inputs.profile_path }}
           EVIDENCE_BASE64: ${{ inputs.evidence_base64 }}
-          RELEASE_SHA: ${{ github.sha }}
+          RELEASE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           REPORT_PATH: ${{ runner.temp }}/website-gate-report.json
         shell: bash
         run: |
@@ -83,6 +98,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: website-release-gate-report
+          name: website-release-gate-report-${{ inputs.phase }}
           path: ${{ runner.temp }}/website-gate-report.json
           if-no-files-found: warn
