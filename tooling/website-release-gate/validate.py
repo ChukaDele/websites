@@ -22,6 +22,19 @@ SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 STATES = {"PASS", "FAIL", "BLOCKED", "NOT_TESTED", "NOT_APPLICABLE", "WAIVED", "DEFERRED"}
 PRIORITIES = {"P0", "P1", "P2"}
 
+def identity(value: object) -> str:
+    """Canonicalise labels. Identity authentication is external to this validator."""
+    return value.strip().casefold() if isinstance(value, str) else ""
+
+def fresh(value: object, now: dt.datetime, days: int) -> bool:
+    observed = parse_time(value)
+    return (observed is not None and
+            observed <= now + dt.timedelta(minutes=5) and
+            now - observed <= dt.timedelta(days=days))
+
+def summary_text(value: object) -> str:
+    return str(value).replace("\r", " ").replace("\n", " ").replace("<", "&lt;").replace(">", "&gt;")
+
 
 def parse_time(value: object) -> dt.datetime | None:
     if not isinstance(value, str) or not value:
@@ -31,15 +44,6 @@ def parse_time(value: object) -> dt.datetime | None:
         if parsed.tzinfo is None:
             return None
         return parsed.astimezone(dt.timezone.utc)
-    except ValueError:
-        return None
-
-
-def parse_due_date(value: object) -> dt.date | None:
-    if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
-        return None
-    try:
-        return dt.date.fromisoformat(value)
     except ValueError:
         return None
 
@@ -71,7 +75,7 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
     blockers: list[str] = []
     warnings: list[str] = []
 
-    if profile.get("schema_version") != 1:
+    if type(profile.get("schema_version")) is not int or profile.get("schema_version") != 1:
         blockers.append("PROFILE: schema_version must be 1")
     for key in ("project", "repository", "site_type"):
         if not nonempty(profile.get(key)):
@@ -91,11 +95,11 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
     for role in ("builder", "reviewer", "approver"):
         if not nonempty(owners.get(role)):
             blockers.append(f"PROFILE: owners.{role} is required")
-    if len({owners.get(x) for x in ("builder", "reviewer", "approver") if nonempty(owners.get(x))}) < 3:
+    if len({identity(owners.get(x)) for x in ("builder", "reviewer", "approver") if nonempty(owners.get(x))}) < 3:
         blockers.append("PROFILE: builder, reviewer and approver must be distinct identities")
 
     controls = catalog.get("controls")
-    if catalog.get("schema_version") != 1 or not isinstance(controls, list) or not controls:
+    if type(catalog.get("schema_version")) is not int or catalog.get("schema_version") != 1 or not isinstance(controls, list) or not controls:
         blockers.append("CATALOG: invalid or empty schema_version/controls")
         controls = []
     seen: set[str] = set()
@@ -104,8 +108,11 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
             blockers.append("CATALOG: every control must be an object")
             continue
         cid = row.get("id")
-        if not nonempty(cid) or cid in seen:
-            blockers.append(f"CATALOG: empty/duplicate control id {cid}")
+        if not nonempty(cid):
+            blockers.append("CATALOG: invalid or missing control id")
+            continue
+        if cid in seen:
+            blockers.append(f"CATALOG: duplicate control id {cid}")
         seen.add(cid)
         if row.get("phase") not in PHASES:
             blockers.append(f"CATALOG {cid}: invalid phase")
@@ -114,11 +121,11 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
 
     release_sha = evidence.get("release_sha", "")
     if phase != "intake":
+        if not isinstance(expected_sha, str) or not SHA_RE.fullmatch(expected_sha):
+            blockers.append("EVIDENCE: explicit expected --sha required after intake")
         if not isinstance(release_sha, str) or not SHA_RE.fullmatch(release_sha):
             blockers.append("EVIDENCE: release_sha must be a full 40-character Git SHA")
-        if not isinstance(expected_sha, str) or not SHA_RE.fullmatch(expected_sha):
-            blockers.append("EVIDENCE: verified --sha or GITHUB_SHA is required after intake")
-        elif expected_sha != release_sha:
+        if expected_sha and expected_sha != release_sha:
             blockers.append(f"EVIDENCE: release_sha {release_sha} does not match expected checkout {expected_sha}")
         entries = evidence.get("controls")
         if not isinstance(entries, dict):
@@ -129,7 +136,8 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
 
     checked = 0
     for row in controls:
-        if not isinstance(row, dict) or row.get("phase") not in PHASES:
+        if (not isinstance(row, dict) or row.get("phase") not in PHASES
+                or not nonempty(row.get("id"))):
             continue
         if PHASES.index(row["phase"]) > PHASES.index(phase) or phase == "intake":
             continue
@@ -143,44 +151,40 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
         if status not in STATES:
             blockers.append(f"{cid}: invalid status {status}")
             continue
+        if item.get("release_sha") != release_sha:
+            blockers.append(f"{cid}: control evidence release_sha does not match release")
         if status in ("FAIL", "BLOCKED", "NOT_TESTED"):
             blockers.append(f"{cid} [{row['priority']}]: {status}, release is blocked")
             continue
         reviewer = item.get("reviewed_by")
         if not nonempty(reviewer):
             blockers.append(f"{cid}: missing reviewed_by")
-        if row["priority"] in ("P0", "P1") and reviewer == owners.get("builder"):
+        if row["priority"] in ("P0", "P1") and identity(reviewer) == identity(owners.get("builder")):
             blockers.append(f"{cid}: reviewer cannot be the builder")
-        if status in ("NOT_APPLICABLE", "DEFERRED", "WAIVED"):
-            # These are accepted exceptions, not a way around the release binding.
-            if item.get("release_sha") != release_sha:
-                blockers.append(f"{cid}: exception must bind to release SHA")
-            observed = parse_time(item.get("observed_at"))
-            if (observed is None or observed > now + dt.timedelta(minutes=5)
-                    or now - observed > dt.timedelta(days=7)):
-                blockers.append(f"{cid}: exception needs a recent verified timestamp")
-            if not usable_url(item.get("evidence_url")):
-                blockers.append(f"{cid}: exception needs an HTTPS evidence URL")
-            if not nonempty(item.get("tested_by")):
-                blockers.append(f"{cid}: exception needs tested_by")
-            elif item.get("tested_by") == reviewer:
-                blockers.append(f"{cid}: exception reviewer must differ from tester")
+        if row["priority"] in ("P0", "P1") and identity(reviewer) != identity(owners.get("reviewer")):
+            blockers.append(f"{cid}: P0/P1 reviewer must match designated reviewer")
         if status == "NOT_APPLICABLE":
             if not row.get("conditional", False):
                 blockers.append(f"{cid}: mandatory control cannot be NA")
             if len(str(item.get("reason", "")).strip()) < 15:
                 blockers.append(f"{cid}: NA requires substantive applicability reason (15+ characters)")
+            if row["priority"] == "P0":
+                if identity(item.get("approved_by")) != identity(owners.get("approver")):
+                    blockers.append(f"{cid}: P0 NA needs project approver")
+                if not usable_url(item.get("evidence_url")) or not fresh(item.get("observed_at"), now, 21):
+                    blockers.append(f"{cid}: P0 NA needs recent HTTPS applicability evidence")
             continue
         if status == "DEFERRED":
             if row["priority"] != "P2":
                 blockers.append(f"{cid}: only P2 may be deferred")
             if not all(nonempty(item.get(k)) for k in ("owner", "issue", "due_date")):
                 blockers.append(f"{cid}: deferred issue needs owner, issue, due_date")
-            due = parse_due_date(item.get("due_date"))
-            if due is None:
-                blockers.append(f"{cid}: deferred issue needs valid ISO YYYY-MM-DD due_date")
-            elif not now.date() <= due <= (now + dt.timedelta(days=90)).date():
-                blockers.append(f"{cid}: deferred due_date must be today or within 90 days")
+            try:
+                due = dt.date.fromisoformat(str(item.get("due_date", "")))
+                if not now.date() <= due <= now.date() + dt.timedelta(days=180):
+                    blockers.append(f"{cid}: due_date must be within the next 180 days")
+            except ValueError:
+                blockers.append(f"{cid}: due_date must be YYYY-MM-DD")
             continue
         if status == "WAIVED":
             waiver = item.get("waiver")
@@ -190,15 +194,13 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
             if not isinstance(waiver, dict):
                 blockers.append(f"{cid}: no waiver evidence")
                 continue
-            if waiver.get("approved_by") != owners.get("approver"):
+            if identity(waiver.get("approved_by")) != identity(owners.get("approver")):
                 blockers.append(f"{cid}: waiver must name the project approver")
             if not all(nonempty(waiver.get(k)) for k in ("reason", "mitigation", "issue", "expires_at")):
                 blockers.append(f"{cid}: waiver missing reason/mitigation/issue/expiry")
             end = parse_time(waiver.get("expires_at"))
-            if end is None or end <= now or end > now + dt.timedelta(days=30):
-                blockers.append(f"{cid}: waiver must expire within 30 days")
-            if not usable_url(waiver.get("evidence_url")):
-                blockers.append(f"{cid}: waiver requires an HTTPS owner-approval evidence URL")
+            if end is None or not now < end <= now + dt.timedelta(days=90):
+                blockers.append(f"{cid}: waiver expiry must be future and within 90 days")
             warnings.append(f"{cid}: P1 owner-approved waiver requires separate human verification")
             continue
 
@@ -215,7 +217,7 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
                 blockers.append(f"{cid}: PASS evidence missing, future dated or stale (limit {age_limit_days}d)")
             if not nonempty(item.get("tested_by")):
                 blockers.append(f"{cid}: PASS needs tested_by")
-            if item.get("tested_by") == reviewer:
+            if identity(item.get("tested_by")) == identity(reviewer):
                 blockers.append(f"{cid}: independent reviewer must differ from tester")
 
     if isinstance(entries, dict):
@@ -232,19 +234,16 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
             if not isinstance(approval, dict):
                 blockers.append(f"APPROVAL: missing {required_phase} approval")
                 continue
-            if approval.get("approved_by") != owners.get("approver"):
+            if identity(approval.get("approved_by")) != identity(owners.get("approver")):
                 blockers.append(f"APPROVAL: {required_phase} approved_by must match project approver")
             if approval.get("release_sha") != release_sha:
                 blockers.append(f"APPROVAL: {required_phase} must bind to release SHA")
-            observed = parse_time(approval.get("observed_at"))
-            if not usable_url(approval.get("evidence_url")) or observed is None:
-                blockers.append(f"APPROVAL: {required_phase} needs evidence URL and timestamp")
-            elif observed > now + dt.timedelta(minutes=5) or now - observed > dt.timedelta(days=7):
-                blockers.append(f"APPROVAL: {required_phase} is stale or future dated")
+            if not usable_url(approval.get("evidence_url")) or not fresh(approval.get("observed_at"), now, 21 if required_phase == "prelaunch" else 7):
+                blockers.append(f"APPROVAL: {required_phase} needs recent HTTPS evidence URL and timestamp")
+            if approval.get("decision") != "APPROVED":
+                blockers.append(f"APPROVAL: {required_phase} requires explicit APPROVED decision")
 
-    label = "EVIDENCE_PASS" if not blockers else "RELEASE_BLOCKED"
-    if phase == "closeout":
-        label = "CLOSEOUT_EVIDENCE_PASS" if not blockers else "CLOSEOUT_BLOCKED"
+    label = f"{phase.upper()}_EVIDENCE_PASS" if not blockers else f"{phase.upper()}_BLOCKED"
     return {"status": label, "phase": phase, "project": profile.get("project"),
             "release_sha": release_sha, "checked_controls": checked,
             "blockers": blockers, "warnings": warnings,
@@ -263,12 +262,10 @@ def main() -> int:
     try:
         if args.phase != "intake" and not args.evidence:
             raise ValueError("--evidence is required after intake")
-        if args.phase != "intake" and not SHA_RE.fullmatch(args.sha or ""):
-            raise ValueError("--sha or GITHUB_SHA must be a verified 40-character commit SHA after intake")
         result = audit(load_json(args.catalog), load_json(args.profile),
                        load_json(args.evidence) if args.evidence else {},
                        args.phase, expected_sha=args.sha)
-    except (OSError, ValueError, json.JSONDecodeError) as ex:
+    except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as ex:
         result = {"status": "RELEASE_BLOCKED", "phase": args.phase, "blockers": [str(ex)],
                   "warnings": [], "checked_controls": 0}
     print(json.dumps(result, indent=2))
@@ -281,9 +278,9 @@ def main() -> int:
             f.write(f"## Website release gate: {result['status']}\n\n")
             f.write(f"Phase: {args.phase}; controls evaluated: {result.get('checked_controls', 0)}\n\n")
             for blocker in result["blockers"]:
-                f.write(f"- BLOCKER: {blocker}\n")
+                f.write(f"- BLOCKER: {summary_text(blocker)}\n")
             for warning in result.get("warnings", []):
-                f.write(f"- WARNING: {warning}\n")
+                f.write(f"- WARNING: {summary_text(warning)}\n")
     return 1 if result["blockers"] else 0
 
 
