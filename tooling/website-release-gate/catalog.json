@@ -1,0 +1,308 @@
+{
+  "schema_version": 1,
+  "standard": "Website Launch QA v2.0",
+  "controls": [
+    {
+      "id": "R01",
+      "name": "404 and recovery route",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "R02",
+      "name": "Primary above-fold CTA on conversion pages",
+      "phase": "prelaunch",
+      "priority": "P1",
+      "conditional": true
+    },
+    {
+      "id": "R03",
+      "name": "Unique page-specific SEO titles",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "R04",
+      "name": "Page-specific meta descriptions",
+      "phase": "prelaunch",
+      "priority": "P2"
+    },
+    {
+      "id": "R05",
+      "name": "OG/social preview metadata and image",
+      "phase": "prelaunch",
+      "priority": "P2",
+      "conditional": true
+    },
+    {
+      "id": "R06",
+      "name": "Favicons/app icons",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "R07",
+      "name": "Correct robots.txt and crawl instructions",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "R08",
+      "name": "Canonical-only XML sitemap",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "R09",
+      "name": "Informative/decorative image alt",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "R10",
+      "name": "Mobile/tablet/desktop breakpoints",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "R11",
+      "name": "Sticky mobile CTA if justified",
+      "phase": "prelaunch",
+      "priority": "P2",
+      "conditional": true
+    },
+    {
+      "id": "R12",
+      "name": "Loading/empty/error/slow states",
+      "phase": "prelaunch",
+      "priority": "P1",
+      "conditional": true
+    },
+    {
+      "id": "R13",
+      "name": "Accessible form labels and error handling",
+      "phase": "prelaunch",
+      "priority": "P1",
+      "conditional": true
+    },
+    {
+      "id": "R14",
+      "name": "Verified confirmation or thank-you flow",
+      "phase": "prelaunch",
+      "priority": "P1",
+      "conditional": true
+    },
+    {
+      "id": "R15",
+      "name": "Accurate privacy notice",
+      "phase": "prelaunch",
+      "priority": "P0",
+      "non_waivable": true
+    },
+    {
+      "id": "R16",
+      "name": "Terms where required",
+      "phase": "prelaunch",
+      "priority": "P1",
+      "conditional": true
+    },
+    {
+      "id": "R17",
+      "name": "Consent mode, tag blocking and user controls",
+      "phase": "prelaunch",
+      "priority": "P0",
+      "non_waivable": true,
+      "conditional": true
+    },
+    {
+      "id": "R18",
+      "name": "Analytics events and lawful configuration",
+      "phase": "live",
+      "priority": "P1",
+      "conditional": true
+    },
+    {
+      "id": "R19",
+      "name": "Appropriate verified business contact details",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "X01",
+      "name": "Final claims/content, brand, rights and licences",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "X02",
+      "name": "Critical customer journeys end to end",
+      "phase": "prelaunch",
+      "priority": "P0"
+    },
+    {
+      "id": "X03",
+      "name": "Live form delivery to CRM/email/database verified",
+      "phase": "live",
+      "priority": "P0",
+      "conditional": true
+    },
+    {
+      "id": "X04",
+      "name": "Keyboard, focus, screen reader and WCAG 2.2 AA review",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "X05",
+      "name": "Approved-design visual regression and device review",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "X06",
+      "name": "Route-specific performance budget with lab evidence",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "X07",
+      "name": "Field Web Vitals measurement or NA reason",
+      "phase": "closeout",
+      "priority": "P2",
+      "conditional": true
+    },
+    {
+      "id": "X08",
+      "name": "Old URL migration and redirects where applicable",
+      "phase": "live",
+      "priority": "P1",
+      "conditional": true
+    },
+    {
+      "id": "X09",
+      "name": "Canonicals, headings, structured data and language",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "X10",
+      "name": "Staging indexing controls and live noindex audit",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "X11",
+      "name": "Production HTTPS/TLS and no mixed content",
+      "phase": "live",
+      "priority": "P0",
+      "non_waivable": true
+    },
+    {
+      "id": "X12",
+      "name": "Security headers, CSP and exposure review",
+      "phase": "live",
+      "priority": "P1"
+    },
+    {
+      "id": "X13",
+      "name": "Executable secret/credential scanning",
+      "phase": "build",
+      "priority": "P0"
+    },
+    {
+      "id": "X14",
+      "name": "Dependency/vulnerability scan and resolved highs",
+      "phase": "build",
+      "priority": "P1"
+    },
+    {
+      "id": "X15",
+      "name": "Auth/ecommerce threat model and transaction tests",
+      "phase": "prelaunch",
+      "priority": "P0",
+      "conditional": true
+    },
+    {
+      "id": "X16",
+      "name": "Data inventory, storage, processor and retention review",
+      "phase": "prelaunch",
+      "priority": "P0",
+      "non_waivable": true
+    },
+    {
+      "id": "X17",
+      "name": "Backup, recovery and rollback rehearsal",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "X18",
+      "name": "Production monitoring, alerts and failure owners",
+      "phase": "live",
+      "priority": "P1"
+    },
+    {
+      "id": "X19",
+      "name": "Site/domain/hosting/CMS/admin ownership transfer",
+      "phase": "closeout",
+      "priority": "P1"
+    },
+    {
+      "id": "X20",
+      "name": "Source/assets/licenses/support/handover pack",
+      "phase": "closeout",
+      "priority": "P1"
+    },
+    {
+      "id": "X21",
+      "name": "Formal independent reviewer and owner acceptance",
+      "phase": "closeout",
+      "priority": "P1"
+    },
+    {
+      "id": "X22",
+      "name": "Postlaunch check 24-72h, 7/30 days where contracted",
+      "phase": "closeout",
+      "priority": "P2",
+      "conditional": true
+    },
+    {
+      "id": "X23",
+      "name": "Live browser smoke, CTA and consent recheck",
+      "phase": "live",
+      "priority": "P0"
+    },
+    {
+      "id": "X24",
+      "name": "Cross-browser, touch, zoom and reduced-motion review",
+      "phase": "prelaunch",
+      "priority": "P1"
+    },
+    {
+      "id": "X25",
+      "name": "Spam guard, rate limits and form abuse paths",
+      "phase": "prelaunch",
+      "priority": "P1",
+      "conditional": true
+    },
+    {
+      "id": "X26",
+      "name": "Staging/private endpoints not exposed or indexable",
+      "phase": "live",
+      "priority": "P1"
+    },
+    {
+      "id": "X27",
+      "name": "Live runtime/console error and log review",
+      "phase": "live",
+      "priority": "P1"
+    },
+    {
+      "id": "X28",
+      "name": "Transactional email identity, delivery and DMARC review",
+      "phase": "prelaunch",
+      "priority": "P1",
+      "conditional": true
+    }
+  ]
+}
