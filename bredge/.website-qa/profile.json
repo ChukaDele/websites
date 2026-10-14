@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "standard": "Website Launch QA v2.0",
+  "project": "The Bredge marketing website",
+  "repository": "ChukaDele/websites",
+  "site_type": "leadgen",
+  "production_url": "https://thebredge.com",
+  "staging_url": "https://bredge.thebredge.workers.dev",
+  "markets": [
+    "Global"
+  ],
+  "critical_journeys": [
+    "Browse services and schedule a call",
+    "Send contact enquiry and verify actual inbox or CRM delivery",
+    "Access articles, resources, legal pages and recover from an unknown route"
+  ],
+  "owners": {
+    "builder": "Website PR implementation engineer",
+    "reviewer": "PENDING independent GitHub reviewer",
+    "approver": "Bredge accountable owner; approval PENDING"
+  },
+  "enforcement": {
+    "status": "ENFORCEMENT_PARTIAL",
+    "reason": "Workers preview currently reports the same SHA as production, so staging isolation unverified. Protected Github environment and executable checks require verified production deployment. Existing stored API token scope and direct Wrangler bypass unverified."
+  }
+}

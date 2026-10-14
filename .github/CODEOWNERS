@@ -4,3 +4,12 @@
 /.github/workflows/website-release-gate.yml @ChukaDele
 /.github/workflows/website-release-gate-tests.yml @ChukaDele
 /tooling/website-release-gate/ @ChukaDele
+
+# Bredge release policy and source-of-truth checks.
+/.github/workflows/deploy-bredge.yml @ChukaDele
+/bredge/.website-qa/ @ChukaDele
+/bredge/package.json @ChukaDele
+/bredge/package-lock.json @ChukaDele
+/bredge/scripts/verify-live.sh @ChukaDele
+/bredge/tests/ @ChukaDele
+/bredge/worker/ @ChukaDele
