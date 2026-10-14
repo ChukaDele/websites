@@ -9,11 +9,7 @@
   "markets": [
     "Global"
   ],
-  "critical_journeys": [
-    "Browse services and schedule a call",
-    "Send contact enquiry and verify actual inbox or CRM delivery",
-    "Access articles, resources, legal pages and recover from an unknown route"
-  ],
+  "critical_journeys": [],
   "owners": {
     "builder": "Website PR implementation engineer",
     "reviewer": "PENDING independent GitHub reviewer",
