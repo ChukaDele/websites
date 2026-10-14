@@ -16,7 +16,7 @@ export function validateLeadSubmissionGuard(body: unknown): LeadGuardResult {
     return { status: 400, error: "Please refresh the form and submit again." };
   }
   if (fields.elapsedMs < 1200) {
-    return { status: 429, error: "Please wait a moment, then submit again." };
+    return { status: 422, error: "Please wait a moment, then submit again." };
   }
   return null;
 }

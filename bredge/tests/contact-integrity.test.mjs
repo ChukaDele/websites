@@ -9,7 +9,7 @@ test("normal elapsed forms proceed to webhook validation", () => {
 
 test("autofill or suspiciously fast form cannot receive fabricated 200", () => {
   const rejected = validateLeadSubmissionGuard({ company_website: "", elapsedMs: 200 });
-  assert.equal(rejected?.status, 429);
+  assert.equal(rejected?.status, 422);
   assert.match(rejected?.error || "", /wait a moment/i);
 });
 

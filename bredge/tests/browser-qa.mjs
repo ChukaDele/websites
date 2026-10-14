@@ -282,7 +282,7 @@ async function testContactCannotClaimUndeliveredSuccess(browser) {
     };
     const headers = { Origin: "https://thebredge.com" };
     const fast = await context.request.post(`${base}/api/contact`, { data: payload, headers });
-    assert.equal(fast.status(), 429, "fast lead must not be marked delivered");
+    assert.equal(fast.status(), 422, "fast lead must not be marked delivered");
     assert.equal((await fast.json()).ok, undefined);
     const trapped = await context.request.post(`${base}/api/contact`, {
       data: { ...payload, elapsedMs: 2000, company_website: "autofilled" }, headers,
