@@ -1,0 +1,31 @@
+name: Website Standard Contract Tests
+
+on:
+  pull_request:
+    paths:
+      - 'tooling/website-release-gate/**'
+      - '.github/workflows/website-release-gate.yml'
+      - '.github/workflows/website-release-gate-tests.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'tooling/website-release-gate/**'
+      - '.github/workflows/website-release-gate.yml'
+      - '.github/workflows/website-release-gate-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validator-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile gate
+        run: python -m py_compile tooling/website-release-gate/validate.py tooling/website-release-gate/scaffold.py
+      - name: Run fail-closed contract regression suite
+        run: python -m unittest discover -s tooling/website-release-gate/tests -v
