@@ -35,6 +35,15 @@ def parse_time(value: object) -> dt.datetime | None:
         return None
 
 
+def parse_due_date(value: object) -> dt.date | None:
+    if not isinstance(value, str) or not re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}", value):
+        return None
+    try:
+        return dt.date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
 def nonempty(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
@@ -107,7 +116,9 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
     if phase != "intake":
         if not isinstance(release_sha, str) or not SHA_RE.fullmatch(release_sha):
             blockers.append("EVIDENCE: release_sha must be a full 40-character Git SHA")
-        if expected_sha and expected_sha != release_sha:
+        if not isinstance(expected_sha, str) or not SHA_RE.fullmatch(expected_sha):
+            blockers.append("EVIDENCE: verified --sha or GITHUB_SHA is required after intake")
+        elif expected_sha != release_sha:
             blockers.append(f"EVIDENCE: release_sha {release_sha} does not match expected checkout {expected_sha}")
         entries = evidence.get("controls")
         if not isinstance(entries, dict):
@@ -140,6 +151,20 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
             blockers.append(f"{cid}: missing reviewed_by")
         if row["priority"] in ("P0", "P1") and reviewer == owners.get("builder"):
             blockers.append(f"{cid}: reviewer cannot be the builder")
+        if status in ("NOT_APPLICABLE", "DEFERRED", "WAIVED"):
+            # These are accepted exceptions, not a way around the release binding.
+            if item.get("release_sha") != release_sha:
+                blockers.append(f"{cid}: exception must bind to release SHA")
+            observed = parse_time(item.get("observed_at"))
+            if (observed is None or observed > now + dt.timedelta(minutes=5)
+                    or now - observed > dt.timedelta(days=7)):
+                blockers.append(f"{cid}: exception needs a recent verified timestamp")
+            if not usable_url(item.get("evidence_url")):
+                blockers.append(f"{cid}: exception needs an HTTPS evidence URL")
+            if not nonempty(item.get("tested_by")):
+                blockers.append(f"{cid}: exception needs tested_by")
+            elif item.get("tested_by") == reviewer:
+                blockers.append(f"{cid}: exception reviewer must differ from tester")
         if status == "NOT_APPLICABLE":
             if not row.get("conditional", False):
                 blockers.append(f"{cid}: mandatory control cannot be NA")
@@ -151,6 +176,11 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
                 blockers.append(f"{cid}: only P2 may be deferred")
             if not all(nonempty(item.get(k)) for k in ("owner", "issue", "due_date")):
                 blockers.append(f"{cid}: deferred issue needs owner, issue, due_date")
+            due = parse_due_date(item.get("due_date"))
+            if due is None:
+                blockers.append(f"{cid}: deferred issue needs valid ISO YYYY-MM-DD due_date")
+            elif not now.date() <= due <= (now + dt.timedelta(days=90)).date():
+                blockers.append(f"{cid}: deferred due_date must be today or within 90 days")
             continue
         if status == "WAIVED":
             waiver = item.get("waiver")
@@ -165,8 +195,10 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
             if not all(nonempty(waiver.get(k)) for k in ("reason", "mitigation", "issue", "expires_at")):
                 blockers.append(f"{cid}: waiver missing reason/mitigation/issue/expiry")
             end = parse_time(waiver.get("expires_at"))
-            if end is None or end <= now:
-                blockers.append(f"{cid}: waiver expiry invalid or elapsed")
+            if end is None or end <= now or end > now + dt.timedelta(days=30):
+                blockers.append(f"{cid}: waiver must expire within 30 days")
+            if not usable_url(waiver.get("evidence_url")):
+                blockers.append(f"{cid}: waiver requires an HTTPS owner-approval evidence URL")
             warnings.append(f"{cid}: P1 owner-approved waiver requires separate human verification")
             continue
 
@@ -204,8 +236,11 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
                 blockers.append(f"APPROVAL: {required_phase} approved_by must match project approver")
             if approval.get("release_sha") != release_sha:
                 blockers.append(f"APPROVAL: {required_phase} must bind to release SHA")
-            if not usable_url(approval.get("evidence_url")) or parse_time(approval.get("observed_at")) is None:
+            observed = parse_time(approval.get("observed_at"))
+            if not usable_url(approval.get("evidence_url")) or observed is None:
                 blockers.append(f"APPROVAL: {required_phase} needs evidence URL and timestamp")
+            elif observed > now + dt.timedelta(minutes=5) or now - observed > dt.timedelta(days=7):
+                blockers.append(f"APPROVAL: {required_phase} is stale or future dated")
 
     label = "EVIDENCE_PASS" if not blockers else "RELEASE_BLOCKED"
     if phase == "closeout":
@@ -228,6 +263,8 @@ def main() -> int:
     try:
         if args.phase != "intake" and not args.evidence:
             raise ValueError("--evidence is required after intake")
+        if args.phase != "intake" and not SHA_RE.fullmatch(args.sha or ""):
+            raise ValueError("--sha or GITHUB_SHA must be a verified 40-character commit SHA after intake")
         result = audit(load_json(args.catalog), load_json(args.profile),
                        load_json(args.evidence) if args.evidence else {},
                        args.phase, expected_sha=args.sha)
