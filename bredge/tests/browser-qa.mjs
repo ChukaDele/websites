@@ -36,7 +36,10 @@ async function assertPageBasics(page, path) {
   assert.ok(response.status() < 400, `${path}: HTTP ${response.status()}`);
   await page.waitForTimeout(120);
 
-  const h1Count = await page.locator("h1").count();
+  // Playwright locators pierce open shadow roots. The Cal.com widget inserts
+  // its own H1 inside a shadow root on /schedule; this is not a page heading.
+  // Count document-owned headings, so duplicate site H1s still fail strictly.
+  const h1Count = await page.evaluate(() => document.querySelectorAll("h1").length);
   assert.equal(h1Count, 1, `${path}: expected exactly one H1, saw ${h1Count}`);
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
