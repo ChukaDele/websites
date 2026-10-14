@@ -105,3 +105,4 @@ Mandatory external controls for each website repository:
 - Keep the final owner-reviewed evidence pack and issue register outside untrusted PR content. Confirm LIVE_VERIFIED and CLOSEOUT_APPROVED only after independently authenticated human decisions.
 
 Until those protections and test runs are verified on the actual target repository and host, release enforcement is ENFORCEMENT_PARTIAL. This source repository PR installs the mechanism, but does not change or protect production websites on its own.
+<!-- Temporary negative-test edit: must require an independent code-owner approval. Never merge. -->
