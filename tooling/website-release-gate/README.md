@@ -89,3 +89,19 @@ Status vocabulary: BUILD_GREEN, PRELAUNCH_APPROVED, LIVE_VERIFIED, CLOSEOUT_EVID
 
 ## Reference standards
 W3C WCAG 2.2 AA, web.dev Core Web Vitals, OWASP Secure Headers, ICO cookies guidance, Google Search Central. See the canonical Notion SOP for applicability.
+
+## Security model and non-bypass requirements
+
+WARNING: The JSON approvals are untrusted assertions, even when the validator reports PASS. Names and evidence URLs are editable strings. The validator checks data shape, freshness, commit consistency and separation of identity labels. It does not authenticate reviewers, open evidence links, or prove real tests were run.
+
+Mandatory external controls for each website repository:
+- Use an organisation or repository ruleset requiring a centrally managed workflow, or independently administered equivalent. Otherwise a PR can replace its caller workflow with a fake success under the same job name.
+- Add CODEOWNERS for .github/workflows/** and .website-qa/**, require independent code-owner review, and dismiss stale approvals. A one-person repository needs a separate trusted reviewer or a distinct controlled owner-approval mechanism.
+- Bind authenticated approvals to GitHub Environments with required reviewers or approved GitHub reviews via API. Review the identity behind any claimed waiver; a string match is insufficient.
+- Protect deployment to production against bypass by direct Cloudflare/Vercel/CLI actions. Match live deployment commit to independently approved release commit.
+- Make both contract checks and real build, browser, accessibility, performance, security and application-specific integration tests required on the protected branch.
+- The reusable caller must use a reviewed pinned commit SHA and match the latest approved main standard. Update pinned refs on new standard releases.
+- Evidence base64 is only for small, non-sensitive metadata. Do not include customer details, credentials, secrets or contact-form payloads in Actions inputs or logs. Prefer secure artifact retrieval for large test evidence.
+- Keep the final owner-reviewed evidence pack and issue register outside untrusted PR content. Confirm LIVE_VERIFIED and CLOSEOUT_APPROVED only after independently authenticated human decisions.
+
+Until those protections and test runs are verified on the actual target repository and host, release enforcement is ENFORCEMENT_PARTIAL. This source repository PR installs the mechanism, but does not change or protect production websites on its own.
