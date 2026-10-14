@@ -188,6 +188,12 @@ jobs:
             echo "::error::Missing production-scoped Cloudflare environment credentials"
             exit 1
           fi
+          # Block releases when the primary contact form webhook is unconfigured.
+          # Presence is necessary but a separately verified Sheet write is still required.
+          if ! npx wrangler secret list --name bredge | node scripts/assert-lead-secrets.mjs; then
+            echo "::error::Bredge contact webhook secrets missing. See P0 issue #13."
+            exit 1
+          fi
           npx wrangler deploy -c dist/server/wrangler.json
 
       - name: Prove live production build and critical public routes

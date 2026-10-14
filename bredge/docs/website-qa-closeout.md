@@ -23,3 +23,13 @@ The workflow runs `bredge-quality` and `bredge-secret-scan` for pull requests an
 - Verify the live deployment SHA, handover, rollback and accountable owner acceptance.
 
 **Current status: ENFORCEMENT_PARTIAL / CLOSEOUT_BLOCKED.** A green build or launch checklist is insufficient evidence of completion.
+
+## P0: production contact enquiry pipeline unavailable
+
+On 14 October 2026, a labeled synthetic, otherwise-valid submission to https://thebredge.com/api/contact returned HTTP 503. The response explicitly said form delivery was not configured. Cloudflare reported no configured secrets for Worker bredge. The intended owner Google workbook has only headers in Leads and Bookings. This is tracked in https://github.com/ChukaDele/websites/issues/13.
+
+The owner-authenticated Google Apps Script has been created, bound to the existing workbook, and synchronized with the canonical integrations/google-leads/Code.gs. Its manifest remains private; it has not been deployed because the existing Google clasp OAuth session lacks deployment permissions. No webhook secret values have been placed in source or chat.
+
+The manual production-release job now refuses publishing unless Cloudflare reports both GOOGLE_LEADS_WEBHOOK_URL and GOOGLE_LEADS_WEBHOOK_SECRET secret NAMES. The guard is exercised by Node regression tests, including missing, present and malformed inventories. This is only a configuration presence check. A passing guard cannot prove the values work, a Sheet row was written or notification email arrived.
+
+To close: authorize Apps Script deployment with a separate Google profile, set the appropriate Script Properties, deploy the web app with authenticated shared-secret handling, configure the Worker secrets securely, confirm one actual QA contact enquiry in the correct workbook and a received notification, review Turnstile/anti-abuse, then repeat browser/production and handover tests. Status remains CLOSEOUT_BLOCKED.
