@@ -27,6 +27,7 @@ permissions:
 
 jobs:
   release-contract:
+    name: website-qa-${{ inputs.phase }}-evidence
     runs-on: ubuntu-latest
     steps:
       - name: Checkout site repository
