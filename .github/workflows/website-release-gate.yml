@@ -55,7 +55,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Reject stale or unapproved standard
+      - name: Require pin from reviewed standard main history
         shell: bash
         env:
           STANDARD_REF: ${{ inputs.standard_ref }}
@@ -63,10 +63,12 @@ jobs:
           set -euo pipefail
           git -C .website-quality-standard fetch --no-tags origin main
           approved_head="$(git -C .website-quality-standard rev-parse FETCH_HEAD)"
-          if [[ "$STANDARD_REF" != "$approved_head" ]]; then
-            echo "::error::Standard must match the currently approved main branch commit"
+          if ! git -C .website-quality-standard merge-base --is-ancestor "$STANDARD_REF" "$approved_head"; then
+            echo "::error::Pinned standard ref has not been merged to main"
             exit 1
           fi
+          # SHA pin stays stable across unrelated changes to standard main.
+          # Version upgrades are explicit, reviewed changes to the caller.
 
       - name: Contract validation
         env:
