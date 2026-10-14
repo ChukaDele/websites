@@ -1,18 +1,13 @@
 name: Website Standard Contract Tests
 
+# Required checks must run on EVERY PR, including changes outside the gate directory.
+# Path filters can leave a required status pending forever and block unrelated PRs.
 on:
   pull_request:
-    paths:
-      - 'tooling/website-release-gate/**'
-      - '.github/workflows/website-release-gate.yml'
-      - '.github/workflows/website-release-gate-tests.yml'
   push:
     branches:
       - main
-    paths:
-      - 'tooling/website-release-gate/**'
-      - '.github/workflows/website-release-gate.yml'
-      - '.github/workflows/website-release-gate-tests.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
