@@ -89,6 +89,8 @@ class GateTests(unittest.TestCase):
             e["controls"]["R11"] = {
                 "status": "NOT_APPLICABLE", "reviewed_by": "Reviewer",
                 "reason": "This site does not use sticky mobile conversion CTAs",
+                "release_sha": SHA, "observed_at": stamp(), "tested_by": "Engineer",
+                "evidence_url": "https://example.com/qa/no-sticky-cta",
             }
         self.assertEqual(result(change=mutate)["status"], "CLOSEOUT_EVIDENCE_PASS")
 
@@ -121,7 +123,9 @@ class GateTests(unittest.TestCase):
         def mutate(p, e):
             e["controls"]["R04"] = {
                 "status": "DEFERRED", "reviewed_by": "Reviewer", "owner": "Engineer",
-                "issue": "TCK-2", "due_date": "2026-11-01",
+                "issue": "TCK-2", "due_date": (NOW.date() + dt.timedelta(days=20)).isoformat(),
+                "release_sha": SHA, "observed_at": stamp(), "tested_by": "Engineer",
+                "evidence_url": "https://example.com/issues/TCK-2",
             }
         self.assertEqual(result(change=mutate)["status"], "CLOSEOUT_EVIDENCE_PASS")
 
@@ -130,6 +134,81 @@ class GateTests(unittest.TestCase):
         p["critical_journeys"] = []
         r = gate.audit(CATALOG, p, {}, "intake")
         self.assertTrue(any("critical_journeys" in s for s in r["blockers"]))
+
+    def test_conditional_na_without_release_evidence_is_blocked(self):
+        def mutate(p, e):
+            e["controls"]["R17"] = {
+                "status": "NOT_APPLICABLE", "reviewed_by": "Reviewer",
+                "reason": "The site only uses strictly necessary first-party storage",
+            }
+        r = result(change=mutate)
+        self.assertEqual(r["status"], "CLOSEOUT_BLOCKED")
+        self.assertTrue(any("R17" in issue and "evidence" in issue for issue in r["blockers"]))
+
+    def test_deferred_invalid_due_date_is_blocked(self):
+        def mutate(p, e):
+            e["controls"]["R04"] = {
+                "status": "DEFERRED", "reviewed_by": "Reviewer", "tested_by": "Engineer",
+                "owner": "Engineer", "issue": "TCK-2", "due_date": "yesterday",
+                "release_sha": SHA, "observed_at": stamp(),
+                "evidence_url": "https://example.com/issues/TCK-2",
+            }
+        self.assertTrue(any("valid ISO" in b for b in result(change=mutate)["blockers"]))
+
+    def test_deferred_past_due_date_is_blocked(self):
+        def mutate(p, e):
+            e["controls"]["R04"] = {
+                "status": "DEFERRED", "reviewed_by": "Reviewer", "tested_by": "Engineer",
+                "owner": "Engineer", "issue": "TCK-2",
+                "due_date": (NOW.date() - dt.timedelta(days=1)).isoformat(),
+                "release_sha": SHA, "observed_at": stamp(),
+                "evidence_url": "https://example.com/issues/TCK-2",
+            }
+        self.assertTrue(any("within 90 days" in b for b in result(change=mutate)["blockers"]))
+
+    def test_stale_closeout_approval_is_blocked(self):
+        def mutate(p, e):
+            e["approvals"]["closeout"]["observed_at"] = (NOW - dt.timedelta(days=30)).isoformat()
+        self.assertTrue(any("closeout is stale" in b for b in result(change=mutate)["blockers"]))
+
+    def test_future_closeout_approval_is_blocked(self):
+        def mutate(p, e):
+            e["approvals"]["closeout"]["observed_at"] = (NOW + dt.timedelta(days=3)).isoformat()
+        self.assertTrue(any("closeout is stale" in b for b in result(change=mutate)["blockers"]))
+
+    def test_missing_expected_commit_is_blocked(self):
+        p, e = sample()
+        r = gate.audit(CATALOG, p, e, "closeout", expected_sha="", now=NOW)
+        self.assertTrue(any("verified --sha" in b for b in r["blockers"]))
+
+    def test_waiver_without_owner_approval_link_is_blocked(self):
+        def mutate(p, e):
+            e["controls"]["R01"] = {
+                "status": "WAIVED", "reviewed_by": "Reviewer", "tested_by": "Engineer",
+                "release_sha": SHA, "observed_at": stamp(),
+                "evidence_url": "https://example.com/issue/1",
+                "waiver": {
+                    "approved_by": "Owner", "reason": "Temporary landing 404 fallback",
+                    "mitigation": "Server-level fallback installed", "issue": "TCK-1",
+                    "expires_at": (NOW + dt.timedelta(days=2)).isoformat()
+                }
+            }
+        self.assertTrue(any("owner-approval evidence URL" in b for b in result(change=mutate)["blockers"]))
+
+    def test_valid_time_limited_waiver_contract(self):
+        def mutate(p, e):
+            e["controls"]["R01"] = {
+                "status": "WAIVED", "reviewed_by": "Reviewer", "tested_by": "Engineer",
+                "release_sha": SHA, "observed_at": stamp(),
+                "evidence_url": "https://example.com/issues/TCK-1",
+                "waiver": {
+                    "approved_by": "Owner", "reason": "Temporary custom-404 fallback",
+                    "mitigation": "Infrastructure-managed 404 for release", "issue": "TCK-1",
+                    "evidence_url": "https://example.com/approvals/TCK-1",
+                    "expires_at": (NOW + dt.timedelta(days=2)).isoformat()
+                }
+            }
+        self.assertEqual(result(change=mutate)["status"], "CLOSEOUT_EVIDENCE_PASS")
 
 
 if __name__ == "__main__":
