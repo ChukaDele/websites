@@ -272,6 +272,29 @@ async function testInsights(browser) {
   console.log("✓ insights index + article desktop/mobile");
 }
 
+async function testContactCannotClaimUndeliveredSuccess(browser) {
+  const context = await browser.newContext();
+  try {
+    const payload = {
+      formType: "contact", name: "Internal QA", email: "qa-check@invalid.example",
+      company: "Internal Test", message: "Controlled negative lead integrity test",
+      needs: ["Data engineering"], company_website: "", elapsedMs: 100,
+    };
+    const headers = { Origin: "https://thebredge.com" };
+    const fast = await context.request.post(`${base}/api/contact`, { data: payload, headers });
+    assert.equal(fast.status(), 429, "fast lead must not be marked delivered");
+    assert.equal((await fast.json()).ok, undefined);
+    const trapped = await context.request.post(`${base}/api/contact`, {
+      data: { ...payload, elapsedMs: 2000, company_website: "autofilled" }, headers,
+    });
+    assert.equal(trapped.status(), 422, "honeypot autofill must not be marked delivered");
+    assert.equal((await trapped.json()).ok, undefined);
+    console.log("✓ contact fast-fill/honeypot rejected without false success");
+  } finally {
+    await context.close();
+  }
+}
+
 async function testHeaders(browser) {
   const context = await browser.newContext();
   const response = await context.request.get(base);
@@ -293,6 +316,7 @@ try {
   await testShortAndReducedMotion(browser);
   await testExperienceMotionAndMobileReading(browser);
   await testInsights(browser);
+  await testContactCannotClaimUndeliveredSuccess(browser);
   await testHeaders(browser);
   console.log("\nBredge browser QA: PASS");
 } finally {

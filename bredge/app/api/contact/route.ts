@@ -16,6 +16,7 @@
  */
 
 import { ALLOWED_ORIGINS } from "../../../lib/config";
+import { validateLeadSubmissionGuard } from "../../../lib/contact-guard";
 
 interface Env {
   GOOGLE_LEADS_WEBHOOK_URL?: string;
@@ -41,8 +42,6 @@ function getEnv(): Env {
 
 const bad = (error: string, status = 400) => Response.json({ error }, { status });
 const ok = () => Response.json({ ok: true }, { status: 200 });
-// Bots that trip the honeypot / speed trap get a fake 200 so they don't learn.
-const silentOk = () => Response.json({ ok: true }, { status: 200 });
 
 async function verifyTurnstile(token: string, secret: string, ip?: string) {
   const body = new URLSearchParams({ secret, response: token });
@@ -66,9 +65,10 @@ export async function POST(request: Request) {
   let body: Payload;
   try { body = (await request.json()) as Payload; } catch { return bad("Invalid request."); }
 
-  // Honeypot + speed trap → silently accepted, never stored.
-  if (body.company_website && body.company_website.trim() !== "") return silentOk();
-  if (typeof body.elapsedMs === "number" && body.elapsedMs >= 0 && body.elapsedMs < 1200) return silentOk();
+  // Refuse success for unsaved submissions. Fast/autofilled visitors get a clear retry.
+  // Real success requires the downstream Google webhook to confirm a saved lead.
+  const integrityError = validateLeadSubmissionGuard(body);
+  if (integrityError) return bad(integrityError.error, integrityError.status);
 
   const name = (body.name || "").trim();
   const email = (body.email || "").trim();
