@@ -1,0 +1,26 @@
+name: Website Standard Contract Tests
+
+# Required checks must run on EVERY PR, including changes outside the gate directory.
+# Path filters can leave a required status pending forever and block unrelated PRs.
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validator-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile gate
+        run: python -m py_compile tooling/website-release-gate/validate.py tooling/website-release-gate/scaffold.py
+      - name: Run fail-closed contract regression suite
+        run: python -m unittest discover -s tooling/website-release-gate/tests -v

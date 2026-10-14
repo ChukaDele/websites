@@ -1,0 +1,106 @@
+name: Website Release Evidence Gate
+
+on:
+  workflow_call:
+    inputs:
+      phase:
+        description: Intake, build, prelaunch, live, or closeout.
+        required: true
+        type: string
+      standard_ref:
+        description: Exact 40-char SHA of ChukaDele/websites standard.
+        required: true
+        type: string
+      profile_path:
+        description: File in caller repository containing site profile.
+        required: false
+        type: string
+        default: .website-qa/profile.json
+      evidence_base64:
+        description: Base64 release evidence generated outside source commit.
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  release-contract:
+    name: website-qa-${{ inputs.phase }}-evidence
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout site repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Check standard is pinned
+        env:
+          STANDARD_REF: ${{ inputs.standard_ref }}
+        shell: bash
+        run: |
+          if [[ ! "$STANDARD_REF" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::standard_ref must be a pinned 40-char lowercase commit SHA"
+            exit 1
+          fi
+
+      - name: Checkout pinned QA standard
+        uses: actions/checkout@v4
+        with:
+          repository: ChukaDele/websites
+          ref: ${{ inputs.standard_ref }}
+          path: .website-quality-standard
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Require pin from reviewed standard main history
+        shell: bash
+        env:
+          STANDARD_REF: ${{ inputs.standard_ref }}
+        run: |
+          set -euo pipefail
+          git -C .website-quality-standard fetch --no-tags origin main
+          approved_head="$(git -C .website-quality-standard rev-parse FETCH_HEAD)"
+          if ! git -C .website-quality-standard merge-base --is-ancestor "$STANDARD_REF" "$approved_head"; then
+            echo "::error::Pinned standard ref has not been merged to main"
+            exit 1
+          fi
+          # SHA pin stays stable across unrelated changes to standard main.
+          # Version upgrades are explicit, reviewed changes to the caller.
+
+      - name: Contract validation
+        env:
+          PHASE: ${{ inputs.phase }}
+          SITE_PROFILE: ${{ inputs.profile_path }}
+          EVIDENCE_BASE64: ${{ inputs.evidence_base64 }}
+          RELEASE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          REPORT_PATH: ${{ runner.temp }}/website-gate-report.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(
+            --catalog .website-quality-standard/tooling/website-release-gate/catalog.json
+            --profile "$SITE_PROFILE"
+            --phase "$PHASE"
+            --sha "$RELEASE_SHA"
+            --report "$REPORT_PATH"
+          )
+          if [[ "$PHASE" != "intake" ]]; then
+            if [[ -z "$EVIDENCE_BASE64" ]]; then
+              echo "::error::Release evidence is mandatory for phase $PHASE"
+              exit 1
+            fi
+            printf '%s' "$EVIDENCE_BASE64" | base64 -d > "${RUNNER_TEMP}/website-evidence.json"
+            args+=(--evidence "${RUNNER_TEMP}/website-evidence.json")
+          fi
+          python3 .website-quality-standard/tooling/website-release-gate/validate.py "${args[@]}"
+
+      - name: Upload closeout report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-release-gate-report-${{ inputs.phase }}
+          path: ${{ runner.temp }}/website-gate-report.json
+          if-no-files-found: warn
