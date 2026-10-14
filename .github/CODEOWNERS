@@ -1,0 +1,6 @@
+# Changes to the website release controls require an explicitly accountable code-owner review.
+# Keep other website implementation work unblocked when it passes executable checks.
+/.github/CODEOWNERS @ChukaDele
+/.github/workflows/website-release-gate.yml @ChukaDele
+/.github/workflows/website-release-gate-tests.yml @ChukaDele
+/tooling/website-release-gate/ @ChukaDele
