@@ -26,6 +26,7 @@ interface Env {
 
 type Utm = { source?: string; medium?: string; campaign?: string; content?: string };
 type Payload = {
+  submissionId?: string;
   formType?: string;
   name?: string; email?: string; company?: string;
   country?: string; phone?: string; phoneE164?: string; phoneCountry?: string; callingCode?: string;
@@ -101,7 +102,12 @@ export async function POST(request: Request) {
     if (!passed) return bad("Verification failed — please try again.");
   }
 
+  const clientSubmissionId = typeof body.submissionId === "string" ? body.submissionId.trim() : "";
+  if (clientSubmissionId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(clientSubmissionId)) {
+    return bad("Invalid submission identifier. Please refresh the form and try again.");
+  }
   const submission = {
+    submissionId: clientSubmissionId || crypto.randomUUID(),
     formType,
     name, email: email.toLowerCase(), company,
     country: (body.phoneCountry || body.country || "").slice(0, 80),

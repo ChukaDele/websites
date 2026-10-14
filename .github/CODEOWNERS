@@ -13,3 +13,7 @@
 /bredge/scripts/verify-live.sh @ChukaDele
 /bredge/tests/ @ChukaDele
 /bredge/worker/ @ChukaDele
+/bredge/app/api/contact/route.ts @ChukaDele
+/bredge/components/interactions/ContactForm.tsx @ChukaDele
+/bredge/lib/contact-guard.ts @ChukaDele
+/bredge/integrations/google-leads/ @ChukaDele

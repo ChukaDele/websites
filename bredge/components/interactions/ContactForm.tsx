@@ -41,6 +41,9 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
   const [phoneTouched, setPhoneTouched] = useState(false);
   const [state, setState] = useState<State>({ kind: "idle" });
   const lastLead = useRef<{ name: string; email: string; phone: string } | null>(null);
+  // One stable identifier per attempted enquiry; preserve it across retries to
+  // prevent duplicate Google Sheet rows if the network response is lost.
+  const submissionIdRef = useRef<string | null>(null);
   const startedAt = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -71,13 +74,27 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
     el?.focus?.();
   }
 
+  function resetUsedVerification() {
+    // Turnstile tokens are single-use. Any failed/uncertain submit needs a fresh
+    // token before retrying with the same submission ID.
+    if (!TURNSTILE_SITE_KEY) return;
+    try {
+      const holder = window as Window & { turnstile?: { reset: () => void } };
+      holder.turnstile?.reset();
+    } catch { /* The visitor still receives the actual delivery error. */ }
+  }
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (state.kind === "sending") return;
     const data = new FormData(e.currentTarget);
     const email = String(data.get("email") || "").trim().toLowerCase();
     const projectType = [capability, urgentArea].filter(Boolean).join(" · ");
+    // Modern browsers keep one UUID through retries. Older browsers without
+    // randomUUID still submit: the Worker generates a server-side identifier.
+    if (!submissionIdRef.current) submissionIdRef.current = window.crypto?.randomUUID?.() ?? null;
     const payload = {
+      ...(submissionIdRef.current ? { submissionId: submissionIdRef.current } : {}),
       formType,
       name: String(data.get("name") || "").trim(),
       email,
@@ -112,16 +129,21 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
     try {
       const res = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       if (res.ok) {
+        // The next distinct enquiry must receive a new UUID. Preserve the same
+        // ID only across uncertain/failed attempts of this enquiry.
+        submissionIdRef.current = null;
         lastLead.current = { name: payload.name, email: payload.email, phone: payload.phoneE164 };
         trackEvent("contact_success", { selected_needs_count: needs.length, intent: payload.intent });
         setState({ kind: "ok" });
       } else {
         const b = await res.json().catch(() => ({}));
         trackEvent("contact_error", { page_path: payload.page });
+        resetUsedVerification();
         setState({ kind: "error", message: b.error || "That didn’t send. Please try again." });
       }
     } catch {
       trackEvent("contact_error", { page_path: payload.page });
+      resetUsedVerification();
       setState({ kind: "error", message: "That didn’t send. Please try again, or email hello@thebredge.com." });
     }
   }

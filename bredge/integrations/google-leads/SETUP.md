@@ -18,8 +18,10 @@ Pipeline: **Browser → Cloudflare `/api/contact` → Apps Script Web App → wo
 
 ## 2. Cloudflare Worker secrets
 ```bash
-npx wrangler secret put GOOGLE_LEADS_WEBHOOK_URL     # the /exec URL from step 1.4
-npx wrangler secret put GOOGLE_LEADS_WEBHOOK_SECRET  # SAME value as WEBHOOK_SECRET
+# Run only after the Apps Script web app is securely configured and verified.
+# Point at the actual production Worker, not an unrelated Wrangler default.
+npx wrangler secret put GOOGLE_LEADS_WEBHOOK_URL --name bredge
+npx wrangler secret put GOOGLE_LEADS_WEBHOOK_SECRET --name bredge
 ```
 Until both are set, the form fails cleanly to the mailto fallback (never a false success).
 
@@ -50,3 +52,19 @@ Do **not** browser-scrape dashboards. Raw visitor telemetry stays in GA4/Clarity
 - Add the Cal webhook URL (with `?key=`).
 - Do the Dashboard/Leads formatting pass in the Sheet.
 - (Later) GA4 + Search Console API access + property IDs to switch on `syncWeekly()`.
+
+## 2026-10-15: integrity and deployment acceptance
+
+The owner-account Google Apps Script project has been created and **bound to the existing workbook**, with the source initially uploaded and a private (\`MYSELF\`) v1 web-app deployment. A separately authorized \`bredge-leads\` clasp OAuth profile can list deployments; this does not itself grant Apps Script function access, Sheets/MailApp execution consent, or permission to open the endpoint to anonymous traffic. The existing default clasp credentials remain unchanged. The currently deployed private baseline may lag the reviewed GitHub source until a new version is published.
+
+**Production must remain blocked** until all steps below are verified:
+
+1. Approve the Apps Script function permissions in the owner's script editor. Set \`WEBHOOK_SECRET\` and \`CAL_WEBHOOK_SECRET\` in **Project settings > Script properties** with independently generated, high-entropy values. Never commit, log, email or paste the secrets into GitHub/Notion/ChatGPT.
+2. Push the reviewed \`Code.gs\` to this bound project, deploy an immutable new version, and only then change web-app access to \`ANYONE_ANONYMOUS\` with execution as \`USER_DEPLOYING\`. Validate that an anonymous request with an incorrect or absent shared secret cannot write anything.
+3. Configure matching Cloudflare Worker secrets using \`wrangler secret put ... --name bredge\`. The fail-closed GitHub production-release preflight checks the secret **names**, but not their values.
+4. Configure a real Cloudflare Turnstile widget for \`thebredge.com\` and the Worker secret \`TURNSTILE_SECRET_KEY\`; update the public site key in \`lib/config.ts\`. The current blank public key means Turnstile is disabled, so owner approval of abuse protection remains outstanding.
+5. The browser keeps a stable UUID across retries. The Worker forwards it, and the Apps Script uses a script lock and Sheet lookup to avoid duplicate rows. Notification failures set the 26th column \`Notification Status\` to \`PENDING\`, preserve the saved lead and are retriable. Run \`installNotificationRetryTrigger\` once in the authorized editor to install a 15-minute retry job.
+6. Submit one explicitly identified real QA lead from the actual public website. Confirm exactly one \`BR-UUID\` in \`Leads\`, notification status \`SENT\`, and a received owner-email notification. Retry the same submission identifier to prove no second row or notification. Test missing webhook, wrong secret and rate-limit/rejection outcomes without false HTTP 200 acknowledgments.
+7. Audit the connected Cal.com booking webhook separately. It uses \`CAL_WEBHOOK_SECRET\` and must write one actual confirmed booking to the \`Bookings\` tab. A page view is not evidence of booking completion.
+
+Never use a green unit-test or manifest-check status as proof of Google/Cloudflare integration. Release ownership and SHA-bound live smoke remain mandatory.
