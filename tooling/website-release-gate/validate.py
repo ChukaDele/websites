@@ -36,7 +36,7 @@ def parse_time(value: object) -> dt.datetime | None:
 
 
 def parse_due_date(value: object) -> dt.date | None:
-    if not isinstance(value, str) or not re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}", value):
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
         return None
     try:
         return dt.date.fromisoformat(value)
