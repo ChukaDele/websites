@@ -190,7 +190,12 @@ jobs:
           fi
           # Block releases when the primary contact form webhook is unconfigured.
           # Presence is necessary but a separately verified Sheet write is still required.
-          if ! npx wrangler secret list --name bredge | node scripts/assert-lead-secrets.mjs; then
+          worker_name="$(node -p 'JSON.parse(require("node:fs").readFileSync("dist/server/wrangler.json", "utf8")).name')"
+          if [[ "$worker_name" != "bredge" ]]; then
+            echo "::error::Built Worker name is not the approved production Worker bredge"
+            exit 1
+          fi
+          if ! npx wrangler secret list --config dist/server/wrangler.json --format json --name "$worker_name" | node scripts/assert-lead-secrets-cli.mjs; then
             echo "::error::Bredge contact webhook secrets missing. See P0 issue #13."
             exit 1
           fi
