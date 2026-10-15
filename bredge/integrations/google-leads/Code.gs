@@ -17,6 +17,7 @@
  */
 
 var SPREADSHEET_ID = "1FtGA32FXrJ2TK-AOXUJC62hfVj8jpxEsJoWK0M4nAlw";
+var BREDGE_WEBHOOK_REVISION = "bredge-leads-v3-20261015";
 var NOTIFY_EMAIL = "mcdavies001@gmail.com";
 
 var LEADS_HEADERS = [
@@ -48,6 +49,20 @@ function doPost(e) {
     if (!e || !e.postData || !e.postData.contents) return json({ ok: false, error: "empty" });
     var body = JSON.parse(e.postData.contents);
     var params = (e.parameter) || {};
+
+    // Read-only authenticated readiness check for the protected release workflow.
+    // It never appends a lead or returns a secret or personal information.
+    if (params.health === "1") {
+      var expected = PropertiesService.getScriptProperties().getProperty("WEBHOOK_SECRET");
+      if (!expected || !body || body.secret !== expected) return json({ ok: false, error: "unauthorized" });
+      var workbook = ss_();
+      return json({
+        ok: Boolean(workbook.getSheetByName("Leads") && workbook.getSheetByName("Bookings")),
+        service: "bredge-workbook",
+        workbookId: workbook.getId(),
+        revision: BREDGE_WEBHOOK_REVISION,
+      });
+    }
 
     // Cal.com webhook: authenticated by ?key= and identified by triggerEvent.
     if (body.triggerEvent || params.source === "cal") return handleBooking_(body, params);

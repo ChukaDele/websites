@@ -1,0 +1,37 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+const workflow = readFileSync(
+  new URL("../../.github/workflows/deploy-bredge.yml", import.meta.url),
+  "utf8"
+);
+
+test("production requires manual dispatch, a protected environment and the reviewed main SHA", () => {
+  assert.match(workflow, /github\.event_name == 'workflow_dispatch'/);
+  assert.match(workflow, /environment:\s*\n\s*name: Cloudflare/);
+  assert.match(workflow, /current_main=.*gh api/);
+  assert.match(workflow, /REQUESTED_SHA.*GITHUB_SHA/);
+});
+
+test("Google and Turnstile readiness checks precede every production mutation", () => {
+  const preflight = workflow.indexOf("Verify Google webhook readiness and Turnstile");
+  const deploy = workflow.indexOf("Publish reviewed code and secret bindings atomically");
+  assert.ok(preflight >= 0 && deploy > preflight);
+  assert.match(workflow.slice(preflight, deploy), /verify-turnstile-prod-cli/);
+  assert.match(workflow.slice(preflight, deploy), /workbookId == \$wb and \.revision == \$rev/);
+  assert.doesNotMatch(workflow.slice(preflight, deploy), /'\\\.ok/);
+});
+
+test("production code and new secrets publish in one Worker version", () => {
+  const deploy = workflow.slice(workflow.indexOf("Publish reviewed code and secret bindings atomically"));
+  assert.match(deploy, /wrangler deploy -c dist\/server\/wrangler\.json --secrets-file \/dev\/stdin/);
+  assert.doesNotMatch(workflow, /\bwrangler (?:secret (?:put|bulk)|versions secret (?:put|bulk))\b/);
+  assert.match(deploy, /Previous Worker version for rollback/);
+  assert.match(deploy, /npx --no-install wrangler/);
+});
+
+test("CI validates a real Wrangler build with the atomic delivery interface", () => {
+  assert.match(workflow, /Verify atomic Worker deployment packaging without publishing/);
+  assert.match(workflow, /wrangler deploy -c dist\/server\/wrangler\.json --dry-run --secrets-file \/dev\/stdin/);
+});

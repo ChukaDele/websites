@@ -68,6 +68,11 @@ jobs:
       - name: Build and source regression tests
         run: npm test
 
+      - name: Verify atomic Worker deployment packaging without publishing
+        run: |
+          printf '{"QA_ATOMIC_DEPLOY_TEST_ONLY":"dummy"}' |
+            npx --no-install wrangler deploy -c dist/server/wrangler.json --dry-run --secrets-file /dev/stdin
+
       - name: Install browser QA runtime
         run: |
           npm install --no-save --package-lock=false playwright@1.55.0
@@ -99,6 +104,23 @@ jobs:
             cat /tmp/bredge-wrangler.log
             exit 1
           fi
+
+      - name: Preserve browser-tested Worker bundle for approved release
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: bredge-tested-bundle-${{ github.sha }}
+          path: bredge/dist/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Restore the browser-tested Worker artifact in this same CI run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: bredge-tested-bundle-${{ github.sha }}
+          path: bredge/qa-bundle-roundtrip/
+
+      - name: Prove Worker artifact bytes match the bundle Chromium tested
+        run: diff -qr dist qa-bundle-roundtrip
 
       - name: Upload QA screenshots
         if: always()
@@ -171,35 +193,103 @@ jobs:
           cache: npm
           cache-dependency-path: bredge/package-lock.json
 
-      - name: Build and test approved code before token access
-        run: |
-          npm ci
-          npm run lint
-          npm test  # Includes npm run build and embeds GITHUB_SHA in GET /__build.
+      - name: Install locked dependencies for the approved main SHA
+        run: npm ci
 
-      - name: Publish after protected Cloudflare environment approval
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.API }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Restore Worker bundle verified by the Chromium QA job
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: bredge-tested-bundle-${{ github.sha }}
+          path: bredge/dist/
+
+      - name: Check downloaded bundle and repeat source tests without rebuilding
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -z "${CLOUDFLARE_API_TOKEN:-}" || -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]]; then
-            echo "::error::Missing production-scoped Cloudflare environment credentials"
+          test -f dist/server/wrangler.json
+          test "$(node -p 'JSON.parse(require("node:fs").readFileSync("dist/server/wrangler.json", "utf8")).name')" = "bredge"
+          npm run lint
+          node --test tests/*.test.mjs
+
+      - name: Verify Google webhook readiness and Turnstile without production write access
+        env:
+          GOOGLE_LEADS_URL: ${{ secrets.GOOGLE_LEADS_WEBHOOK_URL }}
+          GOOGLE_LEADS_SECRET: ${{ secrets.GOOGLE_LEADS_WEBHOOK_SECRET }}
+          TURNSTILE_SECRET: ${{ secrets.TURNSTILE_SECRET_KEY }}
+          BREDGE_GOOGLE_SCRIPT_DEPLOYMENT_ID: ${{ vars.BREDGE_GOOGLE_SCRIPT_DEPLOYMENT_ID }}
+          BREDGE_GOOGLE_WORKBOOK_ID: ${{ vars.BREDGE_GOOGLE_WORKBOOK_ID }}
+          BREDGE_GOOGLE_SCRIPT_REVISION: ${{ vars.BREDGE_GOOGLE_SCRIPT_REVISION }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$GOOGLE_LEADS_URL" || -z "$GOOGLE_LEADS_SECRET" || -z "$TURNSTILE_SECRET" ]]; then
+            echo "::error::Webhook URL, shared token and Turnstile secret must be in the approved environment."
             exit 1
           fi
-          # Block releases when the primary contact form webhook is unconfigured.
-          # Presence is necessary but a separately verified Sheet write is still required.
+          if [[ "${#GOOGLE_LEADS_SECRET}" -lt 48 ]]; then
+            echo "::error::Shared webhook token is shorter than the minimum accepted length."
+            exit 1
+          fi
+          if [[ -z "$BREDGE_GOOGLE_WORKBOOK_ID" || -z "$BREDGE_GOOGLE_SCRIPT_REVISION" ]]; then
+            echo "::error::Pinned workbook and version are required."
+            exit 1
+          fi
+          node scripts/verify-turnstile-prod-cli.mjs
+          node -e 'const u = new URL(process.env.GOOGLE_LEADS_URL); const id = process.env.BREDGE_GOOGLE_SCRIPT_DEPLOYMENT_ID; if (!id || u.protocol !== "https:" || u.hostname !== "script.google.com" || u.pathname !== "/macros/s/" + id + "/exec" || u.search || u.hash) process.exit(1);'
+          if ! jq -n '{secret:env.GOOGLE_LEADS_SECRET}' |
+            curl --silent --show-error --fail --location --max-time 30 --proto "=https" --proto-redir "=https"               -H "Content-Type: application/json" --data-binary @- "$GOOGLE_LEADS_URL?health=1" |
+            jq -e --arg wb "$BREDGE_GOOGLE_WORKBOOK_ID" --arg rev "$BREDGE_GOOGLE_SCRIPT_REVISION" '.ok == true and .service == "bredge-workbook" and .workbookId == $wb and .revision == $rev' >/dev/null; then
+            echo "::error::Google webhook did not confirm authenticated workbook availability; release blocked."
+            exit 1
+          fi
+
+      - name: Publish reviewed code and secret bindings atomically
+        id: publish
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.API }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          GOOGLE_LEADS_URL: ${{ secrets.GOOGLE_LEADS_WEBHOOK_URL }}
+          GOOGLE_LEADS_SECRET: ${{ secrets.GOOGLE_LEADS_WEBHOOK_SECRET }}
+          TURNSTILE_SECRET: ${{ secrets.TURNSTILE_SECRET_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$CLOUDFLARE_API_TOKEN" || -z "$CLOUDFLARE_ACCOUNT_ID" ]]; then
+            echo "::error::Production deployment credentials are missing."
+            exit 1
+          fi
           worker_name="$(node -p 'JSON.parse(require("node:fs").readFileSync("dist/server/wrangler.json", "utf8")).name')"
           if [[ "$worker_name" != "bredge" ]]; then
-            echo "::error::Built Worker name is not the approved production Worker bredge"
+            echo "::error::The target Worker differs from approved production."
             exit 1
           fi
-          if ! npx wrangler secret list --config dist/server/wrangler.json --format json --name "$worker_name" | node scripts/assert-lead-secrets-cli.mjs; then
-            echo "::error::Bredge contact webhook secrets missing. See P0 issue #13."
+
+          # Record the previous active version before altering production.
+          history="$(npx --no-install wrangler deployments list --name "$worker_name" --json)"
+          previous="$(printf '%s' "$history" | jq -er '[.[] | select([.versions[]? | select(.percentage == 100)] | length > 0)] | max_by(.created_on).versions[] | select(.percentage == 100) | .version_id')"
+          if [[ ! "$previous" =~ ^[0-9a-f-]{36}$ ]]; then
+            echo "::error::Could not verify the current rollback version."
             exit 1
           fi
-          npx wrangler deploy -c dist/server/wrangler.json
+          echo "Previous Worker version for rollback: $previous" >> "$GITHUB_STEP_SUMMARY"
+          echo "previous=$previous" >> "$GITHUB_OUTPUT"
+          previous_sha="$(curl --fail --silent --show-error --max-time 15 -H 'Cache-Control: no-cache' "https://thebredge.com/__build?before=$GITHUB_RUN_ID" | jq -er '.sha')"
+          if [[ ! "$previous_sha" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "::error::Cannot prove which public commit was active before release."
+            exit 1
+          fi
+          echo "previous_sha=$previous_sha" >> "$GITHUB_OUTPUT"
+
+          # Wrangler deploy --secrets-file uploads new source and secrets
+          # in ONE version. Prior secret put/bulk would activate old code
+          # with new credentials, causing a conversion outage on failed builds.
+          # Read secret values from environment and stream them through stdin.
+          echo "attempted=true" >> "$GITHUB_OUTPUT"
+          jq -n '{GOOGLE_LEADS_WEBHOOK_URL:env.GOOGLE_LEADS_URL, GOOGLE_LEADS_WEBHOOK_SECRET:env.GOOGLE_LEADS_SECRET, TURNSTILE_SECRET_KEY:env.TURNSTILE_SECRET}' |
+            npx --no-install wrangler deploy -c dist/server/wrangler.json --secrets-file /dev/stdin
+
+          npx --no-install wrangler secret list --config dist/server/wrangler.json --format json --name "$worker_name" |
+            node scripts/assert-lead-secrets-cli.mjs
 
       - name: Prove live production build and critical public routes
         env:
@@ -222,6 +312,32 @@ jobs:
             exit 1
           fi
           bash scripts/verify-live.sh https://thebredge.com expect-index
+
+      - name: Restore previous Worker version on failed production release
+        if: ${{ failure() && steps.publish.outputs.attempted == 'true' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.API }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          PREVIOUS: ${{ steps.publish.outputs.previous }}
+          PREVIOUS_SHA: ${{ steps.publish.outputs.previous_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$PREVIOUS" =~ ^[0-9a-f-]{36}$ || ! "$PREVIOUS_SHA" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "::error::No verified rollback version and SHA."
+            exit 1
+          fi
+          npx --no-install wrangler rollback "$PREVIOUS" --config dist/server/wrangler.json --name bredge --message "Automatic rollback after failed GitHub run $GITHUB_RUN_ID"
+          for attempt in 1 2 3 4 5; do
+            if curl -fsS -H "Cache-Control: no-cache" --max-time 20 "https://thebredge.com/__build?rollback=$GITHUB_RUN_ID-$attempt" |
+              jq -e --arg sha "$PREVIOUS_SHA" '.sha == $sha and .worker == "bredge"' >/dev/null; then
+              echo "Prior production SHA restored: $PREVIOUS_SHA" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::Rollback attempted, but public SHA does not match the prior version."
+          exit 1
 
       - name: Preserve failure screenshots
         if: failure()

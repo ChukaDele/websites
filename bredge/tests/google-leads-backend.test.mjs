@@ -56,7 +56,7 @@ function harness({ mailFails = false, sheetFails = false, lockFails = false } = 
     PropertiesService: { getScriptProperties: () => ({
       getProperty: (key) => key === "WEBHOOK_SECRET" ? "test-webhook-secret" : null,
     }) },
-    SpreadsheetApp: { openById: () => ({ getSheetByName: () => sheet }), flush: () => {} },
+    SpreadsheetApp: { openById: () => ({ getSheetByName: () => sheet, getId: () => "1FtGA32FXrJ2TK-AOXUJC62hfVj8jpxEsJoWK0M4nAlw" }), flush: () => {} },
     LockService: { getScriptLock: () => ({
       waitLock: () => { if (lockFails) throw new Error("Simulated busy lock"); },
       releaseLock: () => { lockReleases += 1; },
@@ -196,4 +196,23 @@ test("uppercase UUID replay maps to the same lower-case saved row", () => {
   assert.equal(h.submit({ submissionId: uuid.toUpperCase() }).ok, true);
   assert.equal(h.submit({ submissionId: uuid }).duplicate, true);
   assert.equal(h.rows.length, 2);
+});
+
+
+test("readiness endpoint verifies authenticated storage without writing", () => {
+  const h = harness();
+  function call(value) {
+    return JSON.parse(h.context.doPost({
+      postData: { contents: JSON.stringify({ secret: value }) },
+      parameter: { health: "1" },
+    }).body);
+  }
+  assert.equal(call("invalid").ok, false);
+  const healthy = call(baseLead.secret);
+  assert.equal(healthy.ok, true);
+  assert.equal(healthy.service, "bredge-workbook");
+  assert.equal(healthy.workbookId, "1FtGA32FXrJ2TK-AOXUJC62hfVj8jpxEsJoWK0M4nAlw");
+  assert.equal(healthy.revision, "bredge-leads-v3-20261015");
+  assert.equal(h.rows.length, 1);
+  assert.equal(h.emails.length, 0);
 });

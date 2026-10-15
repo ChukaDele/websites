@@ -3,6 +3,7 @@
 export const REQUIRED_LEAD_SECRET_NAMES = Object.freeze([
   "GOOGLE_LEADS_WEBHOOK_URL",
   "GOOGLE_LEADS_WEBHOOK_SECRET",
+  "TURNSTILE_SECRET_KEY",
 ]);
 
 export function missingLeadSecretNames(rows) {

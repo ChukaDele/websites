@@ -17,6 +17,7 @@
 
 import { ALLOWED_ORIGINS } from "../../../lib/config";
 import { validateLeadSubmissionGuard } from "../../../lib/contact-guard";
+import { requiresTurnstileSecret, verifiedTurnstileForHost } from "../../../lib/turnstile-policy";
 
 interface Env {
   GOOGLE_LEADS_WEBHOOK_URL?: string;
@@ -44,13 +45,13 @@ function getEnv(): Env {
 const bad = (error: string, status = 400) => Response.json({ error }, { status });
 const ok = () => Response.json({ ok: true }, { status: 200 });
 
-async function verifyTurnstile(token: string, secret: string, ip?: string) {
+async function verifyTurnstile(token: string, secret: string, hostname: string, ip?: string) {
   const body = new URLSearchParams({ secret, response: token });
   if (ip) body.set("remoteip", ip);
   try {
     const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body });
-    const data = (await r.json()) as { success?: boolean };
-    return !!data.success;
+    const data = await r.json();
+    return verifiedTurnstileForHost(data, hostname);
   } catch {
     return false;
   }
@@ -93,12 +94,17 @@ export async function POST(request: Request) {
   const linkCount = (message.match(/https?:\/\//gi) || []).length;
   if (linkCount > 6) return bad("Too many links in the message.");
 
-  // Turnstile (server-side) — enforced only when the secret is configured.
+  // Every remotely served form requires configured CAPTCHA, even when the
+  // Cloudflare secret has been lost. A missing binding must fail closed.
+  const requestHost = new URL(request.url).hostname;
+  if (requiresTurnstileSecret(requestHost, env.TURNSTILE_SECRET_KEY)) {
+    return bad("Verification is temporarily unavailable. Please email hello@thebredge.com.", 503);
+  }
   if (env.TURNSTILE_SECRET_KEY) {
     const token = (body.turnstileToken || "").trim();
     if (!token) return bad("Please complete the verification.");
     const ip = request.headers.get("cf-connecting-ip") || undefined;
-    const passed = await verifyTurnstile(token, env.TURNSTILE_SECRET_KEY, ip);
+    const passed = await verifyTurnstile(token, env.TURNSTILE_SECRET_KEY, requestHost, ip);
     if (!passed) return bad("Verification failed — please try again.");
   }
 

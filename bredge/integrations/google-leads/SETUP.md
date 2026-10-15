@@ -16,14 +16,15 @@ Pipeline: **Browser → Cloudflare `/api/contact` → Apps Script Web App → wo
 5. The `Leads` tab auto-creates with these columns (frozen header):
    `Submission ID · Received At · Name · Email · Company · Country · Phone · Phone E.164 · Needs · Current Data Capability · Urgent Area · Timeline · Message · Landing Page · Referrer · UTM Source · UTM Medium · UTM Campaign · UTM Content · Traffic Group · Status` (default Status = **New**). Formula-injection is neutralised on every cell. Every verified lead also emails **mcdavies001@gmail.com**.
 
-## 2. Cloudflare Worker secrets
-```bash
-# Run only after the Apps Script web app is securely configured and verified.
-# Point at the actual production Worker, not an unrelated Wrangler default.
-npx wrangler secret put GOOGLE_LEADS_WEBHOOK_URL --name bredge
-npx wrangler secret put GOOGLE_LEADS_WEBHOOK_SECRET --name bredge
-```
-Until both are set, the form fails cleanly to the mailto fallback (never a false success).
+## 2. Cloudflare Worker secrets and protected release
+
+Do **not** run `wrangler secret put` on the live Worker during a code rollout. It activates changed bindings against existing production code before the release is verified.
+
+Configure the following **GitHub Cloudflare environment secrets**, never repository files: `GOOGLE_LEADS_WEBHOOK_URL`, `GOOGLE_LEADS_WEBHOOK_SECRET`, and `TURNSTILE_SECRET_KEY`. The existing protected `API` token is the deployment credential. Its scope must be audited.
+
+The approved manual workflow verifies Google workbook identity, Apps Script revision, a working webhook health check, and a real Turnstile Siteverify rejection of a dummy token. Then a single `wrangler deploy --secrets-file /dev/stdin` uploads the reviewed Worker bundle and all three secrets atomically. Cloudflare preserves previously configured secrets omitted from that file. See [Cloudflare's secret deployment documentation](https://developers.cloudflare.com/workers/configuration/secrets/).
+
+Until the webhook and Turnstile bindings are configured, the contact form and production release remain blocked. An actual saved lead and notification email must be verified separately.
 
 ## 3. Bookings — real Cal.com bookings only (not page views)
 In **Cal.com → Settings → Developer → Webhooks**, add a webhook:
@@ -68,3 +69,11 @@ The owner-account Google Apps Script project has been created and **bound to the
 7. Audit the connected Cal.com booking webhook separately. It uses \`CAL_WEBHOOK_SECRET\` and must write one actual confirmed booking to the \`Bookings\` tab. A page view is not evidence of booking completion.
 
 Never use a green unit-test or manifest-check status as proof of Google/Cloudflare integration. Release ownership and SHA-bound live smoke remain mandatory.
+
+### Protected GitHub production configuration
+
+The \`Cloudflare\` GitHub **environment** (not repository variables or source code) must also hold three protected secrets: \`GOOGLE_LEADS_WEBHOOK_URL\` (the public Apps Script \`/exec\` URL), \`GOOGLE_LEADS_WEBHOOK_SECRET\` (the same high-entropy value as the Apps Script \`WEBHOOK_SECRET\` Script Property), and \`TURNSTILE_SECRET_KEY\` (from a Cloudflare Turnstile widget approved for the site). The Bredge Worker deploy token \`API\` remains in that environment. The public \`TURNSTILE_SITE_KEY\` belongs in \`lib/config.ts\` and must match the widget.
+
+The manual release workflow refuses to mutate the Worker unless an authenticated \`POST <Apps Script /exec URL>?health=1\` with the shared secret confirms that the intended workbook and \`Leads\`/\`Bookings\` tabs are reachable. Wrong, missing or expired credentials fail closed. The readiness endpoint never writes a lead or exposes the secret. After this check and GitHub environment approval, the workflow provisions the approved Worker secrets and verifies their names before deploying.
+
+This is a preflight, not a substitute for an actual submitted lead, confirmed Google Sheet row, owner notification, Turnstile verification, protected main-branch approval and live SHA smoke.
