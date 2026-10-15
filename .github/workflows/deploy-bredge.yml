@@ -119,8 +119,17 @@ jobs:
           name: bredge-tested-bundle-${{ github.sha }}
           path: bredge/qa-bundle-roundtrip/
 
-      - name: Prove Worker artifact bytes match the bundle Chromium tested
-        run: diff -qr dist qa-bundle-roundtrip
+      - name: Prove deployable Worker bytes match the Chromium-tested bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          # upload-artifact deliberately excludes hidden generated cache files
+          # (.vite, .wrangler, .openai and .assetsignore). Compare only the
+          # actual code and assets that are distributed to the release job.
+          diff -qr --exclude='.*' dist qa-bundle-roundtrip
+          test -f qa-bundle-roundtrip/server/wrangler.json
+          printf '{"QA_ATOMIC_DEPLOY_TEST_ONLY":"dummy"}' |
+            npx --no-install wrangler deploy -c qa-bundle-roundtrip/server/wrangler.json --dry-run --secrets-file /dev/stdin
 
       - name: Upload QA screenshots
         if: always()
