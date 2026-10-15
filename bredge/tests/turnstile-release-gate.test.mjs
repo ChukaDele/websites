@@ -1,4 +1,5 @@
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -10,6 +11,12 @@ const exampleSecret = "0x4-production-long-token-placeholder-never-deploy";
 
 test("real-like production keys satisfy structural validation", () => {
   assert.equal(validateProductionTurnstile(source(exampleSite), exampleSecret), exampleSite);
+});
+
+test("the reviewed public website uses a real non-test Turnstile site key", () => {
+  const actual = readFileSync(new URL("../lib/config.ts", import.meta.url), "utf8");
+  const configuredKey = validateProductionTurnstile(actual, exampleSecret);
+  assert.match(configuredKey, /^0x4[A-Za-z0-9_-]{15,30}$/);
 });
 
 test("all Cloudflare published dummy widget/secret keys are forbidden", () => {

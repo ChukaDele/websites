@@ -4,7 +4,7 @@
  * Paste your key here after creating a Turnstile widget; leave "" to disable
  * the widget in development. The matching TURNSTILE_SECRET_KEY is a Worker
  * secret and never appears in client code. */
-export const TURNSTILE_SITE_KEY = "";
+export const TURNSTILE_SITE_KEY = "0x4AAAAAAFXIG7Tbcchi4hll";
 
 /** Origins the lead endpoint will accept submissions from. */
 export const ALLOWED_ORIGINS = [
