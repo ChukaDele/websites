@@ -291,7 +291,7 @@ jobs:
 
           # Record the previous active version before altering production.
           history="$(npx --no-install wrangler deployments list --name "$worker_name" --json)"
-          previous="$(printf '%s' "$history" | node scripts/select-rollback-version-cli.mjs)
+          previous="$(printf '%s' "$history" | node scripts/select-rollback-version-cli.mjs)"
           if [[ ! "$previous" =~ ^[0-9a-f-]{36}$ ]]; then
             echo "::error::Could not verify the current rollback version."
             exit 1
