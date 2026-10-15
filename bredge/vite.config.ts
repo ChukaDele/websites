@@ -14,6 +14,15 @@ const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 const localBindingConfig = {
   main: "./worker/index.ts",
   compatibility_flags: ["nodejs_compat"],
+  // Native per-location rate limiting; stage and production use host-scoped
+  // counters. No browser CAPTCHA or client-supplied timing is trusted as a quota.
+  ratelimits: [
+    {
+      name: "CONTACT_RATE_LIMITER",
+      namespace_id: "41986273",
+      simple: { limit: 10, period: 60 },
+    },
+  ],
   d1_databases: d1
     ? [
         {

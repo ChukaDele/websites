@@ -1,0 +1,23 @@
+{
+  "type": "cloudflare_turnstile_account_readback",
+  "verified_at_utc": "2026-10-15T01:50:48+00:00",
+  "widget_name": "The Bredge Contact Production",
+  "sitekey": "0x4AAAAAAFXIG7Tbcchi4hll",
+  "mode": "managed",
+  "domains": [
+    "bredge-release-qa.thebredge.workers.dev",
+    "bredge.thebredge.workers.dev",
+    "thebredge.com",
+    "www.thebredge.com"
+  ],
+  "secret_matched_original_authenticated_creation_response": true,
+  "siteverify_probe": {
+    "response_token": "qa-intentionally-invalid-token",
+    "expected_error": "invalid-input-response",
+    "observed": true
+  },
+  "production_release_status": "NOT_DEPLOYED",
+  "notes": "Read-back from authenticated Cloudflare Wrangler. Secret never stored in repository. Production browser challenge and real enquiry still need verification.",
+  "staging_origin": "https://bredge-release-qa.thebredge.workers.dev",
+  "staging_browser_verified": false
+}

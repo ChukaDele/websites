@@ -36,7 +36,10 @@ async function assertPageBasics(page, path) {
   assert.ok(response.status() < 400, `${path}: HTTP ${response.status()}`);
   await page.waitForTimeout(120);
 
-  const h1Count = await page.locator("h1").count();
+  // Playwright locators pierce open shadow roots. The Cal.com widget inserts
+  // its own H1 inside a shadow root on /schedule; this is not a page heading.
+  // Count document-owned headings, so duplicate site H1s still fail strictly.
+  const h1Count = await page.evaluate(() => document.querySelectorAll("h1").length);
   assert.equal(h1Count, 1, `${path}: expected exactly one H1, saw ${h1Count}`);
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
@@ -184,13 +187,30 @@ async function testShortAndReducedMotion(browser) {
     await context.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
     const page = await context.newPage();
     await page.goto(base, { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(700);
+    // Distinguish a slow network from broken reduced-motion behavior: start
+    // the completion deadline at React's hydration effect, not DOMContentLoaded.
+    // Merely waiting indefinitely for iq-done would make this test vacuous.
+    await page.locator('.iq[data-iq-hydrated="true"]').waitFor({ state: "attached", timeout: 10_000 });
+    const hydratedAt = Date.now();
+    await page.locator(".iq.iq-done").waitFor({ state: "attached", timeout: 1_600 });
+    assert.ok(Date.now() - hydratedAt <= 1_650, `${config.name}: SQL completion was too slow after hydration`);
+    // Confirm the completed result is actually presented, not just a CSS
+    // marker accidentally left on the root.
+    await page.waitForFunction(() => {
+      const root = document.querySelector(".iq");
+      const result = root?.querySelector(".iq-result");
+      return Boolean(result) && Number(getComputedStyle(result).opacity) >= 0.95;
+    }, null, { timeout: 2_000 });
     const state = await page.locator(".iq").evaluate((root) => ({
-      done: root.classList.contains("iq-done"),
       scenePosition: getComputedStyle(root.querySelector(".iq-scene")).position,
+      lastStageActive: root.querySelector(".iq-stage:last-child")?.classList.contains("active"),
+      resultVisible: Number(getComputedStyle(root.querySelector(".iq-result")).opacity) >= 0.95,
+      checksComplete: root.querySelector(".iq-result strong")?.textContent?.includes("6 / 6 checks passed"),
     }));
     assert.ok(state.scenePosition !== "sticky" && state.scenePosition !== "fixed", `${config.name}: SQL scene should fall back to natural flow, got ${state.scenePosition}`);
-    assert.equal(state.done, true, `${config.name}: complete SQL/result state should be visible`);
+    assert.equal(state.lastStageActive, true, `${config.name}: final SQL stage must be active`);
+    assert.equal(state.resultVisible, true, `${config.name}: completed result must be visible`);
+    assert.equal(state.checksComplete, true, `${config.name}: all six checks must be presented`);
     await page.screenshot({ path: new URL(`home-${config.name}.png`, artifacts).pathname, fullPage: false });
     await context.close();
   }
@@ -269,6 +289,29 @@ async function testInsights(browser) {
   console.log("✓ insights index + article desktop/mobile");
 }
 
+async function testContactCannotClaimUndeliveredSuccess(browser) {
+  const context = await browser.newContext();
+  try {
+    const payload = {
+      formType: "contact", name: "Internal QA", email: "qa-check@invalid.example",
+      company: "Internal Test", message: "Controlled negative lead integrity test",
+      needs: ["Data engineering"], company_website: "", elapsedMs: 100,
+    };
+    const headers = { Origin: "https://thebredge.com" };
+    const fast = await context.request.post(`${base}/api/contact`, { data: payload, headers });
+    assert.equal(fast.status(), 422, "fast lead must not be marked delivered");
+    assert.equal((await fast.json()).ok, undefined);
+    const trapped = await context.request.post(`${base}/api/contact`, {
+      data: { ...payload, elapsedMs: 2000, company_website: "autofilled" }, headers,
+    });
+    assert.equal(trapped.status(), 422, "honeypot autofill must not be marked delivered");
+    assert.equal((await trapped.json()).ok, undefined);
+    console.log("✓ contact fast-fill/honeypot rejected without false success");
+  } finally {
+    await context.close();
+  }
+}
+
 async function testHeaders(browser) {
   const context = await browser.newContext();
   const response = await context.request.get(base);
@@ -277,6 +320,7 @@ async function testHeaders(browser) {
   assert.equal(headers["x-frame-options"], "SAMEORIGIN");
   assert.equal(headers["referrer-policy"], "strict-origin-when-cross-origin");
   assert.ok(headers["permissions-policy"]?.includes("camera=()"));
+  assert.equal(headers["x-robots-tag"], "noindex, nofollow", "preview and local host must not be indexed");
   assert.ok(headers["content-security-policy-report-only"]?.includes("frame-ancestors 'self'"));
   await context.close();
   console.log("✓ response hardening headers");
@@ -290,6 +334,7 @@ try {
   await testShortAndReducedMotion(browser);
   await testExperienceMotionAndMobileReading(browser);
   await testInsights(browser);
+  await testContactCannotClaimUndeliveredSuccess(browser);
   await testHeaders(browser);
   console.log("\nBredge browser QA: PASS");
 } finally {

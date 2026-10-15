@@ -4,3 +4,22 @@
 /.github/workflows/website-release-gate.yml @ChukaDele
 /.github/workflows/website-release-gate-tests.yml @ChukaDele
 /tooling/website-release-gate/ @ChukaDele
+
+# Bredge release policy and source-of-truth checks.
+/.github/workflows/deploy-bredge.yml @ChukaDele
+/bredge/.website-qa/ @ChukaDele
+/bredge/package.json @ChukaDele
+/bredge/package-lock.json @ChukaDele
+/bredge/scripts/verify-live.sh @ChukaDele
+/bredge/tests/ @ChukaDele
+/bredge/worker/ @ChukaDele
+/bredge/app/api/contact/route.ts @ChukaDele
+/bredge/components/interactions/ContactForm.tsx @ChukaDele
+/bredge/lib/contact-guard.ts @ChukaDele
+/bredge/lib/lead-receipt.ts @ChukaDele
+/bredge/components/landing/InvisibleQuery.tsx @ChukaDele
+/bredge/integrations/google-leads/ @ChukaDele
+/bredge/lib/config.ts @ChukaDele
+/bredge/lib/turnstile-policy.ts @ChukaDele
+/bredge/scripts/ @ChukaDele
+/bredge/build/write-build-info.mjs @ChukaDele

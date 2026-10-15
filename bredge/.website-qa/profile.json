@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "standard": "Website Launch QA v2.0",
+  "project": "The Bredge marketing website",
+  "repository": "ChukaDele/websites",
+  "site_type": "leadgen",
+  "production_url": "https://thebredge.com",
+  "staging_url": "https://bredge-release-qa.thebredge.workers.dev",
+  "markets": [
+    "Global"
+  ],
+  "critical_journeys": [
+    "Browse services and schedule a call",
+    "Send contact enquiry and verify actual inbox or CRM delivery",
+    "Access articles, resources, legal pages and recover from an unknown route"
+  ],
+  "owners": {
+    "builder": "Website PR implementation engineer",
+    "reviewer": "PENDING independent GitHub reviewer",
+    "approver": "Bredge accountable owner; approval PENDING"
+  },
+  "enforcement": {
+    "status": "ENFORCEMENT_PARTIAL",
+    "reason": "Rate-limit-based contact fix underway after owner could not complete Cloudflare challenge. Native edge binding, spam guards and browser-to-original-Google-workbook QA require fresh proof at the new PR SHA. Production still serves the old SHA 0e09a43 with broken contact form; independent GitHub approval, protected production deployment, live delivery, rollback and owner handover remain pending."
+  }
+}

@@ -5,32 +5,33 @@
  *           → Google Apps Script Web App → Google Sheet + notification email
  *
  * Layers, in order: origin allowlist → honeypot → min-interaction-time →
- * field validation → content heuristics → Cloudflare Turnstile (server-side)
+ * Cloudflare Worker rate limit → field validation → content heuristics
  * → forward to Apps Script with a shared secret. We only report success if the
  * Apps Script confirms the row was written. No secrets ever reach the client.
  *
  * Required Worker secrets/vars (see integrations/google-leads/SETUP.md):
  *   GOOGLE_LEADS_WEBHOOK_URL     — deployed Apps Script /exec URL
  *   GOOGLE_LEADS_WEBHOOK_SECRET  — shared secret, also in Apps Script props
- *   TURNSTILE_SECRET_KEY         — Cloudflare Turnstile secret (optional in dev)
+ * The Worker requires CONTACT_RATE_LIMITER on POST /api/contact.
  */
 
 import { ALLOWED_ORIGINS } from "../../../lib/config";
+import { validateLeadSubmissionGuard } from "../../../lib/contact-guard";
+import { isSavedLeadReceipt } from "../../../lib/lead-receipt";
 
 interface Env {
   GOOGLE_LEADS_WEBHOOK_URL?: string;
   GOOGLE_LEADS_WEBHOOK_SECRET?: string;
-  TURNSTILE_SECRET_KEY?: string;
 }
 
 type Utm = { source?: string; medium?: string; campaign?: string; content?: string };
 type Payload = {
+  submissionId?: string;
   formType?: string;
   name?: string; email?: string; company?: string;
   country?: string; phone?: string; phoneE164?: string; phoneCountry?: string; callingCode?: string;
   need?: string; needs?: string[]; projectType?: string; capability?: string; urgentArea?: string; message?: string; timeline?: string;
   page?: string; intent?: string; trafficGroup?: string; utm?: Utm;
-  turnstileToken?: string;
   company_website?: string; // honeypot
   elapsedMs?: number;       // ms since the form was shown
 };
@@ -41,20 +42,6 @@ function getEnv(): Env {
 
 const bad = (error: string, status = 400) => Response.json({ error }, { status });
 const ok = () => Response.json({ ok: true }, { status: 200 });
-// Bots that trip the honeypot / speed trap get a fake 200 so they don't learn.
-const silentOk = () => Response.json({ ok: true }, { status: 200 });
-
-async function verifyTurnstile(token: string, secret: string, ip?: string) {
-  const body = new URLSearchParams({ secret, response: token });
-  if (ip) body.set("remoteip", ip);
-  try {
-    const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body });
-    const data = (await r.json()) as { success?: boolean };
-    return !!data.success;
-  } catch {
-    return false;
-  }
-}
 
 export async function POST(request: Request) {
   const env = getEnv();
@@ -66,9 +53,10 @@ export async function POST(request: Request) {
   let body: Payload;
   try { body = (await request.json()) as Payload; } catch { return bad("Invalid request."); }
 
-  // Honeypot + speed trap → silently accepted, never stored.
-  if (body.company_website && body.company_website.trim() !== "") return silentOk();
-  if (typeof body.elapsedMs === "number" && body.elapsedMs >= 0 && body.elapsedMs < 1200) return silentOk();
+  // Refuse success for unsaved submissions. Fast/autofilled visitors get a clear retry.
+  // Real success requires the downstream Google webhook to confirm a saved lead.
+  const integrityError = validateLeadSubmissionGuard(body);
+  if (integrityError) return bad(integrityError.error, integrityError.status);
 
   const name = (body.name || "").trim();
   const email = (body.email || "").trim();
@@ -92,16 +80,12 @@ export async function POST(request: Request) {
   const linkCount = (message.match(/https?:\/\//gi) || []).length;
   if (linkCount > 6) return bad("Too many links in the message.");
 
-  // Turnstile (server-side) — enforced only when the secret is configured.
-  if (env.TURNSTILE_SECRET_KEY) {
-    const token = (body.turnstileToken || "").trim();
-    if (!token) return bad("Please complete the verification.");
-    const ip = request.headers.get("cf-connecting-ip") || undefined;
-    const passed = await verifyTurnstile(token, env.TURNSTILE_SECRET_KEY, ip);
-    if (!passed) return bad("Verification failed — please try again.");
+  const clientSubmissionId = typeof body.submissionId === "string" ? body.submissionId.trim() : "";
+  if (clientSubmissionId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(clientSubmissionId)) {
+    return bad("Invalid submission identifier. Please refresh the form and try again.");
   }
-
   const submission = {
+    submissionId: clientSubmissionId || crypto.randomUUID(),
     formType,
     name, email: email.toLowerCase(), company,
     country: (body.phoneCountry || body.country || "").slice(0, 80),
@@ -138,8 +122,13 @@ export async function POST(request: Request) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ secret: env.GOOGLE_LEADS_WEBHOOK_SECRET, ...submission }),
     });
-    const data = (await r.json().catch(() => ({}))) as { ok?: boolean };
-    if (!r.ok || !data.ok) throw new Error(`Webhook responded ${r.status}`);
+    const data: unknown = await r.json().catch(() => ({}));
+    // Apps Script commonly returns HTTP 200 even for {ok:false}. Accept a
+    // success response ONLY for the exact BR-UUID we submitted and which
+    // the Script confirmed in its deduplicated Google Sheet.
+    if (!r.ok || !isSavedLeadReceipt(data, submission.submissionId)) {
+      throw new Error(`Webhook did not confirm saved lead (HTTP ${r.status})`);
+    }
     return ok();
   } catch {
     return bad("That didn’t send. Please try again, or email hello@thebredge.com.", 502);
