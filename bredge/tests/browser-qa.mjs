@@ -187,7 +187,10 @@ async function testShortAndReducedMotion(browser) {
     await context.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
     const page = await context.newPage();
     await page.goto(base, { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(700);
+    // Remote Worker hydration can complete after the initial DOM event.
+    // Wait for the actual accessibility-safe completed state, not a guessed
+    // 700ms delay. The assertion still fails closed if completion never occurs.
+    await page.locator(".iq.iq-done").waitFor({ state: "attached", timeout: 10_000 });
     const state = await page.locator(".iq").evaluate((root) => ({
       done: root.classList.contains("iq-done"),
       scenePosition: getComputedStyle(root.querySelector(".iq-scene")).position,

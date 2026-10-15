@@ -5,7 +5,7 @@
   "repository": "ChukaDele/websites",
   "site_type": "leadgen",
   "production_url": "https://thebredge.com",
-  "staging_url": "https://bredge.thebredge.workers.dev",
+  "staging_url": "https://bredge-release-qa.thebredge.workers.dev",
   "markets": [
     "Global"
   ],
@@ -21,6 +21,6 @@
   },
   "enforcement": {
     "status": "ENFORCEMENT_PARTIAL",
-    "reason": "Workers preview currently reports the same SHA as production, so staging isolation unverified. Protected Github environment and executable checks require verified production deployment. Existing stored API token scope and direct Wrangler bypass unverified."
+    "reason": "Isolated Cloudflare preview is deployed from GitHub-hosted candidate bundle, SHA 3e3e112; public routes, noindex, full Chromium browser QA and negative contact/Turnstile validations passed. Upstream Google Apps Script v4 successfully writes and deduplicates a labelled synthetic lead, and its notification reached Gmail. Production still serves old SHA 0e09a43 with broken contact form. A real website Turnstile-completed lead, independent GitHub PR approval, protected production release, rollback and handover remain pending."
   }
 }

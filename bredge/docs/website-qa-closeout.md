@@ -6,7 +6,7 @@ Authoritative policy: [Website Launch QA v2.0](https://app.notion.com/p/3c5ab0bf
 
 - Live production at `https://thebredge.com/__build` reports SHA `0e09a43b558714f99ca2738ed96137f84a1ab549`. This is the old live build, not the proposed QA revision.
 - The site verifier checks redirects, HTTPS, canonical tags, indexability, 26 sitemap URLs, 10 insights, 6 resources, structured data, real favicon, and 404. Its old crawler challenge check falsely counted Cloudflare's ordinary JavaScript Detection bootstrap on HTTP 200 pages. The revised check requires real challenge markers plus expected canonical content.
-- The current preview `https://bredge.thebredge.workers.dev/__build` reports the same SHA as production. **Staging isolation is unverified.** This preview cannot independently prove a new candidate has been deployed.
+- The previous preview `https://bredge.thebredge.workers.dev` is a production alias, not an independent staging candidate. A **distinct Cloudflare Worker** now serves `https://bredge-release-qa.thebredge.workers.dev` with an independently observed candidate SHA `3e3e112300c6aee614632b7fe0f7e17dd6681190`. The live production SHA is still `0e09a43b558714f99ca2738ed96137f84a1ab549`. Every preview page has `X-Robots-Tag: noindex, nofollow`; no production route was modified. A real Chromium run passed the route/scroll/responsive/browser QA after the SQL state assertion was changed from a fixed 700ms snapshot to a real `iq-done` wait. Four actual stage POST rejections (fast, honeypot, missing CAPTCHA, invalid CAPTCHA) returned the expected non-200 statuses.
 - The website uses `npm test`, `npm run lint`, and Chromium browser QA against its Worker build. All must actually run in GitHub, with a real secret scan.
 - GitHub's Cloudflare environment has protected-branch policy, an approval requirement, and an existing API environment secret. The scope of that existing secret and direct Cloudflare OAuth rights are **unverified**.
 
@@ -17,7 +17,7 @@ The workflow runs `bredge-quality` and `bredge-secret-scan` for pull requests an
 ## Blockers to actual closeout
 
 - Obtain independent GitHub PR review and owner approval.
-- Prove a truly isolated remote preview of the proposed source SHA.
+- Verify a complete successful browser contact submission on the isolated preview using a real Turnstile-issued token, then recheck the resulting row and Gmail notification.
 - Independently verify contact-form delivery, consent/privacy, accessibility, runtime performance, security and monitoring. Unknown controls remain `NOT_TESTED`.
 - Restrict direct production OAuth and audit the existing Cloudflare API token only after proving the new protected path, without affecting unrelated Workers.
 - Verify the live deployment SHA, handover, rollback and accountable owner acceptance.
@@ -32,13 +32,13 @@ The Google Apps Script project is bound to the original Bredge workbook. A separ
 
 The manual production job first requires a successful authenticated Google workbook health probe and a production Turnstile Siteverify probe. It then publishes the exact Chromium-tested artifact with `GOOGLE_LEADS_WEBHOOK_URL`, `GOOGLE_LEADS_WEBHOOK_SECRET`, and `TURNSTILE_SECRET_KEY` in a single Worker version, using Wrangler's atomic `--secrets-file /dev/stdin` route. Its post-deploy inventory check requires all three secret names. Passing these checks still cannot prove a submitted lead was saved or that the notification arrived. The prior Worker version and observed SHA are captured, with a conditional rollback step on release failure. This production route remains **untested** until authorized deployment.
 
-To close: approve Sheets and Mail permissions for the already-authorized private Apps Script, set the appropriate Script Properties, deploy the web app with authenticated shared-secret handling, configure the Worker secrets securely, confirm one actual QA contact enquiry in the correct workbook and a received notification, review Turnstile/anti-abuse, then repeat browser/production and handover tests. Status remains CLOSEOUT_BLOCKED.
+To close: complete one human-verified Turnstile challenge and contact submission through the isolated preview, verify a separate Sheet row and notification email, obtain Claude's final independent technical review and **an actual different GitHub account's approval**, then execute the protected exact-SHA production release, verify the live source/form, confirm rollback/monitoring and record accountable owner handover. The P0 remains CLOSEOUT_BLOCKED for the public website.
 
 
 ### Google readiness handshake and Turnstile gate (pending human configuration)
 
-A protected GitHub environment step now performs an authenticated, non-mutating Apps Script `?health=1` request before accessing the Cloudflare deploy credential. Missing/invalid webhook URL, secret or Turnstile inputs cause an immediate failure. Only after readiness and owner approval does it provision Worker secrets and permit a deploy. The v4 Apps Script `/exec` service has passed authenticated read-only health and synthetic delivery tests, but no reviewed production Worker deployment has been performed. Current release remains blocked.
+The protected GitHub environment performs authenticated, non-mutating Apps Script `?health=1` and real Turnstile Siteverify checks before publishing a single, atomic Worker version with its required secrets. V4 Google service health, Sheet writing, duplicate replay and owner email have been confirmed. The isolated preview's source and secret bindings have passed checks; **no reviewed production Worker deployment has occurred**. Current production release remains blocked.
 
 ### Isolated Cloudflare preview candidate
 
-Candidate preview origin `https://bredge-release-qa.thebredge.workers.dev` has been configured in the form origin allowlist and authorized Turnstile widget hostnames. The Worker sets `X-Robots-Tag: noindex, nofollow` on all nonproduction host responses. **Do not assert isolated preview deployment or browser QA has passed until an actual Cloudflare deploy and remote browser test provide SHA-bound proof.**
+The actual `bredge-release-qa` Worker is live on Cloudflare at `https://bredge-release-qa.thebredge.workers.dev`, separate from production, serving immutable GitHub-tested candidate artifact SHA `3e3e112300c6aee614632b7fe0f7e17dd6681190` (Actions pull-request merge ref for head `95eef26`). Worker script and assets came from hosted run `38691026210`; Cloudflare CLI 4.92 was used with no production routes or database bindings. HTTP 200, all three secret bindings, noindex headers, real Chromium QA and four negative form rejections passed. A **real CAPTCHA-completed browser submission remains unverified**, so stage acceptance is pending.
