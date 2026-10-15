@@ -21,6 +21,6 @@
   },
   "enforcement": {
     "status": "ENFORCEMENT_PARTIAL",
-    "reason": "Isolated Cloudflare preview is deployed from GitHub-hosted candidate bundle, SHA 3e3e112; public routes, noindex, full Chromium browser QA and negative contact/Turnstile validations passed. Upstream Google Apps Script v4 successfully writes and deduplicates a labelled synthetic lead, and its notification reached Gmail. Production still serves old SHA 0e09a43 with broken contact form. A real website Turnstile-completed lead, independent GitHub PR approval, protected production release, rollback and handover remain pending."
+    "reason": "Rate-limit-based contact fix underway after owner could not complete Cloudflare challenge. Native edge binding, spam guards and browser-to-original-Google-workbook QA require fresh proof at the new PR SHA. Production still serves the old SHA 0e09a43 with broken contact form; independent GitHub approval, protected production deployment, live delivery, rollback and owner handover remain pending."
   }
 }

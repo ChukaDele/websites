@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { TURNSTILE_SITE_KEY } from "../../lib/config";
 import { PhoneField, type PhoneValue } from "./PhoneField";
 import { trackEvent, trackOnce, trafficGroup } from "../../lib/analytics";
 
@@ -51,11 +50,6 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
     startedAt.current = performance.now();
     const intent = new URLSearchParams(window.location.search).get("intent");
     if (intent && INTENT_TO_NEED[intent]) queueMicrotask(() => setNeeds([INTENT_TO_NEED[intent]]));
-    if (!TURNSTILE_SITE_KEY) return;
-    const s = document.createElement("script");
-    s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-    s.async = true; s.defer = true; document.head.appendChild(s);
-    return () => { s.remove(); };
   }, []);
 
   function toggleNeed(n: string) {
@@ -72,16 +66,6 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
     const el = formRef.current?.querySelector<HTMLElement>(id);
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
     el?.focus?.();
-  }
-
-  function resetUsedVerification() {
-    // Turnstile tokens are single-use. Any failed/uncertain submit needs a fresh
-    // token before retrying with the same submission ID.
-    if (!TURNSTILE_SITE_KEY) return;
-    try {
-      const holder = window as Window & { turnstile?: { reset: () => void } };
-      holder.turnstile?.reset();
-    } catch { /* The visitor still receives the actual delivery error. */ }
   }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -111,7 +95,6 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
       page: window.location.pathname,
       intent: new URLSearchParams(window.location.search).get("intent") || "",
       utm: readUtm(),
-      turnstileToken: String(data.get("cf-turnstile-response") || ""),
       company_website: String(data.get("company_website") || ""),
       elapsedMs: Math.round(performance.now() - startedAt.current),
     };
@@ -122,7 +105,6 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
     if (!phone.valid) { setPhoneTouched(true); setState({ kind: "error", message: "Check that phone number." }); focusField("#phone-input"); return; }
     if (needs.length === 0) { setState({ kind: "error", message: "Please select at least one area we can help with." }); focusField("#needs-group"); return; }
     if (!payload.message) { setState({ kind: "error", message: "Tell us a little about what you’re trying to solve." }); focusField("#message"); return; }
-    if (TURNSTILE_SITE_KEY && !payload.turnstileToken) { setState({ kind: "error", message: "Please complete the verification and try again." }); return; }
 
     setState({ kind: "sending" });
     trackEvent("contact_submit", { selected_needs_count: needs.length, intent: payload.intent, page_path: payload.page });
@@ -138,12 +120,10 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
       } else {
         const b = await res.json().catch(() => ({}));
         trackEvent("contact_error", { page_path: payload.page });
-        resetUsedVerification();
         setState({ kind: "error", message: b.error || "That didn’t send. Please try again." });
       }
     } catch {
       trackEvent("contact_error", { page_path: payload.page });
-      resetUsedVerification();
       setState({ kind: "error", message: "That didn’t send. Please try again, or email hello@thebredge.com." });
     }
   }
@@ -249,7 +229,6 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
         <input id="company_website" name="company_website" tabIndex={-1} autoComplete="off" />
       </div>
 
-      {TURNSTILE_SITE_KEY && <div className="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-theme="light" />}
 
       <button className="button" type="submit" disabled={state.kind === "sending"}>
         {state.kind === "sending" ? "Sending…" : "Send it to a data lead"} <span className="arrow" aria-hidden="true">↗</span>

@@ -70,6 +70,7 @@ jobs:
 
       - name: Verify atomic Worker deployment packaging without publishing
         run: |
+          node scripts/verify-contact-rate-limit-config-cli.mjs dist/server/wrangler.json
           printf '{"QA_ATOMIC_DEPLOY_TEST_ONLY":"dummy"}' |
             npx --no-install wrangler deploy -c dist/server/wrangler.json --dry-run --secrets-file /dev/stdin
 
@@ -236,19 +237,18 @@ jobs:
           npm run lint
           node --test tests/*.test.mjs
 
-      - name: Verify Google webhook readiness and Turnstile without production write access
+      - name: Verify Google webhook readiness and native rate limit without production write access
         env:
           GOOGLE_LEADS_URL: ${{ secrets.GOOGLE_LEADS_WEBHOOK_URL }}
           GOOGLE_LEADS_SECRET: ${{ secrets.GOOGLE_LEADS_WEBHOOK_SECRET }}
-          TURNSTILE_SECRET: ${{ secrets.TURNSTILE_SECRET_KEY }}
           BREDGE_GOOGLE_SCRIPT_DEPLOYMENT_ID: ${{ vars.BREDGE_GOOGLE_SCRIPT_DEPLOYMENT_ID }}
           BREDGE_GOOGLE_WORKBOOK_ID: ${{ vars.BREDGE_GOOGLE_WORKBOOK_ID }}
           BREDGE_GOOGLE_SCRIPT_REVISION: ${{ vars.BREDGE_GOOGLE_SCRIPT_REVISION }}
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -z "$GOOGLE_LEADS_URL" || -z "$GOOGLE_LEADS_SECRET" || -z "$TURNSTILE_SECRET" ]]; then
-            echo "::error::Webhook URL, shared token and Turnstile secret must be in the approved environment."
+          if [[ -z "$GOOGLE_LEADS_URL" || -z "$GOOGLE_LEADS_SECRET" ]]; then
+            echo "::error::Webhook URL and protected shared token must be in the approved environment."
             exit 1
           fi
           if [[ "${#GOOGLE_LEADS_SECRET}" -lt 48 ]]; then
@@ -259,7 +259,7 @@ jobs:
             echo "::error::Pinned workbook and version are required."
             exit 1
           fi
-          node scripts/verify-turnstile-prod-cli.mjs
+          node scripts/verify-contact-rate-limit-config-cli.mjs dist/server/wrangler.json
           node -e 'const u = new URL(process.env.GOOGLE_LEADS_URL); const id = process.env.BREDGE_GOOGLE_SCRIPT_DEPLOYMENT_ID; if (!id || u.protocol !== "https:" || u.hostname !== "script.google.com" || u.pathname !== "/macros/s/" + id + "/exec" || u.search || u.hash) process.exit(1);'
           if ! jq -n '{secret:env.GOOGLE_LEADS_SECRET}' |
             curl --silent --show-error --fail --location --max-time 30 --proto "=https" --proto-redir "=https"               -H "Content-Type: application/json" --data-binary @- "$GOOGLE_LEADS_URL?health=1" |
@@ -275,7 +275,6 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           GOOGLE_LEADS_URL: ${{ secrets.GOOGLE_LEADS_WEBHOOK_URL }}
           GOOGLE_LEADS_SECRET: ${{ secrets.GOOGLE_LEADS_WEBHOOK_SECRET }}
-          TURNSTILE_SECRET: ${{ secrets.TURNSTILE_SECRET_KEY }}
         shell: bash
         run: |
           set -euo pipefail
@@ -310,7 +309,7 @@ jobs:
           # with new credentials, causing a conversion outage on failed builds.
           # Read secret values from environment and stream them through stdin.
           echo "attempted=true" >> "$GITHUB_OUTPUT"
-          jq -n '{GOOGLE_LEADS_WEBHOOK_URL:env.GOOGLE_LEADS_URL, GOOGLE_LEADS_WEBHOOK_SECRET:env.GOOGLE_LEADS_SECRET, TURNSTILE_SECRET_KEY:env.TURNSTILE_SECRET}' |
+          jq -n '{GOOGLE_LEADS_WEBHOOK_URL:env.GOOGLE_LEADS_URL, GOOGLE_LEADS_WEBHOOK_SECRET:env.GOOGLE_LEADS_SECRET}' |
             npx --no-install wrangler deploy -c dist/server/wrangler.json --secrets-file /dev/stdin
 
           npx --no-install wrangler secret list --config dist/server/wrangler.json --format json --name "$worker_name" |

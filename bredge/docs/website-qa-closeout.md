@@ -42,3 +42,16 @@ The protected GitHub environment performs authenticated, non-mutating Apps Scrip
 ### Isolated Cloudflare preview candidate
 
 The actual `bredge-release-qa` Worker is live on Cloudflare at `https://bredge-release-qa.thebredge.workers.dev`, separate from production, serving immutable GitHub-tested candidate artifact SHA `3e3e112300c6aee614632b7fe0f7e17dd6681190` (Actions pull-request merge ref for head `95eef26`). Worker script and assets came from hosted run `38691026210`; Cloudflare CLI 4.92 was used with no production routes or database bindings. HTTP 200, all three secret bindings, noindex headers, real Chromium QA and four negative form rejections passed. A **real CAPTCHA-completed browser submission remains unverified**, so stage acceptance is pending.
+
+
+## 15 October 2026: remove blocking browser verification in candidate release
+
+The owner refreshed the isolated real-key staging page and could not proceed through its human-verification control. A fresh Chromium network trace from the same Mac showed the Turnstile JavaScript loaded but a Cloudflare challenge-host request failed DNS resolution (`ERR_NAME_NOT_RESOLVED`), with no usable client-side token. This is evidence of a failure path, not proof the owner's interactive browser had the identical network problem.
+
+**Decision:** Bredge is a low-volume contact/lead website. Mandatory Cloudflare Turnstile has been removed from the *candidate* form. It is replaced with a native Cloudflare Worker `CONTACT_RATE_LIMITER` binding (10 POST requests per 60 seconds per Cloudflare location, keyed by Cloudflare-provided connecting IP and hostname), before any webhook call. The binding fails closed on absence or runtime error. Existing origin allowlist, honeypot, min-dwell validation, bounded inputs/links, strict Google row receipts, deduplication and notification checks remain in place. These controls are layered but do not guarantee zero distributed spam.
+
+**Verified locally before review:** generated Wrangler deployment JSON contains the expected rate-limit binding, limits and namespace; 53 code/workflow tests passed; lint passed; browser QA passed on 27 routes and 24 internal links with responsive/motion checks; a local Worker rejected malformed/fast/honeypot requests. Rate-limit rehearsal progressed from HTTP 400 (validation) to HTTP 429 once the quota was exhausted. A simulated 429 is not evidence of a new live production deployment.
+
+**Production remains unchanged and P0 CLOSEOUT_BLOCKED.** A new exact-SHA GitHub artifact, isolated Cloudflare staging deployment, positive browser-to-Google Sheet/email test, independent review and approved protected production release are still required. Staging and production must not claim positive lead delivery based only on an HTTP 200 frontend response. Cal.com booking lifecycle remains [P1 issue #14](https://github.com/ChukaDele/websites/issues/14).
+
+**Secret lifecycle:** the old `TURNSTILE_SECRET_KEY` may remain in the protected environment/previous Worker as a dormant legacy secret; the new code does not read it and the reviewed release does not require it. Any later cleanup must be separately authorized and must not accidentally roll back the active Worker or alter shared accounts.

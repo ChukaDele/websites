@@ -81,3 +81,8 @@ This is a preflight, not a substitute for an actual submitted lead, confirmed Go
 ### Verified Google webhook delivery (15 October 2026)
 
 The existing public v4 Apps Script endpoint accepted one labeled synthetic QA enquiry, created exactly one row in the original owner workbook with Notification Status `SENT`, and sent the corresponding Gmail notification. Retrying the **same** UUID returned `duplicate:true` without a second row or notification. The associated confidential identity and credential details are intentionally omitted from this repository. This proves the Apps Script-to-Sheets-and-email subsystem, **not yet** the full browser-to-Cloudflare-Worker integration. The current production Worker still runs the old site release and returns HTTP 503 for real valid contact submissions.
+
+
+### 15 October 2026: contact protection decision
+
+The previous Turnstile directions above are **historical only** for the revised candidate. A legitimate user could not finish the manual challenge. The candidate no longer embeds the widget or requires `TURNSTILE_SECRET_KEY`. The new Worker intercepts `POST /api/contact` with Cloudflare's native `CONTACT_RATE_LIMITER` binding (10 requests/60 seconds, per location and connecting IP/hostname); it must be present in the generated Wrangler deployment configuration. The protected GitHub workflow now requires only `GOOGLE_LEADS_WEBHOOK_URL` and `GOOGLE_LEADS_WEBHOOK_SECRET`, and checks the native limiter before release. Keep old keys confidential until safely retired after an approved production release. The direct Apps Script v4 integration and deduplication contract are unchanged.

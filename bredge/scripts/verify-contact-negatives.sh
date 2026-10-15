@@ -13,25 +13,20 @@ if [[ "$MODE" == "local" ]]; then ORIGIN="http://localhost:3100"; fi
 
 reply="$(mktemp)"
 trap 'rm -f "$reply"' EXIT
-
 check_rejection() {
-  local case_name="$1"
-  local elapsed="$2"
-  local honeypot="$3"
-  local expect="$4"
-  local token="${5:-}"
+  local case_name="$1" elapsed="$2" honeypot="$3" expect="$4"
+  local need="${5:-Data engineering}"
   local response status
-  response="$(jq -nc --argjson elapsed "$elapsed" --arg trap "$honeypot" --arg token "$token" '
+  response="$(jq -nc --argjson elapsed "$elapsed" --arg trap "$honeypot" --arg need "$need" '
     {
       formType: "contact",
       name: "Release SOP Negative Test",
       email: "qa-check@invalid.example",
       company: "Internal QA",
       message: "Intentional negative verification. Must never create a saved lead.",
-      needs: ["Data engineering"],
+      needs: [$need],
       company_website: $trap,
-      elapsedMs: $elapsed,
-      turnstileToken: $token
+      elapsedMs: $elapsed
     }')"
   status="$(printf '%s' "$response" | curl --silent --show-error --max-time 20 \
     -o "$reply" -w '%{http_code}' -X POST "$BASE_URL/api/contact" \
@@ -46,11 +41,7 @@ check_rejection() {
   fi
   echo "PASS $case_name: correctly rejected HTTP $status"
 }
-
 check_rejection "too-fast submission" 250 "" 422
 check_rejection "autofilled honeypot" 5000 "autofilled.example" 422
-if [[ "$MODE" == "production" ]]; then
-  check_rejection "missing Turnstile token" 5000 "" 400
-  check_rejection "invalid Turnstile token" 5000 "" 400 "qa-intentionally-invalid-token"
-fi
-echo "CONTACT_NEGATIVE_TESTS_PASS (${MODE})"
+check_rejection "unknown service category" 5000 "" 400 "fabricated-skill"
+echo "CONTACT_NEGATIVE_TESTS_PASS ($MODE)"

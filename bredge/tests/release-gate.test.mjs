@@ -8,25 +8,24 @@ import { fileURLToPath } from "node:url";
 import { missingLeadSecretNames, REQUIRED_LEAD_SECRET_NAMES } from "../scripts/assert-lead-secrets.mjs";
 
 const cli = fileURLToPath(new URL("../scripts/assert-lead-secrets-cli.mjs", import.meta.url));
-const all = ["GOOGLE_LEADS_WEBHOOK_URL", "GOOGLE_LEADS_WEBHOOK_SECRET", "TURNSTILE_SECRET_KEY"];
+const all = ["GOOGLE_LEADS_WEBHOOK_URL", "GOOGLE_LEADS_WEBHOOK_SECRET"];
 const items = all.map((name) => ({ name, type: "secret_text" }));
 
 function invokeCli(input, path = cli) {
   return spawnSync(process.execPath, [path], { input, encoding: "utf8", timeout: 10000 });
 }
 
-test("all three bindings are required; missing Turnstile alone blocks production", () => {
+test("both Google webhook secrets are required; CAPTCHA is not a browser dependency", () => {
   assert.deepEqual(REQUIRED_LEAD_SECRET_NAMES, all);
   assert.deepEqual(missingLeadSecretNames([]), all);
   assert.deepEqual(missingLeadSecretNames([items[0]]), all.slice(1));
-  assert.deepEqual(missingLeadSecretNames(items.slice(0, 2)), ["TURNSTILE_SECRET_KEY"]);
   assert.deepEqual(missingLeadSecretNames(items), []);
 });
 
 test("actual CLI fails closed for malformed, empty or partial inventory", () => {
   for (const input of [
     "", "Cloudflare CLI output\n[]", '{"names":[]}', "[]",
-    JSON.stringify(items.slice(0, 1)), JSON.stringify(items.slice(0, 2)),
+    JSON.stringify(items.slice(0, 1)),
   ]) {
     const result = invokeCli(input);
     assert.notEqual(result.status, 0, "unexpected CLI pass: " + input);
@@ -34,7 +33,7 @@ test("actual CLI fails closed for malformed, empty or partial inventory", () => 
   }
 });
 
-test("actual CLI reports presence of all three without claiming real delivery", () => {
+test("actual CLI reports presence of both Google without claiming real delivery", () => {
   const result = invokeCli(JSON.stringify(items));
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /WORKER_LEAD_SECRET_NAMES_PRESENT/);

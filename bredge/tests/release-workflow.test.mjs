@@ -14,13 +14,13 @@ test("production requires manual dispatch, a protected environment and the revie
   assert.match(workflow, /REQUESTED_SHA.*GITHUB_SHA/);
 });
 
-test("Google and Turnstile readiness checks precede every production mutation", () => {
-  const preflight = workflow.indexOf("Verify Google webhook readiness and Turnstile");
+test("Google workbook and native rate-limit binding are verified before release", () => {
+  const preflight = workflow.indexOf("Verify Google webhook readiness and native rate limit");
   const deploy = workflow.indexOf("Publish reviewed code and secret bindings atomically");
   assert.ok(preflight >= 0 && deploy > preflight);
-  assert.match(workflow.slice(preflight, deploy), /verify-turnstile-prod-cli/);
+  assert.match(workflow.slice(preflight, deploy), /verify-contact-rate-limit-config-cli/);
   assert.match(workflow.slice(preflight, deploy), /workbookId == \$wb and \.revision == \$rev/);
-  assert.doesNotMatch(workflow.slice(preflight, deploy), /'\\\.ok/);
+  assert.doesNotMatch(workflow.slice(preflight, deploy), /verify-turnstile-prod-cli/);
 });
 
 test("production code and new secrets publish in one Worker version", () => {

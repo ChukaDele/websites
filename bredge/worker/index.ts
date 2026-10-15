@@ -2,8 +2,10 @@
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
 import buildInfo from "./build-info.json";
+import { enforceContactRateLimit, type ContactRateLimitBinding } from "../lib/contact-rate-limit";
 
 interface Env {
+  CONTACT_RATE_LIMITER?: ContactRateLimitBinding;
   ASSETS: Fetcher;
   DB: D1Database;
   IMAGES: {
@@ -69,6 +71,10 @@ const worker = {
         },
       }), request);
     }
+
+    // Protect submission before application code or the Sheets webhook runs.
+    const rateLimitResponse = await enforceContactRateLimit(request, env.CONTACT_RATE_LIMITER);
+    if (rateLimitResponse) return withResponseHeaders(rateLimitResponse, request);
 
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];
