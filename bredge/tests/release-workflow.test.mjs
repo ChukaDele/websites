@@ -35,3 +35,8 @@ test("CI validates a real Wrangler build with the atomic delivery interface", ()
   assert.match(workflow, /Verify atomic Worker deployment packaging without publishing/);
   assert.match(workflow, /wrangler deploy -c dist\/server\/wrangler\.json --dry-run --secrets-file \/dev\/stdin/);
 });
+
+test("live negative-contact smoke is required after production route checks", () => {
+  assert.match(workflow, /bash scripts\/verify-contact-negatives\.sh http:\/\/127\.0\.0\.1:8787 local/);
+  assert.match(workflow, /bash scripts\/verify-contact-negatives\.sh https:\/\/thebredge\.com production/);
+});

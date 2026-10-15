@@ -303,6 +303,7 @@ async function testHeaders(browser) {
   assert.equal(headers["x-frame-options"], "SAMEORIGIN");
   assert.equal(headers["referrer-policy"], "strict-origin-when-cross-origin");
   assert.ok(headers["permissions-policy"]?.includes("camera=()"));
+  assert.equal(headers["x-robots-tag"], "noindex, nofollow", "preview and local host must not be indexed");
   assert.ok(headers["content-security-policy-report-only"]?.includes("frame-ancestors 'self'"));
   await context.close();
   console.log("✓ response hardening headers");

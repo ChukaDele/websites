@@ -19,6 +19,21 @@ test("the reviewed public website uses a real non-test Turnstile site key", () =
   assert.match(configuredKey, /^0x4[A-Za-z0-9_-]{15,30}$/);
 });
 
+test("Cloudflare-authenticated widget evidence matches the committed site key and hostnames", () => {
+  const evidence = JSON.parse(readFileSync(new URL("../.website-qa/turnstile-evidence.json", import.meta.url), "utf8"));
+  const actualSource = readFileSync(new URL("../lib/config.ts", import.meta.url), "utf8");
+  assert.ok(actualSource.includes(`TURNSTILE_SITE_KEY = "${evidence.sitekey}"`));
+  assert.equal(evidence.mode, "managed");
+  assert.deepEqual(evidence.domains, [
+    "bredge-release-qa.thebredge.workers.dev", "bredge.thebredge.workers.dev", "thebredge.com", "www.thebredge.com"
+  ]);
+  assert.equal(evidence.secret_matched_original_authenticated_creation_response, true);
+  assert.equal(evidence.siteverify_probe.expected_error, "invalid-input-response");
+  assert.equal(evidence.siteverify_probe.observed, true);
+  assert.equal(evidence.production_release_status, "NOT_DEPLOYED");
+  assert.equal("secret" in evidence, false, "Never put the Turnstile secret in source evidence.");
+});
+
 test("all Cloudflare published dummy widget/secret keys are forbidden", () => {
   for (const key of TEST_SITE_KEYS) assert.throws(() => validateProductionTurnstile(source(key), exampleSecret), /test key/);
   for (const key of TEST_SECRET_KEYS) assert.throws(() => validateProductionTurnstile(source(exampleSite), key), /test key/);

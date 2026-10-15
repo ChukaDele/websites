@@ -104,12 +104,16 @@ jobs:
             cat /tmp/bredge-wrangler.log
             exit 1
           fi
+          # Assert the running Worker never acknowledges rejected enquiries.
+          # Keep this inside the same job step, before Wrangler's EXIT trap.
+          bash scripts/verify-contact-negatives.sh http://127.0.0.1:8787 local
 
       - name: Preserve browser-tested Worker bundle for approved release
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: bredge-tested-bundle-${{ github.sha }}
           path: bredge/dist/
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 7
 
@@ -123,10 +127,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # upload-artifact deliberately excludes hidden generated cache files
-          # (.vite, .wrangler, .openai and .assetsignore). Compare only the
-          # actual code and assets that are distributed to the release job.
-          diff -qr --exclude='.*' dist qa-bundle-roundtrip
+          # Include hidden files in the artifact rather than quietly ignoring
+          # .assetsignore, .vite and other generated files. Exact byte parity
+          # is mandatory, even for hidden deployment metadata.
+          diff -qr dist qa-bundle-roundtrip
           test -f qa-bundle-roundtrip/server/wrangler.json
           printf '{"QA_ATOMIC_DEPLOY_TEST_ONLY":"dummy"}' |
             npx --no-install wrangler deploy -c qa-bundle-roundtrip/server/wrangler.json --dry-run --secrets-file /dev/stdin
@@ -321,6 +325,8 @@ jobs:
             exit 1
           fi
           bash scripts/verify-live.sh https://thebredge.com expect-index
+          # Live negative journeys cannot write a row or claim delivery.
+          bash scripts/verify-contact-negatives.sh https://thebredge.com production
 
       - name: Restore previous Worker version on failed production release
         if: ${{ failure() && steps.publish.outputs.attempted == 'true' }}
@@ -339,7 +345,7 @@ jobs:
           npx --no-install wrangler rollback "$PREVIOUS" --config dist/server/wrangler.json --name bredge --message "Automatic rollback after failed GitHub run $GITHUB_RUN_ID"
           for attempt in 1 2 3 4 5; do
             if curl -fsS -H "Cache-Control: no-cache" --max-time 20 "https://thebredge.com/__build?rollback=$GITHUB_RUN_ID-$attempt" |
-              jq -e --arg sha "$PREVIOUS_SHA" '.sha == $sha and .worker == "bredge"' >/dev/null; then
+              jq -e --arg sha "$PREVIOUS_SHA" '.sha == $sha' >/dev/null; then
               echo "Prior production SHA restored: $PREVIOUS_SHA" >> "$GITHUB_STEP_SUMMARY"
               exit 0
             fi

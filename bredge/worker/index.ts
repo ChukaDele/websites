@@ -32,6 +32,11 @@ function withResponseHeaders(response: Response, request: Request): Response {
   headers.set("X-Frame-Options", "SAMEORIGIN");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  const hostname = new URL(request.url).hostname;
+  // Dedicated PR and Workers.dev previews must never be indexed as separate sites.
+  if (hostname !== "thebredge.com" && hostname !== "www.thebredge.com") {
+    headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
   if (new URL(request.url).protocol === "https:") {
     headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
   }

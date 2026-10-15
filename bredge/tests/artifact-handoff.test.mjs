@@ -7,7 +7,8 @@ const workflow = readFileSync(new URL("../../.github/workflows/deploy-bredge.yml
 test("the approved release restores precisely the browser-tested artifact", () => {
   assert.match(workflow, /Preserve browser-tested Worker bundle for approved release/);
   assert.match(workflow, /Restore the browser-tested Worker artifact in this same CI run/);
-  assert.match(workflow, /diff -qr --exclude=.* dist qa-bundle-roundtrip/);
+  assert.match(workflow, /diff -qr dist qa-bundle-roundtrip/);
+  assert.match(workflow, /include-hidden-files: true/);
   assert.match(workflow, /Restore Worker bundle verified by the Chromium QA job/);
   assert.match(workflow, /download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093/);
 });

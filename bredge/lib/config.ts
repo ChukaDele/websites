@@ -9,6 +9,7 @@ export const TURNSTILE_SITE_KEY = "0x4AAAAAAFXIG7Tbcchi4hll";
 /** Origins the lead endpoint will accept submissions from. */
 export const ALLOWED_ORIGINS = [
   "https://bredge.thebredge.workers.dev",
+  "https://bredge-release-qa.thebredge.workers.dev",
   "https://thebredge.com",
   "https://www.thebredge.com",
   "http://localhost:3100",

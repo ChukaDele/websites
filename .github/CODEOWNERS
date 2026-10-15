@@ -17,3 +17,7 @@
 /bredge/components/interactions/ContactForm.tsx @ChukaDele
 /bredge/lib/contact-guard.ts @ChukaDele
 /bredge/integrations/google-leads/ @ChukaDele
+/bredge/lib/config.ts @ChukaDele
+/bredge/lib/turnstile-policy.ts @ChukaDele
+/bredge/scripts/ @ChukaDele
+/bredge/build/write-build-info.mjs @ChukaDele
