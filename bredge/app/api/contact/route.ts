@@ -17,6 +17,7 @@
 
 import { ALLOWED_ORIGINS } from "../../../lib/config";
 import { validateLeadSubmissionGuard } from "../../../lib/contact-guard";
+import { isSavedLeadReceipt } from "../../../lib/lead-receipt";
 import { requiresTurnstileSecret, verifiedTurnstileForHost } from "../../../lib/turnstile-policy";
 
 interface Env {
@@ -150,8 +151,13 @@ export async function POST(request: Request) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ secret: env.GOOGLE_LEADS_WEBHOOK_SECRET, ...submission }),
     });
-    const data = (await r.json().catch(() => ({}))) as { ok?: boolean };
-    if (!r.ok || !data.ok) throw new Error(`Webhook responded ${r.status}`);
+    const data: unknown = await r.json().catch(() => ({}));
+    // Apps Script commonly returns HTTP 200 even for {ok:false}. Accept a
+    // success response ONLY for the exact BR-UUID we submitted and which
+    // the Script confirmed in its deduplicated Google Sheet.
+    if (!r.ok || !isSavedLeadReceipt(data, submission.submissionId)) {
+      throw new Error(`Webhook did not confirm saved lead (HTTP ${r.status})`);
+    }
     return ok();
   } catch {
     return bad("That didn’t send. Please try again, or email hello@thebredge.com.", 502);

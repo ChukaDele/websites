@@ -102,6 +102,10 @@ export function InvisibleQuery() {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
+    // Testable React hydration boundary. The finished mobile/reduced-motion
+    // state must appear promptly AFTER this effect starts, not merely
+    // eventually after an arbitrary page-load delay.
+    root.dataset.iqHydrated = "true";
     const tokens = tokenize(SQL);
     const total = SQL.length;
     const resolveEnd = SQL.indexOf("billing_monthly AS");
@@ -223,7 +227,11 @@ export function InvisibleQuery() {
       ST.refresh();
     })();
 
-    return () => { disposed = true; mm?.revert(); };
+    return () => {
+      disposed = true;
+      mm?.revert();
+      delete root.dataset.iqHydrated;
+    };
   }, []);
 
   return (

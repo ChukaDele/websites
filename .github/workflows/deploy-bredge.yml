@@ -291,7 +291,7 @@ jobs:
 
           # Record the previous active version before altering production.
           history="$(npx --no-install wrangler deployments list --name "$worker_name" --json)"
-          previous="$(printf '%s' "$history" | jq -er '[.[] | select([.versions[]? | select(.percentage == 100)] | length > 0)] | max_by(.created_on).versions[] | select(.percentage == 100) | .version_id')"
+          previous="$(printf '%s' "$history" | node scripts/select-rollback-version-cli.mjs)
           if [[ ! "$previous" =~ ^[0-9a-f-]{36}$ ]]; then
             echo "::error::Could not verify the current rollback version."
             exit 1
@@ -354,7 +354,7 @@ jobs:
             echo "::error::No verified rollback version and SHA."
             exit 1
           fi
-          npx --no-install wrangler rollback "$PREVIOUS" --config dist/server/wrangler.json --name bredge --message "Automatic rollback after failed GitHub run $GITHUB_RUN_ID"
+          npx --no-install wrangler rollback "$PREVIOUS" --config dist/server/wrangler.json --name bredge --message "Automatic rollback after failed GitHub run $GITHUB_RUN_ID" --yes
           for attempt in 1 2 3 4 5; do
             if curl -fsS -H "Cache-Control: no-cache" --max-time 20 "https://thebredge.com/__build?rollback=$GITHUB_RUN_ID-$attempt" |
               jq -e --arg sha "$PREVIOUS_SHA" '.sha == $sha' >/dev/null; then

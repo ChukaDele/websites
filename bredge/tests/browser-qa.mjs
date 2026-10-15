@@ -187,16 +187,30 @@ async function testShortAndReducedMotion(browser) {
     await context.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
     const page = await context.newPage();
     await page.goto(base, { waitUntil: "domcontentloaded" });
-    // Remote Worker hydration can complete after the initial DOM event.
-    // Wait for the actual accessibility-safe completed state, not a guessed
-    // 700ms delay. The assertion still fails closed if completion never occurs.
-    await page.locator(".iq.iq-done").waitFor({ state: "attached", timeout: 10_000 });
+    // Distinguish a slow network from broken reduced-motion behavior: start
+    // the completion deadline at React's hydration effect, not DOMContentLoaded.
+    // Merely waiting indefinitely for iq-done would make this test vacuous.
+    await page.locator('.iq[data-iq-hydrated="true"]').waitFor({ state: "attached", timeout: 10_000 });
+    const hydratedAt = Date.now();
+    await page.locator(".iq.iq-done").waitFor({ state: "attached", timeout: 1_600 });
+    assert.ok(Date.now() - hydratedAt <= 1_650, `${config.name}: SQL completion was too slow after hydration`);
+    // Confirm the completed result is actually presented, not just a CSS
+    // marker accidentally left on the root.
+    await page.waitForFunction(() => {
+      const root = document.querySelector(".iq");
+      const result = root?.querySelector(".iq-result");
+      return Boolean(result) && Number(getComputedStyle(result).opacity) >= 0.95;
+    }, null, { timeout: 2_000 });
     const state = await page.locator(".iq").evaluate((root) => ({
-      done: root.classList.contains("iq-done"),
       scenePosition: getComputedStyle(root.querySelector(".iq-scene")).position,
+      lastStageActive: root.querySelector(".iq-stage:last-child")?.classList.contains("active"),
+      resultVisible: Number(getComputedStyle(root.querySelector(".iq-result")).opacity) >= 0.95,
+      checksComplete: root.querySelector(".iq-result strong")?.textContent?.includes("6 / 6 checks passed"),
     }));
     assert.ok(state.scenePosition !== "sticky" && state.scenePosition !== "fixed", `${config.name}: SQL scene should fall back to natural flow, got ${state.scenePosition}`);
-    assert.equal(state.done, true, `${config.name}: complete SQL/result state should be visible`);
+    assert.equal(state.lastStageActive, true, `${config.name}: final SQL stage must be active`);
+    assert.equal(state.resultVisible, true, `${config.name}: completed result must be visible`);
+    assert.equal(state.checksComplete, true, `${config.name}: all six checks must be presented`);
     await page.screenshot({ path: new URL(`home-${config.name}.png`, artifacts).pathname, fullPage: false });
     await context.close();
   }
