@@ -14,7 +14,10 @@ export async function enforceContactRateLimit(
   limiter?: ContactRateLimitBinding,
 ): Promise<Response | null> {
   const u = new URL(request.url);
-  if (request.method !== "POST" || u.pathname !== "/api/contact") return null;
+  // The only application POST handler is /api/contact. Limit ALL POSTs so
+  // alternate/encoded path spellings can never bypass this gate if vinext
+  // normalizes them to the same contact handler.
+  if (request.method !== "POST") return null;
 
   if (!limiter || typeof limiter.limit !== "function") {
     return err("Contact protection is temporarily unavailable. Please email hello@thebredge.com.", 503);
