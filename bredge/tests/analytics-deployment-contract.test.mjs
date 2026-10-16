@@ -19,6 +19,7 @@ function verify(env={}){
 test("public IDs are optional, format validated and cannot inject markup",()=>{
   assert.equal(verify().status,0);
   assert.equal(verify({NEXT_PUBLIC_GA4_MEASUREMENT_ID:"G-ABCDEF1234"}).status,0);
+  assert.equal(verify({NEXT_PUBLIC_GA4_MEASUREMENT_ID:" G-ABCDEF1234 "}).status,1);
   assert.equal(verify({NEXT_PUBLIC_CLARITY_PROJECT_ID:"abcdefghij"}).status,0);
   assert.equal(verify({NEXT_PUBLIC_GA4_MEASUREMENT_ID:'G-ABC</script><script>'}).status,1);
   assert.equal(verify({NEXT_PUBLIC_GTM_ID:"javascript:alert(1)"}).status,1);

@@ -10,9 +10,13 @@ if(nodeMajor < 22 || (nodeMajor === 22 && nodeMinor < 18)){
  console.error("BUILD_REQUIRES_NODE_22_18: update the build runtime before generating the research index.");
  process.exit(1);
 }
-import { articles } from "../lib/insights.ts";
-import { resources } from "../lib/resources.ts";
-import { dataBriefs } from "../lib/data-briefs.ts";
+// Evaluate TypeScript sources only after the runtime is known to support
+// built-in erasable TS stripping. Static imports execute too early for this.
+const [{ articles }, { resources }, { dataBriefs }] = await Promise.all([
+  import("../lib/insights.ts"),
+  import("../lib/resources.ts"),
+  import("../lib/data-briefs.ts"),
+]);
 const BASE = "https://thebredge.com";
 const out = new URL("../public/llms-full.txt", import.meta.url);
 const safe = (text) => String(text || "").replace(/\s+/g, " ").trim();

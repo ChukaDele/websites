@@ -55,6 +55,6 @@ export const dataBriefs: readonly DataBrief[] = [
     source: "National Bureau of Statistics and GAIN, Cost of a Healthy Diet, April 2026",
     sourceUrl: "https://microdata.nigerianstat.gov.ng/index.php/catalog/146/related-materials",
     provenance: "Bredge analysis of publicly published NBS Cost of a Healthy Diet data, April 2026",
-    limitations: "CoHD is a modelled least-cost measure, not the amount each household actually spends. An earlier Bredge draft had month-on-month and year-on-year changes that did not match NBS. Those draft percentages are omitted until their calculation is reconciled.",
+    limitations: "CoHD is a modelled least-cost measure, not the amount each household actually spends. Month-on-month and year-on-year comparisons are not shown in this public summary. Refer to the original NBS source for published period-on-period changes.",
   },
 ] as const;

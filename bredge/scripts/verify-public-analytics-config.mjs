@@ -6,7 +6,14 @@ const settings=[
   {name:"NEXT_PUBLIC_GTM_ID",valid:/^GTM-[A-Z0-9]{4,14}$/},
 ];
 for(const item of settings){
-  const value=(process.env[item.name]||"").trim();
+  const raw=process.env[item.name]||"";
+  const value=raw.trim();
+  // Build-time variable interpolation inlines the raw value. Reject padded
+  // IDs now rather than declaring them valid and shipping a broken tracker.
+  if(raw!==value){
+    console.error("INVALID_PUBLIC_ANALYTICS_ID: "+item.name+" contains surrounding whitespace.");
+    process.exit(1);
+  }
   if(value && !item.valid.test(value)){
     console.error("INVALID_PUBLIC_ANALYTICS_ID: "+item.name+" must match its documented format.");
     process.exit(1);
