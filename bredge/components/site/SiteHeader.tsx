@@ -11,9 +11,14 @@ const services = [
   ["Data Diagnostic", "/data-diagnostic", "Find out what to fix first"],
 ];
 
+const work = [
+  ["Explore our work", "/work", "Research, interactive models and practical insights"],
+  ["Research", "/research", "Source-backed business analysis"],
+  ["Interactive portfolio", "/portfolio", "Operate our web-native dashboards"],
+  ["Insights", "/insights", "Useful decisions on data systems"],
+];
 const primary = [
   ["How we work", "/how-we-work"],
-  ["Insights", "/insights"],
   ["About", "/about"],
 ];
 
@@ -23,12 +28,15 @@ function Arrow() {
 
 export function SiteHeader({ variant = "solid" }: { variant?: "solid" | "overlay" }) {
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [workOpen, setWorkOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrollState, setScrollState] = useState<"top" | "hidden" | "compact">("top");
   const headerRef = useRef<HTMLElement>(null);
   const pathname = usePathname() || "/";
   const servicesActive = pathname.startsWith("/services") || pathname === "/data-diagnostic";
-  const lock = servicesOpen || menuOpen;
+  const workActive = pathname === "/work" || pathname.startsWith("/research")
+    || pathname.startsWith("/portfolio") || pathname.startsWith("/insights");
+  const lock = servicesOpen || workOpen || menuOpen;
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
@@ -77,10 +85,27 @@ export function SiteHeader({ variant = "solid" }: { variant?: "solid" | "overlay
           onFocus={() => setServicesOpen(true)}
           onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setServicesOpen(false); }}
         >
-          <a href="/services" aria-haspopup="true" aria-expanded={servicesOpen}>Services <span className="chev" aria-hidden="true">▾</span></a>
-          <div className="nav-dropdown" role="menu">
+          <a href="/services" aria-expanded={servicesOpen}
+            onKeyDown={e=>{if(e.key==="Escape"){setServicesOpen(false);e.currentTarget.focus();}}}>Services <span className="chev" aria-hidden="true">▾</span></a>
+          <div className="nav-dropdown">
             {services.map(([label, href, blurb]) => (
-              <a key={href} href={href} role="menuitem"><b>{label}</b><small>{blurb}</small></a>
+              <a key={href} href={href}><b>{label}</b><small>{blurb}</small></a>
+            ))}
+          </div>
+        </div>
+        <div
+          className={`nav-item has-menu${workOpen ? " open" : ""}${workActive ? " active" : ""}`}
+          onMouseEnter={() => {setWorkOpen(true);setServicesOpen(false);}}
+          onMouseLeave={() => setWorkOpen(false)}
+          onFocus={() => setWorkOpen(true)}
+          onBlur={(e) => {if(!e.currentTarget.contains(e.relatedTarget as Node))setWorkOpen(false);}}
+
+        >
+          <a href="/work" aria-expanded={workOpen}
+            onKeyDown={e=>{if(e.key==="Escape"){setWorkOpen(false);e.currentTarget.focus();}}}>Work <span className="chev" aria-hidden="true">▾</span></a>
+          <div className="nav-dropdown">
+            {work.map(([label,href,blurb]) => (
+              <a key={href} href={href}><b>{label}</b><small>{blurb}</small></a>
             ))}
           </div>
         </div>
@@ -98,6 +123,8 @@ export function SiteHeader({ variant = "solid" }: { variant?: "solid" | "overlay
       <div className="mobile-menu">
         <p className="mobile-eyebrow">SERVICES</p>
         {services.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}
+        <p className="mobile-eyebrow">WORK</p>
+        {work.map(([label,href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}
         <p className="mobile-eyebrow">COMPANY</p>
         {primary.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}
         <a className="button cta-accent mobile-cta" href="/schedule" onClick={() => setMenuOpen(false)}>Schedule a call <Arrow /></a>

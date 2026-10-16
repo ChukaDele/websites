@@ -14,7 +14,15 @@
     "/insights",
     "/resources",
     "/about",
-    "/privacy"
+    "/privacy",
+    "/work",
+    "/portfolio",
+    "/portfolio/finance",
+    "/portfolio/supply-chain",
+    "/portfolio/saas",
+    "/research/nigeria-pms-may-2026",
+    "/research/nigeria-telecoms-q4-2025",
+    "/research/nigeria-cohd-april-2026"
   ],
   "user_authorised_actions": {
     "contact": {
@@ -43,5 +51,14 @@
     "future_option": "Web Bot Auth or a separate credentialed service integration, subject to independent access-control review."
   },
   "knowledge_index_url": "https://thebredge.com/llms-full.txt",
-  "evidence_policy": "Descriptions and metadata come from published content. Cite canonical Insights/Resources URLs and do not invent client results or guarantees."
+  "evidence_policy": "Descriptions and metadata come from published content. Cite canonical Insights/Resources URLs and do not invent client results or guarantees.",
+  "interactive_workbenches": {
+    "endpoint": "/api/workbench",
+    "method": "GET",
+    "public_aggregates_only": true,
+    "requires_authentication": false,
+    "download_or_bulk_export_supported": false,
+    "documentation": "/portfolio",
+    "limit": "120 requests/minute per Cloudflare location; respect site rate limits and do not automate bulk extraction."
+  }
 }

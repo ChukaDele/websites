@@ -81,7 +81,7 @@ Summary: "We need better reporting" hides three different problems. Separating t
 ## Bredge original public-data briefs
 
 ### Nigeria's telecom subscriber base recovered through 2025.
-URL: https://thebredge.com/research#nigeria-telecoms-q4-2025
+URL: https://thebredge.com/research/nigeria-telecoms-q4-2025
 Period: Q4 2025
 Finding: 179.64M — active voice subscriptions
 Summary: Our quarterly brief traces the rebound from the Q3 2024 subscriber trough and compares the Q4 2025 market shares, regional distribution and porting flows. The analysis distinguishes a total subscription measure from an individual-customer count.
@@ -90,7 +90,7 @@ Underlying primary source: https://microdata.nigerianstat.gov.ng/index.php/catal
 Caveats: Mobile subscriptions are not unique people. Number-porting volumes are small relative to the subscriber base and should not be presented as overall churn.
 
 ### Petrol prices varied substantially between Nigerian states.
-URL: https://thebredge.com/research#nigeria-pms-may-2026
+URL: https://thebredge.com/research/nigeria-pms-may-2026
 Period: May 2026
 Finding: ₦1,596.25 — national average price per litre
 Summary: The Bredge fuel-price brief maps state and regional differences in the NBS survey. It compares the national price with the range paid across states, rather than treating a country average as a universal distribution cost.
@@ -99,13 +99,56 @@ Underlying primary source: https://microdata.nigerianstat.gov.ng/index.php/catal
 Caveats: Survey averages do not describe every pump or predict a current pump price. Values describe May 2026 and must not be presented as today's prices.
 
 ### A healthy diet cost ₦1,589 per adult per day nationally.
-URL: https://thebredge.com/research#nigeria-cohd-april-2026
+URL: https://thebredge.com/research/nigeria-cohd-april-2026
 Period: April 2026
 Finding: ₦1,589 — average cost of a healthy diet per adult per day
 Summary: The Bredge brief compares the national healthy-diet reference cost with state and zonal variation, then shows which food groups contribute most to the estimated total. It keeps a nutritional affordability metric separate from general food inflation.
 Source: National Bureau of Statistics and GAIN, Cost of a Healthy Diet, April 2026
 Underlying primary source: https://microdata.nigerianstat.gov.ng/index.php/catalog/146/related-materials
 Caveats: CoHD is a modelled least-cost measure, not the amount each household actually spends. Month-on-month and year-on-year comparisons are not shown in this public summary. Refer to the original NBS source for published period-on-period changes.
+
+## Decision-focused research
+
+### Nigeria is one country. It is not one fuel budget.
+URL: https://thebredge.com/research/nigeria-pms-may-2026
+Summary: A U.S. manufacturer planning distribution in Nigeria can build a convincing national business case—and still get the unit economics wrong state by state. Here is what the May 2026 petrol-price data tells us, what it cannot tell us, and how we would stress-test a market-entry plan.
+Intended audience: Global operators · logistics leaders · investment teams
+Period: May 2026
+Methodological caveats: Prices are dated May 2026 and are not current quotations, fuel contracts, FX-adjusted prices or forecasts. Sampled average prices do not describe every filling station, fleet or route. Cost of distribution also depends on route design, fleet efficiency, labor, security, depreciation, taxes and demand.
+
+### 179 million mobile subscriptions. How many potential customers?
+URL: https://thebredge.com/research/nigeria-telecoms-q4-2025
+Summary: The headline size of a market is almost never the size of your addressable market. Nigeria's Q4 2025 telecoms data shows why network concentration, regional demand and the difference between connections and people matter to a company planning entry or investment.
+Intended audience: Software companies · telecom operators · growth investors
+Period: Q4 2025
+Methodological caveats: Voice and internet subscriptions are connections, not unique consumers, payers or device owners. Porting is not total churn; the count of ported numbers is tiny compared with subscription stocks. The information is a historic Q4 2025 snapshot and not a current market estimate or entry recommendation.
+
+### A healthy diet costs 78% more in Ekiti than Adamawa.
+URL: https://thebredge.com/research/nigeria-cohd-april-2026
+Summary: A global food brand, retailer or development investor cannot treat affordability as a single national statistic. Nigeria's April 2026 healthy-diet reference data shows where a standard pricing assumption can break—and why a basket-cost index is not the same as actual household spending.
+Intended audience: Consumer businesses · food systems investors · development finance
+Period: April 2026
+Methodological caveats: The reference does not measure wages, household budgets, willingness to pay, food consumption or nutritional outcomes. The original draft's month-on-month and year-on-year percentage changes did not match the contemporaneous NBS release; they are intentionally excluded pending reconciliation. Urban/rural pairs are selected examples; no causal explanation is established by the comparative chart.
+
+## Interactive portfolio (read-only public aggregate views)
+
+### Find the revenue that survives its discount.
+URL: https://thebredge.com/portfolio/finance
+Decision question: What should the CFO review before changing commercial discounts?
+Source scope: Microsoft Power BI Financial Sample, 2013–2014 (sample data); dashboard designed and analysed by Bredge
+Limitations: Only 18 visible Canada detail-table entries are modelled here; results cannot be equated with complete company totals. Discount scenario assumes no demand response and should not be treated as a pricing forecast. The data originates from a sample demonstration report; it does not describe an identifiable client business.
+
+### When 55% of deliveries are late, where do you start?
+URL: https://thebredge.com/portfolio/supply-chain
+Decision question: What should the COO fix first?
+Source scope: DataCo SMART SUPPLY CHAIN FOR BIG DATA ANALYSIS (Constante, Silva & Pereira, CC BY 4.0); dashboard designed and analysed by Bredge
+Limitations: Global on-time and late rates are not published by region. Any region-specific estimate would be an unsupported extrapolation. Region sales are rounded in the source PDF and may not add exactly to its enterprise total. The report is a public demonstration artifact, not evidence of private client performance.
+
+### Your MRR headline isn't your retention story.
+URL: https://thebredge.com/portfolio/saas
+Decision question: Which retention lever deserves attention first?
+Source scope: Bredge SaaS Analytics historical demonstration dashboard
+Limitations: Plan-level figures are a historical demonstration snapshot, not a live subscription database. The churn scenario assumes existing ARPU and headcount remain constant, so it is not a retention forecast. Different churn, expansion and revenue recognition definitions could change the actual financial effect.
 
 ## Public checklists and resources
 

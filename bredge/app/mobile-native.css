@@ -384,3 +384,13 @@ html { scroll-padding-top: calc(90px + env(safe-area-inset-top, 0px)); }
   }
   .contact-intro .lede { max-width:60ch; }
 }
+
+
+/* Deep-linking must not replay the homepage intro on Research and Portfolio.
+   When scripts are disabled entirely, CSS cannot clear the html class, so
+   force an unlocked reading experience even if an old document has the class. */
+@media (scripting:none) {
+  html.preload-active,
+  html.preload-active body {overflow:auto!important;}
+  html.preload-active .preloader {display:none!important;}
+}

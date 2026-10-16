@@ -22,6 +22,11 @@ const localBindingConfig = {
       namespace_id: "41986273",
       simple: { limit: 10, period: 60 as const },
     },
+    {
+      name: "WORKBENCH_RATE_LIMITER",
+      namespace_id: "41986274",
+      simple: { limit: 120, period: 60 as const },
+    },
   ],
   d1_databases: d1
     ? [

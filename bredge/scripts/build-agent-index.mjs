@@ -12,10 +12,12 @@ if(nodeMajor < 22 || (nodeMajor === 22 && nodeMinor < 18)){
 }
 // Evaluate TypeScript sources only after the runtime is known to support
 // built-in erasable TS stripping. Static imports execute too early for this.
-const [{ articles }, { resources }, { dataBriefs }] = await Promise.all([
+const [{ articles }, { resources }, { dataBriefs }, { researchStories }, { portfolioStudies }] = await Promise.all([
   import("../lib/insights.ts"),
   import("../lib/resources.ts"),
   import("../lib/data-briefs.ts"),
+  import("../lib/research-editorial.ts"),
+  import("../lib/portfolio-editorial.ts"),
 ]);
 const BASE = "https://thebredge.com";
 const out = new URL("../public/llms-full.txt", import.meta.url);
@@ -58,13 +60,32 @@ for (const item of articles) {
 lines.push("## Bredge original public-data briefs", "");
 for (const brief of dataBriefs) {
   lines.push(`### ${safe(brief.title)}`);
-  lines.push(`URL: ${BASE}/research#${brief.slug}`);
+  lines.push(`URL: ${BASE}/research/${brief.slug}`);
   lines.push(`Period: ${brief.period}`);
   lines.push(`Finding: ${brief.number} — ${brief.unit}`);
   lines.push(`Summary: ${safe(brief.summary)}`);
   lines.push(`Source: ${safe(brief.source)}`);
   lines.push(`Underlying primary source: ${brief.sourceUrl}`);
   lines.push(`Caveats: ${safe(brief.limitations)}`);
+  lines.push("");
+}
+lines.push("## Decision-focused research", "");
+for(const story of researchStories){
+  lines.push(`### ${safe(story.headline)}`);
+  lines.push(`URL: ${BASE}/research/${story.slug}`);
+  lines.push(`Summary: ${safe(story.deck)}`);
+  lines.push(`Intended audience: ${safe(story.audience)}`);
+  lines.push(`Period: ${safe(story.period)}`);
+  lines.push(`Methodological caveats: ${story.caveats.map(safe).join(" ")}`);
+  lines.push("");
+}
+lines.push("## Interactive portfolio (read-only public aggregate views)", "");
+for(const study of portfolioStudies){
+  lines.push(`### ${safe(study.title)}`);
+  lines.push(`URL: ${BASE}/portfolio/${study.slug==="supply"?"supply-chain":study.slug}`);
+  lines.push(`Decision question: ${safe(study.decision)}`);
+  lines.push(`Source scope: ${safe(study.source)}`);
+  lines.push(`Limitations: ${study.limitations.map(safe).join(" ")}`);
   lines.push("");
 }
 lines.push("## Public checklists and resources", "");

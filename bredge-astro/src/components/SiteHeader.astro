@@ -1,7 +1,7 @@
 ---
 const links = [
- ["Services","/services"],["How we work","/how-we-work"],
- ["Insights","/insights"],["About","/about"]
+ ["Services","/services"],["Work","/work"],
+ ["How we work","/how-we-work"],["About","/about"]
 ];
 ---
 <header class="site-header is-top" data-astro-nav>
@@ -22,6 +22,11 @@ const links = [
   <a href="/services/embedded-data-team">Embedded Data Team</a>
   <a href="/services/data-projects">Data Projects</a>
   <a href="/data-diagnostic">Data Diagnostic</a>
+  <p class="mobile-eyebrow">WORK</p>
+  <a href="/work">Work overview</a>
+  <a href="/research">Research</a>
+  <a href="/portfolio">Interactive Portfolio</a>
+  <a href="/insights">Insights</a>
   <p class="mobile-eyebrow">COMPANY</p>
   {links.slice(1).map(([label,url]) => <a href={url}>{label}</a>)}
   <a class="button cta-accent mobile-cta" href="/schedule">Schedule a call <span aria-hidden="true">↗</span></a>

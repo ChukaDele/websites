@@ -1,79 +1,65 @@
-import type { Metadata } from "next";
-import { PageShell, Breadcrumbs } from "../../components/site/PageShell";
-import { pageMetadata } from "../../lib/seo";
-import { dataBriefs } from "../../lib/data-briefs";
+import type {Metadata} from "next";
+import {PageShell,Breadcrumbs} from "../../components/site/PageShell";
+import {researchStories} from "../../lib/research-editorial";
+import {dataBriefs} from "../../lib/data-briefs";
+import {pageMetadata} from "../../lib/seo";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Original Public-Data Briefs & Analysis | The Bredge",
-  description: "Bredge's original analysis of public Nigerian datasets: telecoms, petrol prices and healthy-diet affordability. Read the source, methodology and decision implications.",
-  path: "/research",
+export const metadata:Metadata=pageMetadata({
+ title:"Decision Intelligence Research | The Bredge",
+ description:"Research built for global operators and investors. Explore what Nigeria's telecoms, fuel and food-affordability data mean for business decisions, with interactive evidence.",
+ path:"/research",
 });
-
-const researchLd = {
-  "@context":"https://schema.org", "@type":"CollectionPage",
-  "@id":"https://thebredge.com/research#collection",
-  url:"https://thebredge.com/research",
-  name:"The Bredge Data Briefs",
-  description:"Bredge-authored analysis of publicly published Nigerian statistical data, with source attribution and limitations.",
-  isPartOf:{"@id":"https://thebredge.com/#website"},
-  about: ["Data analysis","Business intelligence","Public statistics"],
-  mainEntity:{
-    "@type":"ItemList",
-    itemListElement:dataBriefs.map((brief,index)=>({
-      "@type":"ListItem", position:index+1,
-      name:brief.title, url:`https://thebredge.com/research#${brief.slug}`,
-    })),
-  },
+const ld={
+ "@context":"https://schema.org","@type":"CollectionPage",
+ "@id":"https://thebredge.com/research#collection",
+ url:"https://thebredge.com/research",
+ name:"Bredge Decision Intelligence Research",
+ description:"Evidence-led research for business decisions, with interactive public-data models and transparent source limitations.",
+ mainEntity:{"@type":"ItemList",itemListElement:researchStories.map((s,i)=>({
+  "@type":"ListItem",position:i+1,name:s.headline,url:"https://thebredge.com/research/"+s.slug
+ }))},
+ isPartOf:{"@id":"https://thebredge.com/#website"},
 };
-
-export default function ResearchPage() {
-  return (
-    <PageShell>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(researchLd)}} />
-      <Breadcrumbs trail={[["Home","/"],["Research","/research"]]} />
-      <section className="section-wrap page-hero research-hero">
-        <p className="eyebrow">BREDGE DATA BRIEFS</p>
-        <h1>What the numbers reveal.</h1>
-        <p className="lede">Original Bredge analysis of publicly available statistics. We show the source, the period and the limits of what each figure tells you, so the work can be assessed on its methods.</p>
-        <p className="research-method">Public-data research. No client records, confidential work or claimed customer outcomes are used in these examples.</p>
-      </section>
-      <section className="section-wrap research-grid" aria-label="Selected original research">
-        {dataBriefs.map((brief,index)=>(
-          <article key={brief.slug} id={brief.slug} className="research-brief">
-            <div className="research-brief-head">
-              <span>{String(index+1).padStart(2,"0")} / {brief.category.toUpperCase()}</span>
-              <small>{brief.period}</small>
-            </div>
-            <div className="research-brief-body">
-              <div className="research-stat">
-                <strong>{brief.number}</strong>
-                <span>{brief.unit}</span>
-                <small>{brief.comparison}</small>
-              </div>
-              <div>
-                <h2>{brief.title}</h2>
-                <p>{brief.summary}</p>
-                <p className="research-decision"><b>Decision context.</b> {brief.decision}</p>
-                <details className="research-evidence">
-                  <summary>Source, method and limitations</summary>
-                  <div>
-                    <p><b>Provenance.</b> {brief.provenance}.</p>
-                    <p><b>Limitations.</b> {brief.limitations}</p>
-                    <p><b>Underlying publisher.</b> {brief.source}.</p>
-                    <a href={brief.sourceUrl} target="_blank" rel="noopener noreferrer">See the official NBS source <span aria-hidden="true">↗</span></a>
-                  </div>
-                </details>
-              </div>
-            </div>
-          </article>
-        ))}
-      </section>
-      <section className="research-close section-wrap">
-        <p className="eyebrow">HOW WE WORK</p>
-        <h2>Interesting data is useful when it changes a decision.</h2>
-        <p>We apply the same source-first discipline when reconciling business systems, designing data models or deciding what to automate. A diagnostic starts with the questions your team needs answered and the evidence already available.</p>
-        <a className="button cta-accent" data-cta="research_diagnostic" href="/data-diagnostic">Explore a Data Diagnostic <span className="arrow" aria-hidden="true">↗</span></a>
-      </section>
-    </PageShell>
-  );
+export default function ResearchPage(){
+ return <PageShell>
+  <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(ld)}}/>
+  <Breadcrumbs trail={[["Home","/"],["Research","/research"]]}/>
+  <>
+   <section className="section-wrap rs-hero">
+    <p className="eyebrow">THE BREDGE / DECISION INTELLIGENCE</p>
+    <div className="rs-hero-layout">
+      <div><h1>Data matters when it changes a decision.</h1></div>
+      <div><p>Entering a new market? Repricing a supply chain? Evaluating a sector? We unpack public data the way an operator or investment team would: what changed, why it matters, what the numbers don’t prove, and which assumption to test next.</p>
+        <a className="text-link" href="/portfolio">Or try our operating dashboards <span className="arrow" aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+    <div className="rs-hero-facts">
+      <span>03 EVIDENCE-LED ANALYSES</span><span>03 INTERACTIVE MODELS</span><span>PUBLIC SOURCES / CLEAR ASSUMPTIONS</span>
+    </div>
+   </section>
+   <section className="rs-index section-wrap" aria-labelledby="rs-index-heading">
+    <div className="rs-heading"><p className="eyebrow">FROM REPORT TO OPERATING QUESTION</p><h2 id="rs-index-heading">Choose the decision you’re making.</h2></div>
+    {researchStories.map((s,i)=><article key={s.slug} className="rs-entry">
+      <div className="rs-entry-side"><span>{String(i+1).padStart(2,"0")} / RESEARCH BRIEF</span>
+        <span>{s.period}</span><span>{s.audience}</span></div>
+      <div className="rs-entry-main"><p className="eyebrow">{s.eyebrow}</p>
+        <h3><a href={"/research/"+s.slug}>{s.headline}<span aria-hidden="true">↗</span></a></h3>
+        <p>{s.deck}</p>
+        <div className="rs-entry-tags">{s.sectors.slice(0,3).map(tag=><span key={tag}>{tag}</span>)}</div>
+        <a className="rs-entry-link" href={"/research/"+s.slug}>Read the analysis and use the model <span aria-hidden="true">↗</span></a></div>
+      <div className="rs-entry-stat"><span>OBSERVED REFERENCE</span><strong>{s.fact}</strong><small>{s.factLabel}</small></div>
+    </article>)}
+   </section>
+   <section className="rs-method-preview section-wrap">
+    <div><p className="eyebrow">THE STANDARD</p><h2>A good chart doesn’t hide its assumptions.</h2></div>
+    <div><p>We treat every published statistic as a claim with a unit, period, source and limitation. Then we separate it from the inputs a business controls. The interactive models demonstrate that thinking, not investment forecasts or invented client outcomes.</p>
+      <a className="text-link" href="/how-we-work">How our analytical process works <span aria-hidden="true">↗</span></a></div>
+   </section>
+   <section className="section-wrap rs-archive" aria-label="Source transparency">
+    <p className="eyebrow">SOURCE TRANSPARENCY</p>
+    <p>The research here is based on published NBS and NCC statistical material and Bredge’s original analysis. Its source records and limitations appear inside each article. Historical observations are not live prices, unique customer counts, income measures or forecasts. Public data briefs are distinct from the interactive sample portfolio.</p>
+    <div className="rs-archive-refs">{dataBriefs.map(x=><a href={x.sourceUrl} target="_blank" rel="noopener noreferrer" key={x.slug}>{x.source} <span aria-hidden="true">↗</span></a>)}</div>
+   </section>
+  </>
+ </PageShell>;
 }
