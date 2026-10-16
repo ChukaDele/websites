@@ -7,7 +7,8 @@ import { SiteFooter } from "../components/site/SiteFooter";
 import { HeroVideo } from "../components/site/HeroVideo";
 import { InvisibleQuery } from "../components/landing/InvisibleQuery";
 import { ExperienceRows } from "../components/site/ExperienceRows";
-import { dataBriefs } from "../lib/data-briefs";
+import { researchStories } from "../lib/research-editorial";
+import { portfolioStudies } from "../lib/portfolio-editorial";
 
 // This describes the content already rendered below. It gives crawlers a clear
 // page-level subject without altering the approved visitor-facing copy.
@@ -83,18 +84,37 @@ export default function Home() {
       <section className="research-teaser section-wrap" aria-labelledby="research-teaser-heading">
         <div className="research-teaser-head">
           <div><p className="eyebrow">ORIGINAL PUBLIC-DATA ANALYSIS</p>
-            <h2 id="research-teaser-heading">The source comes first.</h2>
-            <p>Research briefs built from published Nigerian statistical releases. We make the data period, methodology and limitations visible rather than relying on a persuasive dashboard alone.</p>
+            <h2 id="research-teaser-heading">Data that changes a decision.</h2>
+            <p>Decision intelligence for operators and investors. Compare market-entry assumptions, geographic demand and operating costs with the published source evidence—and challenge the model yourself.</p>
           </div>
-          <a className="text-link" href="/research">Explore the data briefs <span className="arrow" aria-hidden="true">↗</span></a>
+          <a className="text-link" href="/research">Explore the research <span className="arrow" aria-hidden="true">↗</span></a>
         </div>
         <div className="research-teaser-grid">
-          {dataBriefs.slice(0,3).map(brief=>(
-            <a key={brief.slug} className="research-teaser-card" href={`/research#${brief.slug}`}>
-              <span>{brief.category} · {brief.period}</span>
-              <b>{brief.number}</b>
-              <p>{brief.title}</p>
-              <small>Source and limitations <span aria-hidden="true">→</span></small>
+          {researchStories.map(story=>(
+            <a key={story.slug} className="research-teaser-card" href={`/research/${story.slug}`}>
+              <span>{story.eyebrow} · {story.period}</span>
+              <b>{story.fact}</b>
+              <p>{story.headline}</p>
+              <small>Analysis · methodology · interactive model <span aria-hidden="true">↗</span></small>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section className="pl-home-teaser section-wrap" aria-labelledby="portfolio-teaser-heading">
+        <div className="pl-home-teaser-head">
+          <div><p className="eyebrow">INTERACTIVE BUSINESS INTELLIGENCE</p>
+            <h2 id="portfolio-teaser-heading">Don’t just look at it. Run it.</h2>
+            <p>Step into the operator’s chair. Change a segment, compare the evidence and stress-test a business assumption.</p>
+          </div>
+          <a className="text-link" href="/portfolio">Explore the interactive portfolio <span aria-hidden="true">↗</span></a>
+        </div>
+        <div className="pl-home-teaser-grid">
+          {portfolioStudies.map(study=>(
+            <a key={study.slug} href={"/portfolio/"+(study.slug==="supply"?"supply-chain":study.slug)}>
+              <span>{study.sector}</span><strong>{study.metric}</strong>
+              <h3>{study.title}</h3>
+              <small>OPEN THE OPERATING MODEL <b aria-hidden="true">↗</b></small>
             </a>
           ))}
         </div>

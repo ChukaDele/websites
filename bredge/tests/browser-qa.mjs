@@ -853,25 +853,138 @@ async function testHeadingsAndOriginalResearch(browser) {
           `Footer typography ignored its type-system leading at ${v.width}px: ${JSON.stringify(footerStyle)}`);
       }
       if(route==="/research"){
-        assert.equal(await page.locator(".research-brief").count(),3,"Need three verifiable, original public-data briefs");
-        const facts=await page.locator(".research-brief").evaluateAll(nodes=>nodes.map(n=>({
-          title:n.querySelector("h2")?.textContent,
-          number:n.querySelector(".research-stat strong")?.textContent,
-          source:n.querySelector(".research-evidence a")?.getAttribute("href"),
-          limitations:n.querySelector(".research-evidence div")?.textContent,
-          period:n.querySelector(".research-brief-head small")?.textContent,
-        })));
-        assert.deepEqual(facts.map(x=>x.number),["179.64M","₦1,596.25","₦1,589"]);
-        assert.ok(facts.every(x=>x.period&&x.source?.startsWith("https://microdata.nigerianstat.gov.ng/")&&(x.limitations?.length||0)>180));
-        const sourceToggle=page.locator(".research-evidence summary").first();
-        await sourceToggle.click();
-        assert.equal(await page.locator(".research-evidence").first().evaluate(el=>el.open),true);
-        await sourceToggle.click();
+        assert.equal(await page.locator(".rs-entry").count(),3,
+          "Research index must introduce all three source-backed decision stories");
+        const destinations=await page.locator(".rs-entry h3 a").evaluateAll(links=>
+          links.map(link=>link.getAttribute("href")));
+        assert.deepEqual(destinations,[
+          "/research/nigeria-pms-may-2026",
+          "/research/nigeria-telecoms-q4-2025",
+          "/research/nigeria-cohd-april-2026",
+        ]);
+        assert.equal(await page.locator(".rs-archive-refs a").count(),3,
+          "Original publisher sources should remain available on the index");
       }
     }
     await page.close();
   }
   console.log("✓ all headings use one balanced typography/rag system; original research sources and limitations verified");
+}
+
+async function testInteractiveDecisionPortfolio(browser) {
+  const desktop=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:"no-preference"});
+  const samples=[
+    ["/research/nigeria-pms-may-2026","fuel"],
+    ["/research/nigeria-telecoms-q4-2025","telecom"],
+    ["/research/nigeria-cohd-april-2026","diet"],
+    ["/portfolio/finance","finance"],
+    ["/portfolio/supply-chain","supply"],
+    ["/portfolio/saas","saas"],
+  ];
+  for(const [route,dataset] of samples){
+    const res=await desktop.goto(base+route,{waitUntil:"load",timeout:30000});
+    assert.equal(res.status(),200,route+" must render the real decision workbench");
+    const shell=desktop.locator('[data-workbench="'+dataset+'"]');
+    await shell.waitFor({state:"attached",timeout:14000});
+    const tabs=shell.locator(".wb-tabs button");
+    assert.ok(await tabs.count()>=2,route+" must offer multiple meaningful data views");
+    const bars=shell.locator(".wb-bar-row");
+    assert.ok(await bars.count()>=3);
+    const row=bars.nth(1);
+    const selectedText=await row.locator(".wb-bar-name").innerText();
+    await row.click();
+    assert.equal(await shell.locator(".wb-inspector h4").innerText(),selectedText,
+      route+" must show selected business segment");
+    await row.hover();
+    await desktop.waitForTimeout(280);
+    assert.equal(await row.locator(".wb-point-tooltip").evaluate(x=>getComputedStyle(x).visibility),
+      "visible","hover and keyboard insight tooltip must be visible for "+route);
+    const before=await shell.locator(".wb-projection strong").innerText();
+    const range=shell.locator('input[type="range"]');
+    await range.focus();
+    await range.press("End");
+    const after=await shell.locator(".wb-projection strong").innerText();
+    assert.notEqual(before,after,"operating assumption must change its outcome: "+route);
+    await tabs.nth(1).click();
+    await shell.locator('.wb-stage[aria-busy="false"]').waitFor({state:"attached",timeout:12000});
+    const label=await shell.locator(".wb-chart-heading span").innerText();
+    assert.match(label,/0[1-9] \/ /);
+    const report=await shell.locator(".wb-smallprint").innerText();
+    assert.ok(report.length>35,"Dataset scope must be visible: "+route);
+  }
+  // Workbench values can have different units and valid scenario ranges.
+  // A porting (10-100%) assumption must never leak into a voice (1-20%) view.
+  await desktop.goto(base+"/research/nigeria-telecoms-q4-2025",{waitUntil:"load"});
+  const telecom=desktop.locator('[data-workbench="telecom"]');
+  const switches=telecom.getByRole("button",{name:"Customer switching"});
+  await switches.click();
+  await desktop.waitForFunction(()=>{
+    const s=document.querySelector('[data-workbench="telecom"] .wb-chart-heading span');
+    return s?.textContent?.includes("CUSTOMER SWITCHING");
+  });
+  const pct=telecom.locator("input[type=range]");
+  assert.equal(await pct.inputValue(),"80","porting assumption must start inside range");
+  assert.match(await telecom.locator(".wb-projection strong").innerText(),/^\d[\d,]* numbers$/,
+    "Porting scenario cannot retain fractional phone numbers");
+  await pct.focus();await pct.press("End");
+  assert.equal(await pct.inputValue(),"100");
+  await telecom.getByRole("button",{name:"Voice networks"}).click();
+  await desktop.waitForFunction(()=>{
+    const s=document.querySelector('[data-workbench="telecom"] .wb-chart-heading span');
+    return s?.textContent?.includes("VOICE NETWORKS");
+  });
+  assert.equal(await pct.inputValue(),"5","view changes must reset an incompatible slider value");
+  await switches.click();
+  await desktop.waitForFunction(()=>{
+    const s=document.querySelector('[data-workbench="telecom"] .wb-chart-heading span');
+    return s?.textContent?.includes("CUSTOMER SWITCHING");
+  });
+  assert.equal(await pct.inputValue(),"80","returning to a view must use its own default");
+  await telecom.locator(".wb-bar-row").filter({hasText:"9mobile"}).click();
+  assert.match(await telecom.locator(".wb-inspector-secondary").innerText(),
+    /Port-outs[\s\S]*945/,"Port-outs must be accessible without hover");
+  // The original Microsoft sample has negative Enterprise contribution:
+  // do not hide it behind a decorative bar or force clients to infer it.
+  await desktop.goto(base+"/portfolio/finance",{waitUntil:"load"});
+  const finance=desktop.locator('[data-workbench="finance"]');
+  await finance.getByRole("button",{name:"Customer segment"}).click();
+  await desktop.waitForFunction(()=>{
+    const s=document.querySelector('[data-workbench="finance"] .wb-chart-heading span');
+    return s?.textContent?.includes("CUSTOMER SEGMENT");
+  });
+  await finance.locator(".wb-bar-row").filter({hasText:"Enterprise"}).click();
+  assert.match(await finance.locator(".wb-inspector-secondary").innerText(),
+    /Sample profit[\s\S]*−\$38,342/,"Sample losses need their full signed value");
+  assert.match(await finance.locator(".wb-kpis").innerText(),/\$14\.26M/,
+    "Large sample sales need compact notation instead of clipping mobile layouts");
+  await desktop.close();
+  const touch=await browser.newPage({viewport:{width:390,height:844},
+    hasTouch:true,reducedMotion:"reduce"});
+  await touch.goto(base+"/portfolio/finance",{waitUntil:"load"});
+  const shell=touch.locator('[data-workbench="finance"]');
+  assert.ok(await shell.locator(".wb-bars").isVisible());
+  assert.ok(await shell.locator("input[type=range]").isVisible());
+  const overflow=await touch.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+  assert.ok(overflow<=2,"touch dashboard must not overflow narrow phones");
+  await touch.close();
+  console.log("✓ all 6 source-scoped, live chart workbenches: hover/focus, view change, filter and slider");
+}
+
+async function testFreshDesktopDeepLinksSkipHomeIntro(browser) {
+  const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:"no-preference"});
+  for(const route of ["/research","/portfolio/finance"]){
+    await page.goto(base+route,{waitUntil:"domcontentloaded"});
+    const state=await page.evaluate(()=>({
+      blocked:document.documentElement.classList.contains("preload-active"),
+      overlay:getComputedStyle(document.querySelector(".preloader")).display,
+      overflow:getComputedStyle(document.documentElement).overflow,
+    }));
+    assert.equal(state.blocked,false,"deep-linked "+route+" must never be blocked by homepage intro");
+    assert.equal(state.overlay,"none","homepage-only preloader should not obscure "+route);
+    assert.notEqual(state.overflow,"hidden","intro must not scroll-lock "+route);
+  }
+  await page.close();
+  console.log("✓ desktop deep links open directly without the homepage preloader");
 }
 
 async function testContactCannotClaimUndeliveredSuccess(browser) {
@@ -925,6 +1038,8 @@ try {
   await testInsights(browser);
   await testConversionPolishAndRetrieval(browser);
   await testHeadingsAndOriginalResearch(browser);
+  await testFreshDesktopDeepLinksSkipHomeIntro(browser);
+  await testInteractiveDecisionPortfolio(browser);
   await testContactCannotClaimUndeliveredSuccess(browser);
   await testHeaders(browser);
   console.log("\nBredge browser QA: PASS");

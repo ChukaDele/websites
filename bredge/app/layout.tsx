@@ -9,6 +9,8 @@ import "./qa-fixes.css";
 import "./mobile-native.css";
 import "./conversion.css";
 import "./research.css";
+import "./research-labs.css";
+import "./workbench.css";
 import "./typography-rag.css";
 import { Preloader } from "../components/site/Preloader";
 import { Analytics } from "../components/site/Analytics";
@@ -18,7 +20,7 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, view
 // Runs before first paint: mark first-entry (this session, motion allowed) so the
 // preloader overlay is present on the very first frame — no flash for returning
 // visitors, and it decides synchronously so there's no layout jump.
-const preloadInit = `(function(){try{if(!sessionStorage.getItem('bredge_preloaded')&&!matchMedia('(max-width:1000px), (prefers-reduced-motion: reduce)').matches&&!navigator.connection?.saveData){document.documentElement.classList.add('preload-active');}}catch(e){}})();`;
+const preloadInit = `(function(){try{if(location.pathname==='/'&&!sessionStorage.getItem('bredge_preloaded')&&!matchMedia('(max-width:1000px), (prefers-reduced-motion: reduce)').matches&&!navigator.connection?.saveData){document.documentElement.classList.add('preload-active');}}catch(e){}})();`;
 
 // Search and social descriptions deliberately summarise the visible homepage
 // proposition. They do not introduce claims that a visitor cannot verify.

@@ -22,7 +22,7 @@ test("agent discovery index stays derived from published metadata",()=>{
   assert.equal((index.match(/^URL: https:\/\/thebredge.com\/insights\//gm)||[]).length,articles.length);
   assert.equal((index.match(/^URL: https:\/\/thebredge.com\/resources\//gm)||[]).length,resources.length);
   for(const brief of dataBriefs){
-    assert.ok(index.includes("https://thebredge.com/research#"+brief.slug));
+    assert.ok(index.includes("https://thebredge.com/research/"+brief.slug));
     assert.ok(index.includes(brief.sourceUrl));
     assert.ok(index.includes(brief.limitations));
   }

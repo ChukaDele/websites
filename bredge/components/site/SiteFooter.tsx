@@ -11,8 +11,10 @@ const columns: Array<[string, Array<[string, string] | [string, string, "soon"]>
   ["Company", [
     ["About", "/about"],
     ["How we work", "/how-we-work"],
+    ["Work overview", "/work"],
+    ["Research", "/research"],
+    ["Interactive portfolio", "/portfolio"],
     ["Insights", "/insights"],
-    ["Data briefs", "/research"],
     ["Resources", "/resources"],
   ]],
   ["Connect", [

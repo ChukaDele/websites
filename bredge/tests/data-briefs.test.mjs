@@ -16,7 +16,7 @@ test("public Bredge analysis is traceable to official periods and named governme
   assert.doesNotMatch(b.summary,/client projects|client outcomes|customer testimonials/i);
  }
  const sitemapSource=readFileSync(new URL("../app/sitemap.ts",import.meta.url),"utf8");
- assert.match(sitemapSource,/\["\/research", 0\.7, "monthly"\]/);
+ assert.match(sitemapSource,/\["\/research", 0\.8, "monthly"\]/);
 });
 test("uncertain healthy diet draft deltas are not presented as verified figures",()=>{
  const b=dataBriefs.find(x=>x.slug==="nigeria-cohd-april-2026");
@@ -24,13 +24,17 @@ test("uncertain healthy diet draft deltas are not presented as verified figures"
  assert.doesNotMatch(b.summary,/3\.11%|4\.68%|3\.12%|4\.74%/);
  assert.match(b.limitations,/not shown in this public summary/);
 });
-test("research page uses authentic source links and visible limitations",()=>{
- const src=readFileSync(new URL("../app/research/page.tsx",import.meta.url),"utf8");
- assert.match(src,/dataBriefs\.map/);
- assert.match(src,/brief\.limitations/);
- assert.match(src,/brief\.sourceUrl/);
- assert.match(src,/noopener noreferrer/);
- assert.doesNotMatch(src,/localhost|drive\.google\.com\/file/);
+test("research index links real sourced case studies and each story keeps its methodological limitations visible",()=>{
+ const index=readFileSync(new URL("../app/research/page.tsx",import.meta.url),"utf8");
+ const detail=readFileSync(new URL("../components/research/ResearchArticle.tsx",import.meta.url),"utf8");
+ assert.match(index,/researchStories\.map/);
+ assert.match(index,/dataBriefs\.map/);
+ assert.match(index,/x\.sourceUrl/);
+ assert.match(detail,/story\.method\.map/);
+ assert.match(detail,/story\.caveats\.map/);
+ assert.match(detail,/initial\.sourceURL/);
+ assert.match(detail,/noopener noreferrer/);
+ assert.doesNotMatch(detail,/localhost|drive\.google\.com\/file/);
 });
 
 
@@ -57,7 +61,11 @@ test("public research assets contain no private Drive endpoints or PBIX/PDF path
   }
 });
 
-test("each research text anchor has a matching DOM ID",()=>{
-  const src=readFileSync(new URL("../app/research/page.tsx",import.meta.url),"utf8");
-  assert.match(src,/id=\{brief\.slug\}/);
+test("each original research reference links to its own permanent canonical case-study route",()=>{
+  const index=readFileSync(new URL("../app/research/page.tsx",import.meta.url),"utf8");
+  assert.match(index,/href=\{"\/research\/"\+s\.slug\}/);
+  for(const brief of dataBriefs){
+    const article=readFileSync(new URL("../app/research/"+brief.slug+"/page.tsx",import.meta.url),"utf8");
+    assert.match(article,/ResearchArticle/);
+  }
 });
