@@ -21,7 +21,14 @@ const CAPABILITY = { label: "What does your data capability look like today?", o
 const URGENT = { label: "Which area is most urgent?", options: ["Data engineering", "Analytics", "BI / reporting", "Data quality", "Automation", "Not sure"] };
 
 const timelines = ["As soon as possible", "Within 1–2 months", "This quarter", "Exploring"];
-const INTENT_TO_NEED: Record<string, string> = { project: "Data engineering", embedded: "Embedded Data Team", diagnostic: "Data Diagnostic" };
+const INTENT_TO_NEED: Record<string, string> = {
+ project: "Data engineering", embedded: "Embedded Data Team",
+ diagnostic: "Data Diagnostic", portfolio: "BI & reporting", research: "Analytics",
+};
+const INTENT_HELP: Record<string, {label:string;details:string}> = {
+ portfolio:{label:"Interactive portfolio enquiry",details:"We can discuss a reporting or operating model for your team."},
+ research:{label:"Research and market intelligence enquiry",details:"Tell us the business question you need evidence to answer."},
+};
 
 type State = { kind: "idle" | "sending" | "ok" | "error"; message?: string };
 
@@ -33,6 +40,7 @@ function readUtm() {
 
 export function ContactForm({ formType = "contact" }: { formType?: string }) {
   const [needs, setNeeds] = useState<string[]>([]);
+  const [intent, setIntent] = useState("");
   const [capability, setCapability] = useState("");
   const [urgentArea, setUrgentArea] = useState("");
   const [timeline, setTimeline] = useState("");
@@ -49,7 +57,7 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
   useEffect(() => {
     startedAt.current = performance.now();
     const intent = new URLSearchParams(window.location.search).get("intent");
-    if (intent && INTENT_TO_NEED[intent]) queueMicrotask(() => setNeeds([INTENT_TO_NEED[intent]]));
+    if (intent && INTENT_TO_NEED[intent]) queueMicrotask(() => { setNeeds([INTENT_TO_NEED[intent]]); setIntent(intent); });
   }, []);
 
   function toggleNeed(n: string) {
@@ -157,6 +165,7 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
 
   return (
     <form className="contact-form" ref={formRef} onSubmit={onSubmit} noValidate data-clarity-mask="true">
+      {INTENT_HELP[intent] && <p className="contact-intent-context"><strong>{INTENT_HELP[intent].label}</strong> {INTENT_HELP[intent].details}</p>}
       <div className="field">
         <label htmlFor="name">Name <i aria-hidden="true">*</i></label>
         <input id="name" name="name" autoComplete="name" required />
