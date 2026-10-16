@@ -39,3 +39,9 @@ yarn-error.log*
 /outputs/
 /work/
 /.playwright-cli/
+
+# Local TypeScript incremental state
+tsconfig.tsbuildinfo
+
+# Generated on every run by the pinned Wrangler runtime
+worker-configuration.d.ts

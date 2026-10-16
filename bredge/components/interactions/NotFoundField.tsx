@@ -77,8 +77,24 @@ export function NotFoundField() {
       }
       raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(tick);
-    return () => { cancelAnimationFrame(raf); root.removeEventListener("pointermove", onMove); root.removeEventListener("pointerleave", onLeave); };
+    let visible = false;
+    const wake = () => {
+      if (visible && !document.hidden && !raf) raf = requestAnimationFrame(tick);
+      if ((!visible || document.hidden) && raf) { cancelAnimationFrame(raf); raf = 0; }
+    };
+    const io = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      wake();
+    }, { threshold: 0 });
+    io.observe(root);
+    document.addEventListener("visibilitychange", wake);
+    return () => {
+      io.disconnect();
+      document.removeEventListener("visibilitychange", wake);
+      cancelAnimationFrame(raf);
+      root.removeEventListener("pointermove", onMove);
+      root.removeEventListener("pointerleave", onLeave);
+    };
   }, [phase]);
 
   function attemptMatch() {

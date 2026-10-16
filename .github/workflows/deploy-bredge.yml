@@ -68,6 +68,9 @@ jobs:
       - name: Build and source regression tests
         run: npm test
 
+      - name: Validate Cloudflare bindings and TypeScript
+        run: npm run typecheck
+
       - name: Verify atomic Worker deployment packaging without publishing
         run: |
           node scripts/verify-contact-rate-limit-config-cli.mjs dist/server/wrangler.json
@@ -236,6 +239,7 @@ jobs:
           test "$(node -p 'JSON.parse(require("node:fs").readFileSync("dist/server/wrangler.json", "utf8")).name')" = "bredge"
           npm run lint
           node --test tests/*.test.mjs
+          npm run typecheck
 
       - name: Verify Google webhook readiness and native rate limit without production write access
         env:

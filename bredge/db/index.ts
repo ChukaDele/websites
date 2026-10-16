@@ -3,11 +3,15 @@ import { drizzle } from "drizzle-orm/d1";
 import * as schema from "./schema";
 
 export function getDb() {
-  if (!env.DB) {
+  // The marketing Worker intentionally has no D1 binding. Some deployments
+  // explicitly inject DB; keep the missing-binding failure without lying in
+  // the generated Cloudflare runtime type contract.
+  const db = (env as typeof env & { DB?: D1Database }).DB;
+  if (!db) {
     throw new Error(
       "Cloudflare D1 binding `DB` is unavailable. Set the `d1` field in .openai/hosting.json to `DB` or let your control plane inject the real binding values before using the database."
     );
   }
 
-  return drizzle(env.DB, { schema });
+  return drizzle(db, { schema });
 }

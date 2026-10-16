@@ -1,0 +1,75 @@
+name: Bredge Astro Static Pilot QA
+
+on:
+  pull_request:
+    paths:
+      - "bredge-astro/**"
+      - "bredge/package.json"
+      - "bredge/package-lock.json"
+      - "bredge/lib/**"
+      - "bredge/public/**"
+      - "bredge/components/**"
+      - "bredge/app/**"
+      - ".github/workflows/bredge-astro-pilot.yml"
+  push:
+    branches: [main]
+    paths:
+      - "bredge-astro/**"
+      - "bredge/package.json"
+      - "bredge/package-lock.json"
+      - "bredge/lib/**"
+      - "bredge/public/**"
+      - "bredge/components/**"
+      - "bredge/app/**"
+      - ".github/workflows/bredge-astro-pilot.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  astro-static-pilot:
+    name: astro-static-pilot
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: bredge-astro
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          # Astro 7 requires Node >=22.22; use the supported 24 LTS line
+          # independently of the existing protected Bredge Node 22 release.
+          node-version: 24
+          cache: npm
+          cache-dependency-path: bredge-astro/package-lock.json
+      # Shared interaction components resolve dependencies from ../bredge.
+      # A clean CI checkout must install BOTH lockfiles before the pilot build.
+      - name: Install locked existing Bredge runtime dependencies
+        run: npm ci --prefix ../bredge --no-audit --no-fund
+      - name: Install locked Astro prototype dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Compile the static marketing experiment
+        run: npm run build
+      - name: Assert static homepage source and noindex guard
+        run: npm test
+      - name: Verify Astro pilot is not a production-capable contact service
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/index.html
+          if test -f dist/api/contact/index.html || test -f dist/api/contact.html; then
+            echo "::error::The static pilot must not impersonate the real Google lead API."
+            exit 1
+          fi
+          node -e 'const s=require("node:fs").readFileSync("dist/index.html","utf8");if(!s.includes("noindex, nofollow")||!s.includes("https://thebredge.com/"))process.exit(1)'
+      - name: Upload static pilot evidence, not a production release artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: bredge-astro-pilot
+          path: |
+            bredge-astro/dist/index.html
+            bredge-astro/dist/_astro/*.css
+          retention-days: 7
