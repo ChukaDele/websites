@@ -179,6 +179,16 @@
  .wb-bar-row {min-height:48px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
  .wb-bar-row:active {background:#46694e;}
 }
+/* Keyboard focus is a true intent signal even on hybrid/touch devices.
+   Keep the tooltip available to hardware keyboards without enabling sticky
+   synthetic hover after finger taps. This also works in headless Chromium
+   environments that report no fine-pointer media capability. */
+.wb-bar-row:focus-visible .wb-point-tooltip {
+ display:flex;
+ opacity:1;
+ visibility:visible;
+ transform:translateY(0);
+}
 @media (prefers-reduced-motion:reduce) {
  .wb-point-tooltip {transition:none;transform:none!important;}
 }

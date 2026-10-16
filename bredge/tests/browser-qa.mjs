@@ -895,10 +895,22 @@ async function testInteractiveDecisionPortfolio(browser) {
     await row.click();
     assert.equal(await shell.locator(".wb-inspector h4").innerText(),selectedText,
       route+" must show selected business segment");
-    await row.hover();
-    await desktop.waitForTimeout(280);
+    // Hover is a capability, not a desktop-width guarantee: Linux headless
+    // Chromium may report (hover:none) even at a 1440px viewport. Always
+    // verify the accessible keyboard path; require mouse hover where genuine.
+    const hoverCapable=await desktop.evaluate(()=>
+      matchMedia("(hover: hover) and (pointer: fine)").matches);
+    if(hoverCapable){
+      await row.hover();
+      await desktop.waitForTimeout(280);
+      assert.equal(await row.locator(".wb-point-tooltip").evaluate(x=>getComputedStyle(x).visibility),
+        "visible","fine-pointer hover must reveal source tooltip for "+route);
+    }
+    await row.focus();
+    await row.press("Enter");
+    await desktop.waitForTimeout(120);
     assert.equal(await row.locator(".wb-point-tooltip").evaluate(x=>getComputedStyle(x).visibility),
-      "visible","hover and keyboard insight tooltip must be visible for "+route);
+      "visible","keyboard focus must reveal source tooltip for "+route);
     const before=await shell.locator(".wb-projection strong").innerText();
     const range=shell.locator('input[type="range"]');
     await range.focus();
