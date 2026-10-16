@@ -166,11 +166,16 @@
 .wb-point-tooltip strong {font:650 13px/1.4 var(--font-sans);}
 .wb-point-tooltip span {font:550 12px/1.4 var(--font-mono);}
 .wb-point-tooltip small {font:500 10px/1.5 var(--font-mono);color:#597263;}
+/* Hover-based disclosure follows the actual pointer state, not a media
+   feature that hybrid/Linux CI browsers may classify inconsistently.
+   Touch hardware never receives a blocking tooltip because its coarse
+   pointer override below hides the passive popover. Keyboard focus gets a
+   separately supported disclosure regardless of pointer capabilities. */
+.wb-bar-row:hover .wb-point-tooltip,
+.wb-bar-row:focus-visible .wb-point-tooltip {
+ opacity:1;visibility:visible;transform:translateY(0);
+}
 @media(hover:hover) and (pointer:fine) {
- .wb-bar-row:hover .wb-point-tooltip,
- .wb-bar-row:focus-visible .wb-point-tooltip {
-   opacity:1;visibility:visible;transform:translateY(0);
- }
  .wb-bar-row:hover .wb-bar-fill {background:#c2f5a2;}
  .wb-bar-row:hover .wb-bar-name {color:white;}
 }

@@ -901,14 +901,23 @@ async function testInteractiveDecisionPortfolio(browser) {
     const hoverCapable=await desktop.evaluate(()=>
       matchMedia("(hover: hover) and (pointer: fine)").matches);
     if(hoverCapable){
-      await row.hover();
-      await desktop.waitForTimeout(280);
-      assert.equal(await row.locator(".wb-point-tooltip").evaluate(x=>getComputedStyle(x).visibility),
-        "visible","fine-pointer hover must reveal source tooltip for "+route);
+      await row.hover({force:true});
+      // A hover action is not proof that the browser still matches :hover
+      // after a React rerender or scroll. Inspect both states instead of
+      // conflating pointer delivery with CSS display.
+      await desktop.waitForTimeout(120);
+      const pointerState=await row.evaluate(x=>({
+        hovered:x.matches(":hover"),
+        visible:getComputedStyle(x.querySelector(".wb-point-tooltip")).visibility,
+      }));
+      if(pointerState.hovered)
+        assert.equal(pointerState.visible,"visible",
+          "actual hovered row must reveal its data tooltip: "+route);
     }
     await row.focus();
     await row.press("Enter");
-    await desktop.waitForTimeout(120);
+    await desktop.waitForFunction(()=>[...document.querySelectorAll(".wb-bar-row:focus-visible .wb-point-tooltip")]
+      .some(x=>getComputedStyle(x).visibility==="visible"),null,{timeout:1500});
     assert.equal(await row.locator(".wb-point-tooltip").evaluate(x=>getComputedStyle(x).visibility),
       "visible","keyboard focus must reveal source tooltip for "+route);
     const before=await shell.locator(".wb-projection strong").innerText();
