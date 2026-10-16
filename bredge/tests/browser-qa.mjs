@@ -76,6 +76,24 @@ async function testRouteMatrix(browser) {
   console.log(`✓ route matrix: ${routes.length} canonical routes`);
 }
 
+// Remote preview QA should distinguish a transient network socket timeout
+// from a broken link. Retry only thrown transport errors, for a strictly
+// bounded number of attempts. Any HTTP 4xx/5xx still fails immediately.
+async function getWithNetworkRetry(request, url, options = {}) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await request.get(url, { timeout: 45_000, ...options });
+    } catch (error) {
+      const message = String(error);
+      const retryable = /ETIMEDOUT|ECONNRESET|ERR_CONNECTION_RESET|ERR_NETWORK_CHANGED/i.test(message);
+      if (!retryable || attempt === 2) throw error;
+      console.warn(`Network retry ${attempt + 1}/2 for ${new URL(url).pathname}: ${message.match(/ETIMEDOUT|ECONNRESET|ERR_CONNECTION_RESET|ERR_NETWORK_CHANGED/i)?.[0] || "transient error"}`);
+      await new Promise((resolve) => setTimeout(resolve, 350 * (attempt + 1)));
+    }
+  }
+  throw new Error("unreachable");
+}
+
 async function testInternalLinks(browser) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   await context.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
@@ -94,7 +112,7 @@ async function testInternalLinks(browser) {
   }
 
   for (const path of paths) {
-    const response = await context.request.get(`${base}${path}`, { maxRedirects: 5 });
+    const response = await getWithNetworkRetry(context.request, `${base}${path}`, { maxRedirects: 5 });
     assert.ok(response.status() < 400, `internal link ${path}: HTTP ${response.status()}`);
   }
 
@@ -328,7 +346,14 @@ async function testHeroCompositionAndMobileNative(browser) {
   const noScript = await browser.newPage({
     viewport:{width:1440,height:900}, javaScriptEnabled:false, reducedMotion:"no-preference",
   });
-  await noScript.goto(base,{waitUntil:"domcontentloaded"});
+  // The remote Worker can deliver CSS after DOMContentLoaded. A no-JS
+  // computed-style assertion before the stylesheet arrives is meaningless:
+  // an unstyled <div> defaults to display:block. Wait for actual CSS.
+  await noScript.goto(base,{waitUntil:"load",timeout:60000});
+  await noScript.evaluate(() => document.fonts.ready);
+  await noScript.waitForFunction(() =>
+    getComputedStyle(document.querySelector(".morph-cards")).display === "grid",
+    null,{timeout:12000});
   const plain = await noScript.locator(".hero-morph").evaluate(root => {
     const cards=[...root.querySelectorAll(".morph-card")].map(el=>el.getBoundingClientRect());
     const rr=root.querySelector(".morph-result").getBoundingClientRect();
@@ -375,13 +400,22 @@ async function testHeroCompositionAndMobileNative(browser) {
   });
   assert.equal(scene.stickyPosition,"sticky","desktop must have a single CSS-owned sticky viewport");
   assert.equal(scene.pinCount,0,"hero narrative must not use GSAP pin spacers");
-  await desktop.evaluate(({top,height})=>scrollTo(0, top+(height-innerHeight)*0.53),scene);
-  await desktop.waitForTimeout(600);
+  // The site uses scroll-behavior:smooth. A programmatic scrollTo(x,y)
+  // otherwise starts an animation; a fixed sleep can check an intermediate
+  // scroll offset and mistake it for a broken CSS-sticky section.
+  const midpoint = await desktop.evaluate(({top,height}) => {
+    const requested=top+(height-innerHeight)*0.53;
+    window.scrollTo({ top:requested, behavior:"instant" });
+    return requested;
+  }, scene);
+  await desktop.waitForFunction(target=>Math.abs(window.scrollY-target)<3, midpoint, {timeout:2500});
+  await desktop.waitForTimeout(280);
   const stickyTop = await desktop.locator(".hero-morph-content").evaluate(el=>el.getBoundingClientRect().top);
   assert.ok(Math.abs(stickyTop)<=4,
     `Hero sticky scene moved by ${stickyTop}px at mid-scroll. Check ancestor overflow and CSS sticky containment.`);
-  await desktop.evaluate(({top,height})=>scrollTo(0, top+height-innerHeight-12),scene);
-  await desktop.waitForTimeout(950);
+  await desktop.evaluate(({top,height})=>
+    window.scrollTo({top:top+height-innerHeight-12,behavior:"instant"}),scene);
+  await desktop.waitForTimeout(650);
   const reveal = await desktop.locator(".morph-result").evaluate(el=>Number(getComputedStyle(el).opacity));
   assert.ok(reveal > 0.9, `desktop narrative never reveals outcome (opacity ${reveal})`);
   await desktop.close();
