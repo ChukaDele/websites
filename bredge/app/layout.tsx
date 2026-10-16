@@ -7,6 +7,9 @@ import "./globals.css";
 import "./pages.css";
 import "./qa-fixes.css";
 import "./mobile-native.css";
+import "./conversion.css";
+import "./research.css";
+import "./typography-rag.css";
 import { Preloader } from "../components/site/Preloader";
 import { Analytics } from "../components/site/Analytics";
 
@@ -65,7 +68,6 @@ const structuredData = {
       "@type": "Organization",
       "@id": "https://thebredge.com/#organization",
       name: "The Bredge",
-      legalName: "The Bredge, LLC",
       alternateName: ["Bredge"],
       url: "https://thebredge.com",
       logo: "https://thebredge.com/brand/bredge-logo.svg",

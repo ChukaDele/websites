@@ -87,7 +87,7 @@ export function SiteHeader({ variant = "solid" }: { variant?: "solid" | "overlay
         {primary.map(([label, href]) => <a key={href} className={`nav-item${pathname === href ? " active" : ""}`} href={href} aria-current={pathname === href ? "page" : undefined}>{label}</a>)}
       </nav>
 
-      <a className="button button-small header-cta" href="/schedule">Schedule a call <Arrow /></a>
+      <a className="button cta-accent button-small header-cta" data-cta="header_schedule" href="/schedule">Schedule a call <Arrow /></a>
 
       <button className="nav-toggle" aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen((v) => !v)}>
         <span className={menuOpen ? "open" : ""} />
@@ -100,7 +100,7 @@ export function SiteHeader({ variant = "solid" }: { variant?: "solid" | "overlay
         {services.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}
         <p className="mobile-eyebrow">COMPANY</p>
         {primary.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}
-        <a className="button mobile-cta" href="/schedule" onClick={() => setMenuOpen(false)}>Schedule a call <Arrow /></a>
+        <a className="button cta-accent mobile-cta" href="/schedule" onClick={() => setMenuOpen(false)}>Schedule a call <Arrow /></a>
       </div>
     )}
     </>

@@ -27,7 +27,7 @@ export default function ServicesPage() {
         <h1>From messy source systems to decisions your team can trust.</h1>
         <p className="lede">We provide data engineering, analytics and business intelligence consulting for growing and mid-market companies. A reporting problem may actually be a modelling problem. A dashboard nobody trusts may be a reconciliation problem. A forecasting problem may start with unreliable source data.</p>
         <p className="lede">The Bredge works across the data stack — from engineering and modelling to analytics, reporting and ongoing data operations — so the solution follows the problem rather than the other way around.</p>
-        <div className="hero-cta-row"><a className="button" href="/schedule">Schedule a call <span className="arrow" aria-hidden="true">↗</span></a></div>
+        <div className="hero-cta-row"><a className="button cta-accent" data-cta="services_schedule" href="/schedule">Schedule a call <span className="arrow" aria-hidden="true">↗</span></a></div>
       </section>
 
       <section className="section surface">
@@ -80,13 +80,40 @@ export default function ServicesPage() {
         </div>
       </section>
 
+      <section className="section-wrap service-answers" aria-labelledby="service-answers-heading">
+        <p className="eyebrow">CHOOSING THE RIGHT HELP</p>
+        <h2 id="service-answers-heading">A clearer way to choose the work.</h2>
+        <div className="service-answers-grid">
+          <article>
+            <h3>What does The Bredge actually deliver?</h3>
+            <p>Data pipelines, reusable models, metric definitions, quality checks and reporting that answer specific business questions. The scope follows the unreliable numbers or slow workflows we find, rather than a predetermined technology stack.</p>
+            <a href="/services/data-projects">Explore defined-scope projects <span aria-hidden="true">↗</span></a>
+          </article>
+          <article>
+            <h3>When is an embedded team a better fit?</h3>
+            <p>When the organisation has a continuing data backlog across engineering, analytics and reporting. The embedded model provides recurring delivery; a project fits a specific issue with a clear handover.</p>
+            <a href="/services/embedded-data-team">Explore the embedded team <span aria-hidden="true">↗</span></a>
+          </article>
+          <article>
+            <h3>What if we are unsure what is broken?</h3>
+            <p>Start with a Data Diagnostic. We map source systems, reporting, data movement and metric definitions, then provide a prioritised list of reliability risks and improvements. You can take that work to your own team.</p>
+            <a href="/data-diagnostic">See the diagnostic scope <span aria-hidden="true">↗</span></a>
+          </article>
+          <article>
+            <h3>Do we need to replace our existing tools?</h3>
+            <p>Not automatically. The first step is to understand where source data, definitions and processes fail. Better modelling or reconciliation may solve the problem without a new warehouse or reporting platform.</p>
+            <a href="/insights/before-you-build-a-data-warehouse">Read the warehouse decision guide <span aria-hidden="true">↗</span></a>
+          </article>
+        </div>
+      </section>
+
       <section className="section ink">
         <div className="section-wrap callout-inner">
           <div>
             <h2>Not sure which one you need?</h2>
             <p>That’s usually a sign the problem needs diagnosing before it needs scoping.</p>
           </div>
-          <div><a className="button footer-button" href="/data-diagnostic">Start with a Data Diagnostic <span aria-hidden="true">→</span></a></div>
+          <div><a className="button cta-accent footer-button" href="/data-diagnostic">Start with a Data Diagnostic <span aria-hidden="true">→</span></a></div>
         </div>
       </section>
     </PageShell>

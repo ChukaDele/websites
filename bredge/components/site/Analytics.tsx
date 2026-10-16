@@ -65,8 +65,14 @@ export function Analytics() {
       const a = (e.target as HTMLElement)?.closest?.("a");
       if (!a) return;
       const href = a.getAttribute("href") || "";
-      if (href.startsWith("/schedule")) trackEvent("schedule_click", { cta_location: location.pathname, device_group: deviceGroup() });
-      else if (/^\/services|^\/data-diagnostic/.test(href)) trackEvent("service_cta_click", { service: href, cta_location: location.pathname });
+      const cta = a.getAttribute("data-cta") || location.pathname;
+      if (href.startsWith("/schedule")) {
+        trackEvent("schedule_click", { cta_location: cta, page_path: location.pathname, device_group: deviceGroup() });
+      } else if (href.startsWith("/contact")) {
+        trackEvent("contact_cta_click", { cta_location: cta, page_path: location.pathname });
+      } else if (/^\/services|^\/data-diagnostic/.test(href)) {
+        trackEvent("service_cta_click", { service: href, cta_location: cta, page_path: location.pathname });
+      }
     };
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
@@ -85,7 +91,7 @@ export function Analytics() {
 
   return (
     <div className="consent" role="dialog" aria-label="Analytics consent">
-      <p>We use privacy-friendly analytics to understand how the site is used. Lead form details are never sent to analytics.</p>
+      <p>With your permission, we use optional analytics to understand which pages and enquiries work. Your contact details and messages are not sent as analytics events.</p>
       <div className="consent-actions">
         <button type="button" className="button button-small" onClick={() => choose("granted")}>Accept analytics</button>
         <button type="button" className="consent-reject" onClick={() => choose("denied")}>Reject</button>

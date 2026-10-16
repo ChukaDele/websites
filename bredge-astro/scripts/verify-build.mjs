@@ -11,6 +11,8 @@ const checks = [
   [/class="iq-mobile section-wrap"/, "server-rendered mobile SQL excerpts"],
   [/6 \/ 6 checks passed/, "server-rendered completed mobile SQL summary"],
   [/class="morph-card card-5"/, "server-rendered five sources"],
+  [/The source comes first\./, "public-data research introduction"],
+  [/Original public-data analysis/i, "public-data provenance context"],
 ];
 for (const [rule, label] of checks) {
   if (!rule.test(html)) throw new Error("Astro pilot missing " + label);
