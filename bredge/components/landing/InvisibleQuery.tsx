@@ -113,12 +113,30 @@ export function InvisibleQuery() {
 
     let disposed = false;
     let mm: { revert: () => void } | undefined;
+    let started = false;
+    const desktopQuery = window.matchMedia(
+      "(min-width: 1001px) and (min-height: 720px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)",
+    );
+    const finishWithoutLibrary = () => {
+      const code = root.querySelector<HTMLElement>(".iq-code");
+      if (code) code.textContent = SQL;
+      root.classList.remove("iq-testing");
+      root.classList.add("iq-done");
+      root.querySelectorAll<HTMLElement>(".iq-stage").forEach((el, i) => el.classList.toggle("active", i === 5));
+      const cursor = root.querySelector<HTMLElement>(".iq-cursor");
+      if (cursor) cursor.style.opacity = "0";
+    };
+    // Mobile/reduced/short render the complete static state immediately,
+    // without downloading the GSAP and ScrollTrigger packages at all.
+    if (!desktopQuery.matches) finishWithoutLibrary();
 
-    (async () => {
+    const load = async () => {
+      if (started) return;
+      started = true;
       let gsap, ST;
       try {
         [{ default: gsap }, { ScrollTrigger: ST }] = await Promise.all([import("gsap"), import("gsap/ScrollTrigger")]);
-      } catch { return; }
+      } catch { started = false; finishWithoutLibrary(); return; }
       if (disposed) return;
       gsap.registerPlugin(ST);
       const m = gsap.matchMedia();
@@ -174,7 +192,7 @@ export function InvisibleQuery() {
       // use GSAP pinning here: a descendant pin created a second pin spacer next
       // to the Reference Work sticky scene, which could overlap the previous
       // section and leave a large blank runway after zoom/resize refreshes.
-      m.add("(min-width: 1001px) and (min-height: 720px) and (prefers-reduced-motion: no-preference)", () => {
+      m.add("(min-width: 1001px) and (min-height: 720px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)", () => {
         root.classList.remove("iq-testing", "iq-done");
         setVisibleChars(0);
         setStage(0);
@@ -224,11 +242,27 @@ export function InvisibleQuery() {
         return () => {};
       });
 
+      m.add("(max-width: 1000px)", () => {
+        renderFinished();
+      });
+      // Tablets with a mouse-sized viewport can still be touch-first. Their
+      // SQL scene stays static rather than using desktop scroll typing.
+      m.add("(hover: none), (pointer: coarse), (pointer: none)", () => {
+        renderFinished();
+      });
       ST.refresh();
-    })();
+    };
+
+    if (desktopQuery.matches) void load();
+    const onDesktopChange = (event: MediaQueryListEvent) => {
+      if (event.matches) void load();
+      else if (!started) finishWithoutLibrary();
+    };
+    desktopQuery.addEventListener("change", onDesktopChange);
 
     return () => {
       disposed = true;
+      desktopQuery.removeEventListener("change", onDesktopChange);
       mm?.revert();
       delete root.dataset.iqHydrated;
     };

@@ -1,0 +1,26 @@
+# The Bredge
+
+> The Bredge works with growing and mid-market businesses on data engineering, analytics, business intelligence, reconciliation, and reporting automation.
+
+Canonical website: https://thebredge.com/
+Language: English
+
+## Public information
+- [Services](https://thebredge.com/services)
+- [Embedded data team](https://thebredge.com/services/embedded-data-team)
+- [Defined-scope data projects](https://thebredge.com/services/data-projects)
+- [Data diagnostic](https://thebredge.com/data-diagnostic)
+- [How we work](https://thebredge.com/how-we-work)
+- [Articles and guides](https://thebredge.com/insights)
+- [Resources](https://thebredge.com/resources)
+- [About](https://thebredge.com/about)
+- [Privacy](https://thebredge.com/privacy)
+
+## User-authorised actions
+- [Schedule a meeting](https://thebredge.com/schedule)
+- [Send a project enquiry](https://thebredge.com/contact)
+- Contact email: hello@thebredge.com
+
+Browser-use agents may navigate, read, and complete the same accessible forms as people, provided the user has authorised the action. Do not invent details, submit speculative leads, or send bulk enquiries. Submissions are validated and rate limited for everyone. A bot's User-Agent alone does not grant extra access.
+
+For machine-readable navigation details, see https://thebredge.com/.well-known/bredge-agent.json. This is an informative site manifest, not an authentication protocol.

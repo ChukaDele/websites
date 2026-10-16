@@ -118,9 +118,12 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
         trackEvent("contact_success", { selected_needs_count: needs.length, intent: payload.intent });
         setState({ kind: "ok" });
       } else {
-        const b = await res.json().catch(() => ({}));
+        const b: unknown = await res.json().catch(() => ({}));
+        const message = b !== null && typeof b === "object" && "error" in b && typeof b.error === "string"
+          ? b.error
+          : "That didn’t send. Please try again.";
         trackEvent("contact_error", { page_path: payload.page });
-        setState({ kind: "error", message: b.error || "That didn’t send. Please try again." });
+        setState({ kind: "error", message });
       }
     } catch {
       trackEvent("contact_error", { page_path: payload.page });

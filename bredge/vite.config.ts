@@ -20,7 +20,7 @@ const localBindingConfig = {
     {
       name: "CONTACT_RATE_LIMITER",
       namespace_id: "41986273",
-      simple: { limit: 10, period: 60 },
+      simple: { limit: 10, period: 60 as const },
     },
   ],
   d1_databases: d1

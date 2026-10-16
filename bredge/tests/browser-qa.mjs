@@ -178,6 +178,226 @@ async function testScrollNarratives(browser) {
   console.log("✓ scroll narratives: SQL scene has one bounded sticky system and no overlap");
 }
 
+async function testMobileFirstVisitWithoutPreloader(browser) {
+  const page = await browser.newPage({ viewport:{width:390,height:844}, reducedMotion:"no-preference" });
+  await page.goto(base,{waitUntil:"domcontentloaded"});
+  const state=await page.evaluate(()=>({
+    htmlBlocked:document.documentElement.classList.contains("preload-active"),
+    visible:getComputedStyle(document.querySelector(".preloader")).display!=="none",
+    hero:!!document.querySelector(".hero h1"),
+  }));
+  assert.equal(state.htmlBlocked,false,"first-visit mobile must not block hero behind preloader");
+  assert.equal(state.visible,false,"first-visit mobile preloader must not obstruct content");
+  assert.equal(state.hero,true,"mobile hero must render on first view");
+  await page.close();
+  console.log("✓ first-visit phone shows content without GSAP preloader");
+}
+
+async function testMobileMotionFallbacks(browser) {
+  for (const reducedMotion of ["no-preference", "reduce"]) {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion });
+    await page.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
+    for (const { route, selector } of [
+      { route: "/data-diagnostic", selector: ".scan-item" },
+      { route: "/services", selector: ".dtree-stage" },
+      { route: "/about", selector: ".disc-mid" },
+      { route: "/services/data-projects", selector: ".rs-eval" },
+    ]) {
+      await page.goto(base + route, { waitUntil: "domcontentloaded" });
+      await page.waitForTimeout(120);
+      const opacity = await page.locator(selector).first().evaluate((element) => Number(getComputedStyle(element).opacity));
+      assert.ok(opacity > 0.95, `${route} at 390px / ${reducedMotion}: core content hidden at opacity ${opacity}`);
+    }
+    await page.close();
+  }
+  console.log("✓ mobile and reduced-motion service explanations remain readable");
+}
+
+async function testHeroCompositionAndMobileNative(browser) {
+  for (const config of [
+    { width: 320, height: 568 },
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+  ]) {
+    const context = await browser.newContext({ viewport: config, reducedMotion: "no-preference" });
+    await context.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
+    const page = await context.newPage();
+    await page.goto(base, { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(500);
+    const result = await page.evaluate(() => {
+      const cards = [...document.querySelectorAll(".morph-card")];
+      const rectangles = cards.map((c) => c.getBoundingClientRect());
+      const overlap = [];
+      for (let a = 0; a < rectangles.length; a++)
+        for (let b = a + 1; b < rectangles.length; b++) {
+          const x = Math.min(rectangles[a].right, rectangles[b].right) - Math.max(rectangles[a].left, rectangles[b].left);
+          const y = Math.min(rectangles[a].bottom, rectangles[b].bottom) - Math.max(rectangles[a].top, rectangles[b].top);
+          if (x > 2 && y > 2) overlap.push([a, b, x, y]);
+        }
+      const outcome = document.querySelector(".morph-result");
+      const nav = document.querySelector(".nav-toggle");
+      return {
+        cardCount: cards.length, overlap,
+        grid: getComputedStyle(document.querySelector(".morph-cards")).display,
+        resultOpacity: Number(getComputedStyle(outcome).opacity),
+        viewportOverflow: document.documentElement.scrollWidth - innerWidth,
+        arrowConnectors: document.querySelectorAll(".morph-links line").length,
+        navTapSize: nav.getBoundingClientRect().height,
+        heroVideo: document.querySelector(".hero-video")?.getAttribute("src"),
+      };
+    });
+    assert.equal(result.cardCount, 5, `mobile ${config.width}: expected five systems`);
+    assert.deepEqual(result.overlap, [], `mobile ${config.width}: source cards overlap`);
+    assert.equal(result.grid, "grid", `mobile ${config.width}: layout must be a real grid`);
+    assert.ok(result.resultOpacity >= 0.99, `mobile ${config.width}: summary hidden`);
+    assert.equal(result.arrowConnectors, 0, "unanchored SVG connector lines must not be rendered");
+    assert.ok(result.navTapSize >= 44, `mobile ${config.width}: menu control too small`);
+    assert.ok(result.viewportOverflow <= 2, `mobile ${config.width}: horizontal overflow ${result.viewportOverflow}px`);
+    const contact = await page.goto(`${base}/contact`, { waitUntil: "domcontentloaded" });
+    assert.equal(contact.status(), 200);
+    const form = await page.evaluate(() => ({
+      inputs: [...document.querySelectorAll(".contact-form input, .contact-form textarea")].filter(el => !el.closest(".hp") && el.getAttribute("type") !== "checkbox").map(el => ({ id: el.id, fontSize: Number.parseFloat(getComputedStyle(el).fontSize) })),
+      overflow: document.documentElement.scrollWidth - innerWidth,
+      layoutWidth: document.querySelector(".contact-layout").getBoundingClientRect().width,
+      introWidth: document.querySelector(".contact-intro").getBoundingClientRect().width,
+      formWidth: document.querySelector(".contact-form").getBoundingClientRect().width,
+      nextWidth: document.querySelector(".contact-next").getBoundingClientRect().width,
+      templateAreas: getComputedStyle(document.querySelector(".contact-layout")).gridTemplateAreas,
+    }));
+    assert.ok(form.inputs.every(input => input.fontSize >= 16), `mobile ${config.width}: some form fields trigger iOS focus zoom`);
+    assert.ok(form.overflow <= 2, `mobile ${config.width}: contact form overflow`);
+    assert.ok(form.formWidth >= form.layoutWidth * 0.94 && form.introWidth >= form.layoutWidth * 0.94
+      && form.nextWidth >= form.layoutWidth * 0.94,
+      `mobile ${config.width}: contact page squeezed into desktop grid (form=${form.formWidth}, layout=${form.layoutWidth})`);
+    assert.match(form.templateAreas, /intro[\s\S]*form[\s\S]*next/,
+      `mobile ${config.width}: contact sections not in vertical reading order`);
+    await context.close();
+  }
+
+  // Short and reduced-motion desktops must get the SAME no-overlap static
+  // fallback as phones. A visible result card cannot sit on top of source
+  // cards, even if JS fails or the user zooms to a short effective viewport.
+  for (const cfg of [
+    { name: "short desktop", width:1280, height:680, motion:"no-preference" },
+    { name: "reduced motion", width:1440, height:900, motion:"reduce" },
+    { name: "short + reduced", width:1280, height:680, motion:"reduce" },
+  ]) {
+    const fallback = await browser.newPage({viewport:{width:cfg.width,height:cfg.height},reducedMotion:cfg.motion});
+    await fallback.addInitScript(() => sessionStorage.setItem("bredge_preloaded","1"));
+    await fallback.goto(base,{waitUntil:"domcontentloaded"});
+    await fallback.locator('.iq[data-iq-hydrated="true"]').waitFor({state:"attached",timeout:12000});
+    await fallback.waitForTimeout(350);
+    const state = await fallback.locator(".hero-morph").evaluate(root => {
+      const cards=[...root.querySelectorAll(".morph-card")].map(el=>el.getBoundingClientRect());
+      const result=root.querySelector(".morph-result");
+      const decision=root.querySelector(".morph-decision");
+      const rr=result.getBoundingClientRect();
+      const dr=decision.getBoundingClientRect();
+      const overlap=[];
+      for(let a=0;a<cards.length;a++) for(let b=a+1;b<cards.length;b++) {
+        const x=Math.min(cards[a].right,cards[b].right)-Math.max(cards[a].left,cards[b].left);
+        const y=Math.min(cards[a].bottom,cards[b].bottom)-Math.max(cards[a].top,cards[b].top);
+        if(x>2&&y>2) overlap.push({a,b,x,y});
+      }
+      const lastBottom=Math.max(...cards.map(c=>c.bottom));
+      return {
+        enhanced:root.classList.contains("morph-enhanced"),
+        resultOpacity:Number(getComputedStyle(result).opacity),
+        position:getComputedStyle(root.querySelector(".hero-morph-content")).position,
+        cardsDisplay:getComputedStyle(root.querySelector(".morph-cards")).display,
+        resultAfterCards:rr.top>=lastBottom-3,
+        decisionAfterResult:dr.top>=rr.bottom-3,
+        overlap, overflow:document.documentElement.scrollWidth-innerWidth,
+        pinned:!!root.closest(".pin-spacer"),
+      };
+    });
+    assert.equal(state.enhanced,false, `${cfg.name} must not activate the scroll animation`);
+    assert.equal(state.position,"relative", `${cfg.name} should use natural flow`);
+    assert.equal(state.cardsDisplay,"grid", `${cfg.name} cards need a nonoverlapping layout`);
+    assert.deepEqual(state.overlap, [], `${cfg.name} source cards overlap`);
+    assert.equal(state.resultAfterCards,true, `${cfg.name} reconciled result overlays source cards`);
+    assert.equal(state.decisionAfterResult,true, `${cfg.name} decision overlays result`);
+    assert.ok(state.resultOpacity>=0.99, `${cfg.name} result is invisible`);
+    assert.equal(state.pinned,false,`${cfg.name} must have no GSAP pin`);
+    assert.ok(state.overflow<=2, `${cfg.name} horizontal overflow`);
+    await fallback.close();
+  }
+
+  // Progressive enhancement must not be necessary to read the business
+  // narrative. Simulate a capable full desktop with JavaScript DISABLED.
+  const noScript = await browser.newPage({
+    viewport:{width:1440,height:900}, javaScriptEnabled:false, reducedMotion:"no-preference",
+  });
+  await noScript.goto(base,{waitUntil:"domcontentloaded"});
+  const plain = await noScript.locator(".hero-morph").evaluate(root => {
+    const cards=[...root.querySelectorAll(".morph-card")].map(el=>el.getBoundingClientRect());
+    const rr=root.querySelector(".morph-result").getBoundingClientRect();
+    const dr=root.querySelector(".morph-decision").getBoundingClientRect();
+    const overlap=[];
+    for(let a=0;a<cards.length;a++)for(let b=a+1;b<cards.length;b++){
+      const x=Math.min(cards[a].right,cards[b].right)-Math.max(cards[a].left,cards[b].left);
+      const y=Math.min(cards[a].bottom,cards[b].bottom)-Math.max(cards[a].top,cards[b].top);
+      if(x>2&&y>2)overlap.push({a,b});
+    }
+    const mobileSQL=document.querySelector(".iq-mobile");
+    return {
+      enhanced:root.classList.contains("morph-enhanced"),
+      cardsDisplay:getComputedStyle(root.querySelector(".morph-cards")).display,
+      overlap,
+      resultAfterCards:rr.top>=Math.max(...cards.map(c=>c.bottom))-3,
+      decisionAfterResult:dr.top>=rr.bottom-3,
+      opacity:Number(getComputedStyle(root.querySelector(".morph-result")).opacity),
+      staticSQLVisible:mobileSQL && getComputedStyle(mobileSQL).display!=="none",
+      staticSQLHeight:document.querySelector(".iq").getBoundingClientRect().height,
+      viewportHeight:innerHeight,
+      noJSFeature:matchMedia("(scripting:none)").matches,
+    };
+  });
+  assert.equal(plain.enhanced,false,"no-JS browser must never activate GSAP");
+  assert.equal(plain.cardsDisplay,"grid","no-JS desktop must use readable source grid");
+  assert.deepEqual(plain.overlap,[],"no-JS desktop source cards overlap");
+  assert.equal(plain.resultAfterCards,true,"no-JS desktop result overlays source cards");
+  assert.equal(plain.decisionAfterResult,true,"no-JS desktop decision overlays result");
+  assert.ok(plain.opacity>=0.99,"no-JS desktop must have visible result");
+  assert.equal(plain.staticSQLVisible,true,"no-JS desktop should see SSR SQL excerpts");
+  assert.ok(plain.staticSQLHeight<=plain.viewportHeight*1.5,
+    `no-JS SQL section reserves a pointless scroll runway (${plain.staticSQLHeight}px)`);
+  await noScript.close();
+
+  const desktop = await browser.newPage({viewport:{ width:1440, height:900 }, reducedMotion:"no-preference"});
+  await desktop.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
+  await desktop.goto(base,{waitUntil:"domcontentloaded"});
+  await desktop.locator(".hero-morph.morph-enhanced").waitFor({state:"attached",timeout:12000});
+  const scene = await desktop.locator(".hero-morph").evaluate(root => {
+    const r=root.getBoundingClientRect();
+    const sticky=root.querySelector(".hero-morph-content");
+    return {top:r.top+scrollY,height:r.height,stickyPosition:getComputedStyle(sticky).position,pinCount:root.querySelectorAll(".pin-spacer").length};
+  });
+  assert.equal(scene.stickyPosition,"sticky","desktop must have a single CSS-owned sticky viewport");
+  assert.equal(scene.pinCount,0,"hero narrative must not use GSAP pin spacers");
+  await desktop.evaluate(({top,height})=>scrollTo(0, top+(height-innerHeight)*0.53),scene);
+  await desktop.waitForTimeout(600);
+  const stickyTop = await desktop.locator(".hero-morph-content").evaluate(el=>el.getBoundingClientRect().top);
+  assert.ok(Math.abs(stickyTop)<=4,
+    `Hero sticky scene moved by ${stickyTop}px at mid-scroll. Check ancestor overflow and CSS sticky containment.`);
+  await desktop.evaluate(({top,height})=>scrollTo(0, top+height-innerHeight-12),scene);
+  await desktop.waitForTimeout(950);
+  const reveal = await desktop.locator(".morph-result").evaluate(el=>Number(getComputedStyle(el).opacity));
+  assert.ok(reveal > 0.9, `desktop narrative never reveals outcome (opacity ${reveal})`);
+  await desktop.close();
+
+  const llms = await browser.newPage();
+  const llmsRes = await llms.request.get(`${base}/llms.txt`);
+  assert.equal(llmsRes.status(),200,"agent-readable public map missing");
+  assert.match(await llmsRes.text(), /user.authorised|user-authorised/i);
+  const manifest = await llms.request.get(`${base}/.well-known/bredge-agent.json`);
+  assert.equal(manifest.status(),200,"agent capabilities manifest missing");
+  const doc = await manifest.json();
+  assert.equal(doc.agent_authentication.public_write_credentials_available, false, "public write bypass must not be offered");
+  await llms.close();
+  console.log("✓ mobile-native source grid and form, desktop motion bounds and agent manifest");
+}
+
 async function testShortAndReducedMotion(browser) {
   for (const config of [
     { name: "short", viewport: { width: 1280, height: 700 }, reducedMotion: "no-preference" },
@@ -331,6 +551,9 @@ try {
   await testRouteMatrix(browser);
   await testInternalLinks(browser);
   await testScrollNarratives(browser);
+  await testHeroCompositionAndMobileNative(browser);
+  await testMobileFirstVisitWithoutPreloader(browser);
+  await testMobileMotionFallbacks(browser);
   await testShortAndReducedMotion(browser);
   await testExperienceMotionAndMobileReading(browser);
   await testInsights(browser);
