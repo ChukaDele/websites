@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 import { chromium } from "playwright";
+import {testFinanceStudio} from "./finance-studio.browser.mjs";
 
 const base = process.env.QA_BASE_URL || "http://127.0.0.1:8787";
 const artifacts = new URL("../qa-artifacts/", import.meta.url);
@@ -1127,6 +1128,7 @@ try {
   await testHeadingsAndOriginalResearch(browser);
   await testFreshDesktopDeepLinksSkipHomeIntro(browser);
   await testInteractiveDecisionPortfolio(browser);
+  await testFinanceStudio(browser,base);
   await testDistinctDecisionScenesAndFooter(browser);
   await testContactCannotClaimUndeliveredSuccess(browser);
   await testHeaders(browser);
