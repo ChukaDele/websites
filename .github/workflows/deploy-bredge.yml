@@ -41,6 +41,13 @@ jobs:
     name: bredge-quality
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # These are PUBLIC measurement IDs only, not credentials. Compile them
+    # into the same tested artifact that the protected release later deploys.
+    # Configure as repo Actions variables, never as environment secrets.
+    env:
+      NEXT_PUBLIC_GA4_MEASUREMENT_ID: ${{ vars.BREDGE_GA4_MEASUREMENT_ID }}
+      NEXT_PUBLIC_CLARITY_PROJECT_ID: ${{ vars.BREDGE_CLARITY_PROJECT_ID }}
+      NEXT_PUBLIC_GTM_ID: ${{ vars.BREDGE_GTM_ID }}
     defaults:
       run:
         working-directory: bredge
@@ -61,6 +68,11 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify approved analytics IDs and source-backed agent index
+        run: |
+          node scripts/verify-public-analytics-config.mjs
+          npm run agent-index:check
 
       - name: Lint
         run: npm run lint

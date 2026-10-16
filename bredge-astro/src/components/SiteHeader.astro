@@ -11,7 +11,7 @@ const links = [
   <nav class="site-nav" aria-label="Primary navigation">
     {links.map(([name,href]) => <a class="nav-item" href={href}>{name}</a>)}
   </nav>
-  <a class="button button-small header-cta" href="/schedule">Schedule a call <span aria-hidden="true" class="arrow">↗</span></a>
+  <a class="button cta-accent button-small header-cta" href="/schedule">Schedule a call <span aria-hidden="true" class="arrow">↗</span></a>
   <button class="nav-toggle" type="button" aria-controls="astro-mobile-menu" aria-label="Open menu" aria-expanded="false" data-mobile-menu-trigger>
     <span></span>
   </button>
@@ -24,7 +24,7 @@ const links = [
   <a href="/data-diagnostic">Data Diagnostic</a>
   <p class="mobile-eyebrow">COMPANY</p>
   {links.slice(1).map(([label,url]) => <a href={url}>{label}</a>)}
-  <a class="button mobile-cta" href="/schedule">Schedule a call <span aria-hidden="true">↗</span></a>
+  <a class="button cta-accent mobile-cta" href="/schedule">Schedule a call <span aria-hidden="true">↗</span></a>
 </nav>
 <style>
   .mobile-menu[hidden] { display:none !important; }

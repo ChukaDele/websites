@@ -699,6 +699,181 @@ async function testInsights(browser) {
   console.log("✓ insights index + article desktop/mobile");
 }
 
+async function testConversionPolishAndRetrieval(browser) {
+  const desktop = await browser.newPage({ viewport:{width:1440,height:900},reducedMotion:"no-preference" });
+  await desktop.addInitScript(() => sessionStorage.setItem("bredge_preloaded","1"));
+  const vendorRequests = [];
+  desktop.on("request", r => {
+    if (/googletagmanager\.com|clarity\.ms\/tag\//.test(r.url())) vendorRequests.push(r.url().split("?")[0]);
+  });
+  await desktop.goto(base, {waitUntil:"load"});
+  await desktop.evaluate(()=>document.fonts.ready);
+  const btn=desktop.locator("a[data-cta=hero_schedule]");
+  assert.equal(await btn.getAttribute("href"),"/schedule");
+  assert.ok(await btn.evaluate(el=>el.classList.contains("cta-accent")),
+    "Hero CTA must opt into the new microinteraction treatment");
+  const first=await btn.evaluate(el=>{
+    const a=getComputedStyle(el), arrow=getComputedStyle(el.querySelector(".arrow"));
+    const r=el.getBoundingClientRect();
+    return {bg:a.backgroundColor,text:a.color,arrowTransform:arrow.transform,box:[r.width,r.height],heading:getComputedStyle(document.querySelector(".hero h1")).fontFamily};
+  });
+  assert.match(first.heading,/Instrument Sans/,"Hero display should use the established Instrument Sans Variable, not fallback");
+  await btn.hover();
+  await desktop.waitForTimeout(390);
+  const hovered=await btn.evaluate(el=>{
+    const a=getComputedStyle(el),arrow=getComputedStyle(el.querySelector(".arrow"));
+    const r=el.getBoundingClientRect();
+    return {bg:a.backgroundColor,text:a.color,arrowTransform:arrow.transform,box:[r.width,r.height]};
+  });
+  assert.notEqual(first.bg,hovered.bg,"Hover must change the primary CTA color");
+  assert.notEqual(first.text,hovered.text,"Hover must retain contrast with an inverted CTA foreground");
+  assert.notEqual(first.arrowTransform,hovered.arrowTransform,"The directional arrow should move independently");
+  assert.ok(Math.abs(first.box[0]-hovered.box[0])<2&&Math.abs(first.box[1]-hovered.box[1])<2,
+    "Button hover must not cause document layout shifts");
+  assert.equal(vendorRequests.length,0,"Optional GA4/Clarity must not load before user consent");
+  const consentButton=await desktop.locator("button").evaluateAll(els=>{
+    const button=els.find(el=>el.textContent?.includes("Accept analytics"));
+    return button ? {className:button.className} : null;
+  });
+  // Unconfigured QA has no consent banner. When available the optional
+  // accept control must keep its utility-button style, never CTA-accent.
+  if(consentButton) assert.ok(!consentButton.className.includes("cta-accent"));
+
+
+  const services=await desktop.goto(base+"/services",{waitUntil:"load"});
+  assert.equal(services.status(),200);
+  const guide=await desktop.locator(".service-answers").evaluate(el=>({
+    heading:el.querySelector("h2")?.textContent,
+    answers:[...el.querySelectorAll("article")].map(node=>({
+      question:node.querySelector("h3")?.textContent?.trim(),
+      answer:node.querySelector("p")?.textContent?.trim(),
+      url:node.querySelector("a")?.getAttribute("href"),
+    })),
+  }));
+  assert.equal(guide.answers.length,4,"Services page should answer four real pre-purchase questions");
+  assert.ok(guide.answers.every(x=>(x.question?.length||0)>15&&(x.answer?.length||0)>90&&x.url?.startsWith("/")));
+  for (const answer of guide.answers) {
+    const res = await getWithNetworkRetry(desktop.request, new URL(answer.url,base).toString());
+    assert.equal(res.status(),200,`Services answer linked to an unavailable page: ${answer.url}`);
+  }
+  const index=await desktop.request.get(base+"/llms-full.txt");
+  assert.equal(index.status(),200,"Canonical agent retrieval index must be public");
+  const content=await index.text();
+  assert.equal((content.match(/^URL: https:\/\/thebredge.com\/insights\//gm)||[]).length,10);
+  assert.equal((content.match(/^URL: https:\/\/thebredge.com\/resources\//gm)||[]).length,6);
+  const manifest=await desktop.request.get(base+"/.well-known/bredge-agent.json");
+  assert.equal(manifest.status(),200);
+  assert.equal((await manifest.json()).knowledge_index_url,"https://thebredge.com/llms-full.txt");
+  await desktop.close();
+
+  const mobile=await browser.newPage({viewport:{width:390,height:844},reducedMotion:"reduce",isMobile:true,hasTouch:true});
+  await mobile.addInitScript(()=>sessionStorage.setItem("bredge_preloaded","1"));
+  await mobile.goto(base,{waitUntil:"load"});
+  const hero=await mobile.locator("a[data-cta=hero_schedule]").evaluate(el=>{
+    const button=el.getBoundingClientRect();
+    const arrow=el.querySelector(".arrow").getBoundingClientRect();
+    return {visible:button.width>80&&button.height>=48,arrowWithin:arrow.right<=button.right+1,
+      transition:getComputedStyle(el.querySelector(".arrow")).transitionDuration,
+      overflow:document.documentElement.scrollWidth-innerWidth,heading:getComputedStyle(document.querySelector("h1")).fontFamily};
+  });
+  assert.equal(hero.visible,true,"Mobile CTA must be a usable tap target");
+  assert.equal(hero.arrowWithin,true,"Arrow must remain inside the button");
+  assert.ok(hero.overflow<=2,"Mobile heading/CTA causes horizontal overflow");
+  assert.match(hero.heading,/Instrument Sans/);
+  assert.equal(hero.transition,"0s","Reduced motion should disable decorative arrow transitions");
+  await mobile.close();
+  console.log("✓ CTA color/arrow interaction, heading type, service answers, AI index and analytics consent");
+}
+
+async function testHeadingsAndOriginalResearch(browser) {
+  const probe=await browser.newPage();
+  const allSourceRoutes=await sitemapRoutes(probe.request);
+  await probe.close();
+  const keyRoutes=["/","/services","/research","/insights/why-dashboards-disagree"];
+  for(const v of [
+    {width:320,height:568},{width:390,height:844},{width:768,height:1024},{width:1440,height:900}
+  ]){
+    const page=await browser.newPage({viewport:v,reducedMotion:"reduce"});
+    await page.addInitScript(()=>sessionStorage.setItem("bredge_preloaded","1"));
+    // Every canonical route is checked on phone and desktop. The 320px and
+    // tablet runs focus on the most sensitive public/commercial templates.
+    const routes=(v.width===390||v.width===1440)
+      ? [...new Set([...allSourceRoutes,"/research"])] : keyRoutes;
+    for(const route of routes){
+      const response=await page.goto(base+route,{waitUntil:"load",timeout:30000});
+      assert.equal(response.status(),200,"Typography route unavailable: "+route);
+      await page.evaluate(()=>document.fonts.ready);
+      const data=await page.evaluate(()=>{
+        const headings=[...document.querySelectorAll("h1,h2,h3")].filter(el=>{
+          const style=getComputedStyle(el),rect=el.getBoundingClientRect();
+          return style.display!=="none"&&style.visibility!=="hidden"&&rect.width>15&&rect.height>5;
+        });
+        return {
+          overflow:document.documentElement.scrollWidth-innerWidth,
+          headings:headings.map(el=>{
+            const style=getComputedStyle(el),r=el.getBoundingClientRect();
+            return {
+              text:(el.textContent||"").trim().slice(0,75),
+              family:style.fontFamily,
+              wrap:style.textWrap,
+              size:parseFloat(style.fontSize),
+              line:parseFloat(style.lineHeight),
+              left:r.left,right:r.right,
+            };
+          }),
+        };
+      });
+      assert.ok(data.overflow<=2,"Typography produces overflow on "+route+" at "+v.width);
+      assert.ok(data.headings.length>=2,"Expected visible heading structure: "+route);
+      for(const heading of data.headings){
+        assert.match(heading.family,/Instrument Sans/,
+          "Heading does not use the established type family: "+route+" "+heading.text);
+        assert.equal(heading.wrap,"balance","Heading needs balanced rag: "+route+" "+heading.text);
+        assert.ok(heading.line>=heading.size*.93,
+          "Heading too tightly stacked: "+route+" "+v.width+" "+heading.text);
+        assert.ok(heading.left>=-3&&heading.right<=v.width+3,
+          "Heading clips at "+v.width+": "+route+" "+heading.text);
+      }
+      if(route==="/"){
+        const heroStyle=await page.locator(".hero h1").evaluate(el=>{
+          const style=getComputedStyle(el);
+          return {ratio:parseFloat(style.lineHeight)/parseFloat(style.fontSize),
+            tracking:parseFloat(style.letterSpacing)/parseFloat(style.fontSize)};
+        });
+        const footerStyle=await page.locator(".footer-content h2").evaluate(el=>{
+          const style=getComputedStyle(el);
+          return {ratio:parseFloat(style.lineHeight)/parseFloat(style.fontSize),
+            tracking:parseFloat(style.letterSpacing)/parseFloat(style.fontSize)};
+        });
+        const expectedHero=v.width<=650?1.025:1.015;
+        const expectedFooter=v.width<=650?1.075:1.025;
+        assert.ok(Math.abs(heroStyle.ratio-expectedHero)<.012,
+          `Hero typography ignored its type-system leading at ${v.width}px: ${JSON.stringify(heroStyle)}`);
+        assert.ok(Math.abs(footerStyle.ratio-expectedFooter)<.012,
+          `Footer typography ignored its type-system leading at ${v.width}px: ${JSON.stringify(footerStyle)}`);
+      }
+      if(route==="/research"){
+        assert.equal(await page.locator(".research-brief").count(),3,"Need three verifiable, original public-data briefs");
+        const facts=await page.locator(".research-brief").evaluateAll(nodes=>nodes.map(n=>({
+          title:n.querySelector("h2")?.textContent,
+          number:n.querySelector(".research-stat strong")?.textContent,
+          source:n.querySelector(".research-evidence a")?.getAttribute("href"),
+          limitations:n.querySelector(".research-evidence div")?.textContent,
+          period:n.querySelector(".research-brief-head small")?.textContent,
+        })));
+        assert.deepEqual(facts.map(x=>x.number),["179.64M","₦1,596.25","₦1,589"]);
+        assert.ok(facts.every(x=>x.period&&x.source?.startsWith("https://microdata.nigerianstat.gov.ng/")&&(x.limitations?.length||0)>180));
+        const sourceToggle=page.locator(".research-evidence summary").first();
+        await sourceToggle.click();
+        assert.equal(await page.locator(".research-evidence").first().evaluate(el=>el.open),true);
+        await sourceToggle.click();
+      }
+    }
+    await page.close();
+  }
+  console.log("✓ all headings use one balanced typography/rag system; original research sources and limitations verified");
+}
+
 async function testContactCannotClaimUndeliveredSuccess(browser) {
   const context = await browser.newContext();
   try {
@@ -748,6 +923,8 @@ try {
   await testShortAndReducedMotion(browser);
   await testExperienceMotionAndMobileReading(browser);
   await testInsights(browser);
+  await testConversionPolishAndRetrieval(browser);
+  await testHeadingsAndOriginalResearch(browser);
   await testContactCannotClaimUndeliveredSuccess(browser);
   await testHeaders(browser);
   console.log("\nBredge browser QA: PASS");

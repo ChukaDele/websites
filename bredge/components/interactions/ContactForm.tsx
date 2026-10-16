@@ -142,7 +142,7 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
         <span className="success-mark" aria-hidden="true">✓</span>
         <h2>Thanks — we’ve got it.</h2>
         <p>Your note has been sent to the Bredge team. We’ll review the context and reply by email.</p>
-        <button type="button" className="button" onClick={goSchedule}>Schedule a 30-minute call <span className="arrow" aria-hidden="true">↗</span></button>
+        <button type="button" className="button cta-accent" onClick={goSchedule}>Schedule a 30-minute call <span className="arrow" aria-hidden="true">↗</span></button>
       </div>
     );
   }
@@ -233,7 +233,7 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
       </div>
 
 
-      <button className="button" type="submit" disabled={state.kind === "sending"}>
+      <button className="button cta-accent" type="submit" disabled={state.kind === "sending"}>
         {state.kind === "sending" ? "Sending…" : "Send it to a data lead"} <span className="arrow" aria-hidden="true">↗</span>
       </button>
 

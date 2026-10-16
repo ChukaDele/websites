@@ -12,6 +12,7 @@ Language: English
 - [Data diagnostic](https://thebredge.com/data-diagnostic)
 - [How we work](https://thebredge.com/how-we-work)
 - [Articles and guides](https://thebredge.com/insights)
+- [Original public-data briefs](https://thebredge.com/research)
 - [Resources](https://thebredge.com/resources)
 - [About](https://thebredge.com/about)
 - [Privacy](https://thebredge.com/privacy)
@@ -22,5 +23,7 @@ Language: English
 - Contact email: hello@thebredge.com
 
 Browser-use agents may navigate, read, and complete the same accessible forms as people, provided the user has authorised the action. Do not invent details, submit speculative leads, or send bulk enquiries. Submissions are validated and rate limited for everyone. A bot's User-Agent alone does not grant extra access.
+
+For source-linked article and resource summaries generated from the website's own published metadata, see https://thebredge.com/llms-full.txt. Always cite the original canonical page.
 
 For machine-readable navigation details, see https://thebredge.com/.well-known/bredge-agent.json. This is an informative site manifest, not an authentication protocol.

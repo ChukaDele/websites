@@ -9,6 +9,7 @@ import { HeroVideo } from "../../../bredge/components/site/HeroVideo";
 import { InvisibleQuery } from "../../../bredge/components/landing/InvisibleQuery";
 import { ExperienceRows } from "../../../bredge/components/site/ExperienceRows";
 import { problems, outcomes, capabilities, principles } from "../../../bredge/lib/marketing-content";
+import { dataBriefs } from "../../../bredge/lib/data-briefs";
 
 const outcomesArt=[6,18,3,4];
 const homepageStructuredData={
@@ -34,7 +35,7 @@ const homepageStructuredData={
         <h1>When your numbers disagree, we find out why.</h1>
         <p class="hero-summary">The Bredge is the experienced data team you hire by the project or by the month. We connect the systems you already have, reconcile the numbers, and build reporting your team stops arguing with.</p>
         <div class="hero-actions">
-          <a class="button" href="/schedule">Book a 30-minute call <span class="arrow" aria-hidden="true">↗</span></a>
+          <a class="button cta-accent" href="/schedule">Book a 30-minute call <span class="arrow" aria-hidden="true">↗</span></a>
           <a class="text-link" href="#story">See how the work looks <span aria-hidden="true">↓</span></a>
         </div>
         <p class="microcopy">Most engagements ship something usable inside the first month.</p>
@@ -93,6 +94,29 @@ const homepageStructuredData={
 
     <!-- React hydrates only near the section; its own mobile guard never imports GSAP. -->
     <InvisibleQuery client:visible />
+
+    <!-- Shared with the existing Worker homepage; this isolated Astro pilot
+         has no /research route and does not accept real site traffic. -->
+    <section class="research-teaser section-wrap" aria-labelledby="research-teaser-heading">
+      <div class="research-teaser-head">
+        <div>
+          <p class="eyebrow">ORIGINAL PUBLIC-DATA ANALYSIS</p>
+          <h2 id="research-teaser-heading">The source comes first.</h2>
+          <p>Research briefs built from published Nigerian statistical releases. We make the data period, methodology and limitations visible rather than relying on a persuasive dashboard alone.</p>
+        </div>
+        <a class="text-link" href="https://thebredge.com/research">Explore the data briefs <span class="arrow" aria-hidden="true">↗</span></a>
+      </div>
+      <div class="research-teaser-grid">
+        {dataBriefs.map(brief=>(
+          <a class="research-teaser-card" href={"https://thebredge.com/research#" + brief.slug}>
+            <span>{brief.category} · {brief.period}</span>
+            <b>{brief.number}</b>
+            <p>{brief.title}</p>
+            <small>Source and limitations <span aria-hidden="true">↗</span></small>
+          </a>
+        ))}
+      </div>
+    </section>
 
     <section class="trust section-wrap">
       <div class="section-heading">

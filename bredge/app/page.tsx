@@ -7,6 +7,7 @@ import { SiteFooter } from "../components/site/SiteFooter";
 import { HeroVideo } from "../components/site/HeroVideo";
 import { InvisibleQuery } from "../components/landing/InvisibleQuery";
 import { ExperienceRows } from "../components/site/ExperienceRows";
+import { dataBriefs } from "../lib/data-briefs";
 
 // This describes the content already rendered below. It gives crawlers a clear
 // page-level subject without altering the approved visitor-facing copy.
@@ -51,7 +52,7 @@ export default function Home() {
           <p className="eyebrow">DATA ENGINEERING <i /> ANALYTICS <i /> BUSINESS INTELLIGENCE</p>
           <h1>When your numbers disagree, we find out why.</h1>
           <p className="hero-summary">The Bredge is the experienced data team you hire by the project or by the month. We connect the systems you already have, reconcile the numbers, and build reporting your team stops arguing with.</p>
-          <div className="hero-actions"><a className="button" href="/schedule">Book a 30-minute call <Arrow /></a><a className="text-link" href="#story">See how the work looks <span>↓</span></a></div>
+          <div className="hero-actions"><a className="button cta-accent" data-cta="hero_schedule" href="/schedule">Book a 30-minute call <Arrow /></a><a className="text-link" href="#story">See how the work looks <span>↓</span></a></div>
           <p className="microcopy">Most engagements ship something usable inside the first month.</p>
         </div>
         <HeroVideo />
@@ -78,6 +79,26 @@ export default function Home() {
       <section id="work" className="work-section section-wrap"><div className="section-heading work-intro"><p className="eyebrow">SYNTHETIC DATA</p><h2>We can’t show you a client’s dashboard. So we built our own.</h2><p>Client work is under NDA. These are the same patterns on synthetic data, with the SQL and the tests left visible, so you can judge the thinking instead of the screenshot.</p></div><ReferenceDashboards /></section>
 
       <InvisibleQuery />
+
+      <section className="research-teaser section-wrap" aria-labelledby="research-teaser-heading">
+        <div className="research-teaser-head">
+          <div><p className="eyebrow">ORIGINAL PUBLIC-DATA ANALYSIS</p>
+            <h2 id="research-teaser-heading">The source comes first.</h2>
+            <p>Research briefs built from published Nigerian statistical releases. We make the data period, methodology and limitations visible rather than relying on a persuasive dashboard alone.</p>
+          </div>
+          <a className="text-link" href="/research">Explore the data briefs <span className="arrow" aria-hidden="true">↗</span></a>
+        </div>
+        <div className="research-teaser-grid">
+          {dataBriefs.slice(0,3).map(brief=>(
+            <a key={brief.slug} className="research-teaser-card" href={`/research#${brief.slug}`}>
+              <span>{brief.category} · {brief.period}</span>
+              <b>{brief.number}</b>
+              <p>{brief.title}</p>
+              <small>Source and limitations <span aria-hidden="true">→</span></small>
+            </a>
+          ))}
+        </div>
+      </section>
 
       <section className="trust section-wrap"><div className="section-heading"><p className="eyebrow">OUR PRINCIPLES</p><h2>Don’t take the dashboard on trust.</h2></div><div className="principles">{principles.map(([number, title, description]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div><p className="trust-statement">Stay because we’re useful, not because only we understand what we built.</p></section>
 

@@ -10,6 +10,7 @@
     "/services/data-projects",
     "/data-diagnostic",
     "/how-we-work",
+    "/research",
     "/insights",
     "/resources",
     "/about",
@@ -19,7 +20,14 @@
     "contact": {
       "page": "/contact",
       "interaction": "accessible_browser_form",
-      "required_fields": ["name", "email", "company", "phone", "needs", "message"],
+      "required_fields": [
+        "name",
+        "email",
+        "company",
+        "phone",
+        "needs",
+        "message"
+      ],
       "outcome": "A successful response confirms a saved enquiry; do not assume delivery from a button click.",
       "consent": "Act only for a person who explicitly authorised the enquiry."
     },
@@ -33,5 +41,7 @@
   "agent_authentication": {
     "public_write_credentials_available": false,
     "future_option": "Web Bot Auth or a separate credentialed service integration, subject to independent access-control review."
-  }
+  },
+  "knowledge_index_url": "https://thebredge.com/llms-full.txt",
+  "evidence_policy": "Descriptions and metadata come from published content. Cite canonical Insights/Resources URLs and do not invent client results or guarantees."
 }

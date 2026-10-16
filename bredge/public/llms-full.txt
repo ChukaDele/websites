@@ -1,0 +1,155 @@
+# The Bredge | Canonical Knowledge and Service Index
+
+> A source-linked summary of Bredge's public services, published articles and decision resources. It is not a substitute for the original articles.
+
+Publisher: The Bredge
+Canonical site: https://thebredge.com/
+Contact: hello@thebredge.com
+
+## What The Bredge offers
+
+- Data engineering, analytics and business intelligence: https://thebredge.com/services
+- Embedded data team for a continuing data backlog: https://thebredge.com/services/embedded-data-team
+- Defined-scope data projects and handover: https://thebredge.com/services/data-projects
+- Data Diagnostic to map issues and prioritise next actions: https://thebredge.com/data-diagnostic
+- Bredge original analysis of public statistical releases: https://thebredge.com/research
+
+The Bredge helps growing and mid-market organisations reconcile conflicting data, define important measures, automate recurring reporting and improve the reliability of systems feeding business decisions. Work is scoped around the actual source problem.
+
+## Published Insights (canonical URLs and descriptions)
+
+### Why do Finance and Sales have different revenue numbers?
+URL: https://thebredge.com/insights/why-dashboards-disagree
+Published: 2026-07-14
+Topic: Data reliability
+Summary: The board pack says £4.2m, CRM says £4.5m, and Finance has a spreadsheet with £4.3m. Every number has an explanation. Here is how to find it — before anyone rebuilds a dashboard.
+
+### When do we actually need a data team — and who should we hire first?
+URL: https://thebredge.com/insights/when-to-hire-a-data-team
+Published: 2026-07-21
+Topic: Running a data function
+Summary: More data work does not always mean more headcount. How to tell when you have outgrown one analyst, and whether your first move is a hire, a project, or an embedded team.
+
+### Do we actually need a data warehouse yet?
+URL: https://thebredge.com/insights/before-you-build-a-data-warehouse
+Published: 2026-07-28
+Topic: Data systems
+Summary: A warehouse solves specific problems. Build it before you have them and you inherit cost and complexity you did not need. The questions that decide whether it is time.
+
+### Our customer data lives in five systems. How do we get one reliable customer view?
+URL: https://thebredge.com/insights/one-customer-view
+Published: 2026-08-04
+Topic: Data systems
+Summary: CRM, billing, product, finance and support each have their own idea of who a customer is. A single customer view is an identity problem first, and a dashboard problem last.
+
+### We rebuild the same management report every month. How do we automate it without making it more fragile?
+URL: https://thebredge.com/insights/automate-monthly-reporting
+Published: 2026-08-08
+Topic: Analytics & BI
+Summary: Automating a monthly report the wrong way just moves the fragility somewhere you can no longer see it. What to move upstream, what to leave in Excel, and how to keep it auditable.
+
+### We know our data setup is messy. What should we fix first?
+URL: https://thebredge.com/insights/what-to-fix-first
+Published: 2026-08-09
+Topic: Running a data function
+Summary: Everything feels broken, so nothing gets fixed. A way to inventory the mess, score it by impact and effort, and choose the one change that makes the next three easier.
+
+### Why is our Power BI dashboard so slow?
+URL: https://thebredge.com/insights/power-bi-slow
+Published: 2026-08-09
+Topic: Analytics & BI
+Summary: A slow Power BI report is usually a data-model problem wearing a dashboard costume. Where the time actually goes, and the model choices that fix it.
+
+### We spend days cleaning Excel files before every report. What should we automate first?
+URL: https://thebredge.com/insights/excel-cleaning-automation
+Published: 2026-08-09
+Topic: Analytics & BI
+Summary: If you repeat the same clean-up every month, it is a transformation waiting to be written down once. What to automate first, what to fix at source, and what to leave in Excel.
+
+### How do we know whether our data is actually reliable?
+URL: https://thebredge.com/insights/is-our-data-reliable
+Published: 2026-08-09
+Topic: Data reliability
+Summary: Reliable does not mean it looks right in a chart. It means it passes explicit checks — completeness, uniqueness, validity, freshness, reconciliation — that someone owns.
+
+### We need better reporting. Do we need Power BI, a warehouse, or both?
+URL: https://thebredge.com/insights/power-bi-warehouse-or-both
+Published: 2026-08-09
+Topic: Data systems
+Summary: "We need better reporting" hides three different problems. Separating the reporting layer, the model and the integration tells you what to buy — and in what order.
+
+## Bredge original public-data briefs
+
+### Nigeria's telecom subscriber base recovered through 2025.
+URL: https://thebredge.com/research#nigeria-telecoms-q4-2025
+Period: Q4 2025
+Finding: 179.64M — active voice subscriptions
+Summary: Our quarterly brief traces the rebound from the Q3 2024 subscriber trough and compares the Q4 2025 market shares, regional distribution and porting flows. The analysis distinguishes a total subscription measure from an individual-customer count.
+Source: National Bureau of Statistics, Nigerian Telecoms Data Q3–Q4 2025; underlying NCC administrative data
+Underlying primary source: https://microdata.nigerianstat.gov.ng/index.php/catalog/179/related-materials
+Caveats: Mobile subscriptions are not unique people. Number-porting volumes are small relative to the subscriber base and should not be presented as overall churn.
+
+### Petrol prices varied substantially between Nigerian states.
+URL: https://thebredge.com/research#nigeria-pms-may-2026
+Period: May 2026
+Finding: ₦1,596.25 — national average price per litre
+Summary: The Bredge fuel-price brief maps state and regional differences in the NBS survey. It compares the national price with the range paid across states, rather than treating a country average as a universal distribution cost.
+Source: National Bureau of Statistics, Premium Motor Spirit (Petrol) Price Watch, May 2026
+Underlying primary source: https://microdata.nigerianstat.gov.ng/index.php/catalog/157/related-materials
+Caveats: Survey averages do not describe every pump or predict a current pump price. Values describe May 2026 and must not be presented as today's prices.
+
+### A healthy diet cost ₦1,589 per adult per day nationally.
+URL: https://thebredge.com/research#nigeria-cohd-april-2026
+Period: April 2026
+Finding: ₦1,589 — average cost of a healthy diet per adult per day
+Summary: The Bredge brief compares the national healthy-diet reference cost with state and zonal variation, then shows which food groups contribute most to the estimated total. It keeps a nutritional affordability metric separate from general food inflation.
+Source: National Bureau of Statistics and GAIN, Cost of a Healthy Diet, April 2026
+Underlying primary source: https://microdata.nigerianstat.gov.ng/index.php/catalog/146/related-materials
+Caveats: CoHD is a modelled least-cost measure, not the amount each household actually spends. An earlier Bredge draft had month-on-month and year-on-year changes that did not match NBS. Those draft percentages are omitted until their calculation is reconciled.
+
+## Public checklists and resources
+
+### Revenue reconciliation checklist
+URL: https://thebredge.com/resources/revenue-reconciliation-checklist
+Type: Checklist
+Purpose: Run this before anyone rebuilds a report. It reconciles two revenue figures at record level and classifies every difference, so you fix the cause rather than the chart.
+Related evidence and background: https://thebredge.com/insights/why-dashboards-disagree
+
+### Critical-data quality checklist
+URL: https://thebredge.com/resources/data-quality-checklist
+Type: Checklist
+Purpose: Reliable does not mean it looks right in a chart. It means the data passes explicit checks that someone owns. Run these against the few datasets your decisions actually depend on.
+Related evidence and background: https://thebredge.com/insights/is-our-data-reliable
+
+### Data warehouse readiness checklist
+URL: https://thebredge.com/resources/data-warehouse-readiness
+Type: Checklist
+Purpose: A warehouse solves specific problems. Answer these before you build one. If most answers are no, a simpler option is usually cheaper and faster.
+Related evidence and background: https://thebredge.com/insights/before-you-build-a-data-warehouse
+
+### First data hire decision guide
+URL: https://thebredge.com/resources/first-data-hire-decision-tree
+Type: Decision guide
+Purpose: Your first data move should follow the constraint that is actually blocking decisions, not a generic org chart. Work through these to point at a role or an alternative.
+Related evidence and background: https://thebredge.com/insights/when-to-hire-a-data-team
+
+### Monthly reporting automation map
+URL: https://thebredge.com/resources/reporting-automation-map
+Type: Map
+Purpose: Map the report before you automate it, so automation removes effort without hiding fragility. Fill this in for one monthly report.
+Related evidence and background: https://thebredge.com/insights/automate-monthly-reporting
+
+### Data diagnostic checklist
+URL: https://thebredge.com/resources/data-diagnostic-checklist
+Type: Checklist
+Purpose: When everything feels broken, sequence matters more than ambition. Inventory the mess, then score each issue by impact and effort to decide what to fix first.
+Related evidence and background: https://thebredge.com/insights/what-to-fix-first
+
+## Using and citing this index
+
+- Read and cite the canonical page. Snippets here summarise the public source rather than replace it.
+- Published dates describe the source metadata. No automated freshness or fabricated revisions are claimed.
+- The synthetic data demonstrations on the homepage are illustrative, not customer testimonials or independently audited case studies. Review each original article for its own evidence and limitations.
+- User-authorised browsers and agents may use the same public pages and contact form. There is no public machine-write credential, bot-trust bypass, or bulk-outreach permission.
+- For actual enquiries use the browser form at https://thebredge.com/contact, subject to standard validation and rate limits.
+- For booking use https://thebredge.com/schedule and obtain user approval of the selected time.

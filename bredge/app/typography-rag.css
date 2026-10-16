@@ -1,0 +1,100 @@
+/* Bredge typography and text rag contract. One variable display family,
+   consistent hierarchy, disciplined negative tracking and balanced endings.
+   Do not force manual <br> elements in headlines: let viewport width decide. */
+:root {
+  --display-weight: 560;
+  --display-tight: -.052em;
+  --heading-tight: -.038em;
+  --heading-card: -.020em;
+  --type-line-display: 1.025;
+  --type-line-heading: 1.09;
+}
+h1,h2,h3,h4,h5,h6 {
+  font-family:var(--font-sans);
+  font-optical-sizing:auto;
+  font-kerning:normal;
+  hyphens:manual;
+  text-wrap:balance;
+  overflow-wrap:break-word;
+}
+h1 {
+  font-weight:var(--display-weight);
+  letter-spacing:var(--display-tight);
+  line-height:var(--type-line-display);
+}
+h2 {
+  font-weight:var(--display-weight);
+  letter-spacing:var(--heading-tight);
+  line-height:var(--type-line-heading);
+}
+h3,h4,h5,h6 {
+  font-weight:570;
+  letter-spacing:var(--heading-card);
+  line-height:1.15;
+}
+:where(p,li,blockquote,figcaption) {text-wrap:pretty;overflow-wrap:break-word;}
+.hero h1,.page-hero h1 {
+  max-width:17ch;
+  text-wrap:balance;
+  letter-spacing:-.050em;
+  line-height:1.015;
+}
+.hero-morph-tease h2,.section-heading h2,.section-lead h2 {
+  max-width:24ch;
+  text-wrap:balance;
+}
+.research-teaser h2,.research-close h2,.service-answers h2 {
+  max-width:22ch;
+  text-wrap:balance;
+}
+.research-brief h2,.service-answers article h3,.problem-card h3,
+.principles h3,.outcome-card h3,.cap-head h3,.bridge-card h3 {
+  max-width:32ch;
+  text-wrap:balance;
+  letter-spacing:-.021em;
+  line-height:1.16;
+}
+.ax-hero h1,.insights-hero h1,.resource-hero h1 {
+  max-width:23ch;
+  text-wrap:balance;
+  line-height:1.045;
+}
+.research-brief p,.research-hero .lede,.research-close p {
+  max-width:70ch;
+  text-wrap:pretty;
+}
+@media(max-width:650px){
+  .hero h1,.page-hero h1 {
+    max-width:15ch;
+    letter-spacing:-.043em;
+    line-height:1.025;
+  }
+  .hero-morph-tease h2,.section-heading h2,.section-lead h2 {
+    max-width:100%;
+    line-height:1.085;
+  }
+  .research-brief h2,.service-answers article h3,.problem-card h3 {
+    letter-spacing:-.015em;
+    line-height:1.19;
+  }
+}
+@media print {
+  h1,h2,h3 {break-after:avoid;}
+  p {orphans:2;widows:2;}
+}
+
+/* Footer H2 was authored at .87 leading in globals.css, the only outlier in
+   the viewport/route type audit. Preserve editorial scale without clipping. */
+.footer-content h2 {
+  line-height:1.025;
+  letter-spacing:-.047em;
+  max-width:20ch;
+}
+@media (max-width:650px) {
+  .footer-content h2 {
+    font-size:clamp(2.65rem,11vw,3.5rem);
+    line-height:1.075;
+    letter-spacing:-.036em;
+    max-width:100%;
+  }
+}
