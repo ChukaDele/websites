@@ -1,6 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 import { PageShell,Breadcrumbs } from "../site/PageShell";
 import Workbench from "../workbench/Workbench";
 import { researchBySlug,researchStories } from "../../lib/research-editorial";
+import {editorialAssets} from "../../lib/editorial-assets";
 import { getWorkbench,views } from "../../lib/workbench-data";
 
 export function ResearchArticle({slug}:{slug:string}){
@@ -31,6 +33,10 @@ export function ResearchArticle({slug}:{slug:string}){
     <div className="rl-prelude"><span>{story.eyebrow}</span><span>{story.period}</span><span>{story.readTime}</span></div>
     <h1 itemProp="headline">{story.headline}</h1>
     <p className="rl-deck" itemProp="description">{story.deck}</p>
+    <figure className="rl-story-cover">
+      <img src={editorialAssets[story.lab].src} alt={editorialAssets[story.lab].alt} width="1536" height="860" fetchPriority="high" decoding="async" />
+      <figcaption>{editorialAssets[story.lab].subject} · Editorial illustration</figcaption>
+    </figure>
     <div className="rl-byline"><span>ANALYSIS BY THE BREDGE</span><span>{story.audience}</span></div>
     <div className="rl-thesis"><span>THE ARGUMENT</span><p>{story.thesis}</p></div>
    </header>

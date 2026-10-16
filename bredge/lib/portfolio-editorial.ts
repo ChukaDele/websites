@@ -15,7 +15,7 @@ export const portfolioStudies:readonly PortfolioStudy[]=[
   slug:"finance",lab:"finance",index:"01",sector:"FINANCE & REVENUE OPERATIONS",
   title:"Find the revenue that survives its discount.",
   lede:"A finance dashboard should do more than celebrate sales. Step into a historical sample, separate product and segment performance, and see how sensitive profit is to another point of discounting.",
-  metric:"$118.7M",metricDescription:"overall sales shown in the original dashboard (not the filtered sample below)",
+  metric:"$14.26M",metricDescription:"Canada sample sales represented by the interactive model; full source report shows $118.7M",
   source:"Microsoft Power BI Financial Sample, 2013–2014 (sample data); dashboard designed and analysed by Bredge",
   decision:"What should the CFO review before changing commercial discounts?",
   capabilities:["Revenue modelling","Margin analysis","Segment economics","Decision-ready BI"],

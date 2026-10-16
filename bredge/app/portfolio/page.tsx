@@ -1,6 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 import type {Metadata} from "next";
 import {PageShell,Breadcrumbs} from "../../components/site/PageShell";
 import {portfolioStudies} from "../../lib/portfolio-editorial";
+import {editorialAssets} from "../../lib/editorial-assets";
 import {pageMetadata} from "../../lib/seo";
 
 export const metadata:Metadata=pageMetadata({
@@ -20,12 +22,11 @@ export default function PortfolioPage(){
   <section className="section-wrap pl-index" aria-labelledby="portfolio-heading">
     <p className="eyebrow">PICK AN OPERATING PROBLEM</p><h2 id="portfolio-heading">Put yourself in the operator’s chair.</h2>
     <div className="pl-index-grid">
-    {portfolioStudies.map((s,i)=><a className={"pl-gallery-card pl-gallery-"+s.slug} key={s.slug} href={"/portfolio/"+(s.slug==="supply"?"supply-chain":s.slug)}>
+    {portfolioStudies.map((s)=><a className={"pl-gallery-card pl-gallery-"+s.slug} key={s.slug} href={"/portfolio/"+(s.slug==="supply"?"supply-chain":s.slug)+"#operating-room"}>
       <div className="pl-gallery-top"><span>{s.index} / {s.sector}</span><span aria-hidden="true">↗</span></div>
-      <div className="pl-gallery-graphic" aria-hidden="true">
-        <div className="pl-gallery-plot">{[43,69,57,77,40,83,56,93,66,81].map((n,j)=>
-          <i key={j} style={{height:(n+(i*7)%17)+"%"}} />)}</div>
-        <strong>{s.metric}</strong><span>LIVE MODEL / SELECT TO OPEN</span>
+      <div className="pl-gallery-graphic">
+        <img className="pl-gallery-cover" src={editorialAssets[s.lab].src} alt="" width="1536" height="860" loading="lazy" decoding="async" />
+        <strong>{s.metric}</strong><span>{editorialAssets[s.lab].subject}</span>
       </div>
       <div className="pl-gallery-text"><h3>{s.title}</h3><p>{s.lede}</p>
         <span>ENTER THE DASHBOARD <b aria-hidden="true">↗</b></span>

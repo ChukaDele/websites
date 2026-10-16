@@ -1,6 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 import type {Metadata} from "next";
 import {PageShell,Breadcrumbs} from "../../components/site/PageShell";
 import {researchStories} from "../../lib/research-editorial";
+import {editorialAssets} from "../../lib/editorial-assets";
 import {dataBriefs} from "../../lib/data-briefs";
 import {pageMetadata} from "../../lib/seo";
 
@@ -47,7 +49,10 @@ export default function ResearchPage(){
         <p>{s.deck}</p>
         <div className="rs-entry-tags">{s.sectors.slice(0,3).map(tag=><span key={tag}>{tag}</span>)}</div>
         <a className="rs-entry-link" href={"/research/"+s.slug}>Read the analysis and use the model <span aria-hidden="true">↗</span></a></div>
-      <div className="rs-entry-stat"><span>OBSERVED REFERENCE</span><strong>{s.fact}</strong><small>{s.factLabel}</small></div>
+      <div className="rs-entry-stat">
+        <img className="rs-entry-cover" src={editorialAssets[s.lab].src} alt="" width="1536" height="860" loading="lazy" decoding="async" />
+        <span>OBSERVED REFERENCE / {s.period}</span><strong>{s.fact}</strong><small>{s.factLabel}</small>
+      </div>
     </article>)}
    </section>
    <section className="rs-method-preview section-wrap">

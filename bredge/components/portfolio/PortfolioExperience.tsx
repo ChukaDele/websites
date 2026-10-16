@@ -1,6 +1,8 @@
-import { PageShell,Breadcrumbs } from "../site/PageShell";
+/* eslint-disable @next/next/no-img-element */
+import {PageShell,Breadcrumbs} from "../site/PageShell";
 import Workbench from "../workbench/Workbench";
-import { portfolioBySlug,portfolioStudies } from "../../lib/portfolio-editorial";
+import {portfolioBySlug,portfolioStudies} from "../../lib/portfolio-editorial";
+import {editorialAssets} from "../../lib/editorial-assets";
 import {getWorkbench,views} from "../../lib/workbench-data";
 
 export function PortfolioExperience({slug}:{slug:string}){
@@ -8,22 +10,27 @@ export function PortfolioExperience({slug}:{slug:string}){
  if(!study)throw Error("Unknown portfolio demonstration.");
  const data=getWorkbench(study.lab,views[study.lab][0].id);
  const path="/portfolio/"+(slug==="supply"?"supply-chain":slug);
+ const art=editorialAssets[study.lab];
  return <PageShell>
   <Breadcrumbs trail={[["Home","/"],["Portfolio","/portfolio"],[study.title,path]]}/>
-  <section className="section-wrap pl-hero">
-    <div className="pl-hero-top"><span>{study.sector}</span><span>INTERACTIVE PORTFOLIO / {study.index}</span></div>
-    <h1>{study.title}</h1>
-    <p className="lede">{study.lede}</p>
-    <div className="pl-hero-meta"><span>{study.who}</span><span>SOURCE: HISTORICAL DEMONSTRATION</span></div>
+  <section className="section-wrap pl-hero pl-hero-v2">
+    <div className="pl-hero-copy">
+      <div className="pl-hero-top"><span>{study.sector}</span><span>OPERATING MODEL / {study.index}</span></div>
+      <h1>{study.title}</h1>
+      <p className="lede">{study.lede}</p>
+      <p className="pl-hero-audience">{study.who}</p>
+      <a className="pl-model-jump" href="#operating-room">Open the interactive dashboard <span aria-hidden="true">↓</span></a>
+    </div>
+    <figure className="pl-cover">
+      <img src={art.src} alt={art.alt} width="1536" height="860" fetchPriority="high" decoding="async"/>
+      <figcaption>{art.subject} · Editorial illustration</figcaption>
+    </figure>
   </section>
-  <section className="pl-feature-bar section-wrap">
-    <div><span>SOURCE-DASHBOARD REFERENCE</span><strong>{study.metric}</strong><small>{study.metricDescription}</small></div>
-    <div><span>DECISION BRIEF</span><p>{study.decision}</p></div>
-  </section>
-  <section className="section-wrap pl-operating-room" id="operating-room">
-    <p className="eyebrow">THE OPERATING ROOM</p>
-    <h2>Take the controls.</h2>
-    <p>Choose a view, compare a segment and change an assumption. The calculations update. Source values and demonstration limits stay visible, so the dashboard cannot quietly turn a scenario into an asserted fact.</p>
+  <section className="section-wrap pl-operating-room" id="operating-room" aria-labelledby="pl-operating-heading">
+    <div className="pl-room-intro">
+      <div><p className="eyebrow">{study.sector} / INTERACTIVE ANALYSIS</p><h2 id="pl-operating-heading">{study.decision}</h2></div>
+      <div className="pl-room-context"><span>ORIGINAL REPORT REFERENCE</span><strong>{study.metric}</strong><small>{study.metricDescription}</small></div>
+    </div>
     <Workbench dataset={study.lab} initial={data} options={views[study.lab]}/>
   </section>
   <div className="section-wrap pl-story">
@@ -32,25 +39,22 @@ export function PortfolioExperience({slug}:{slug:string}){
       <div><h2>{section.heading}</h2>{section.paragraphs.map((p,j)=><p key={j}>{p}</p>)}</div>
     </section>)}
   </div>
-  <section className="pl-implementation section-wrap">
-    <p className="eyebrow">WHAT THIS DEMONSTRATES</p>
-    <h2>Engineering, analysis and judgement in one place.</h2>
-    <div className="pl-capabilities">{study.capabilities.map((c,i)=><span key={c}>{String(i+1).padStart(2,"0")} — {c}</span>)}</div>
-    <details className="pl-source-details"><summary>Source data, scope and limitations</summary>
-      <p>Source artifact: {study.source}. This site neither distributes the original PDF, PBIX or report model nor claims that its full underlying historical dataset is present.</p>
+  <section className="section-wrap pl-method">
+    <details className="pl-source-details"><summary>Source data, methodology and limitations</summary>
+      <p><strong>Data reference:</strong> {study.source}. The original report’s headline may describe a larger dataset than the interactive sample slice. This website does not distribute the original Power BI models or claim these are real client outcomes.</p>
       <ul>{study.limitations.map(l=><li key={l}>{l}</li>)}</ul>
     </details>
   </section>
   <section className="pl-conclusion section-wrap">
-    <p className="eyebrow">TAKE THE NEXT STEP</p>
-    <h2>Your real data should be this easy to challenge.</h2>
-    <p>We build reporting around the decisions someone owns, with evidence and assumptions visible. If you’re planning a new analytics system, let’s start with the problem you need it to solve.</p>
+    <p className="eyebrow">APPLY THIS TO YOUR BUSINESS</p>
+    <h2>Your team deserves answers this easy to challenge.</h2>
+    <p>Bring us a business decision your current reporting cannot support. We’ll help identify the data, assumptions and workflow needed to answer it.</p>
     <div className="pl-cta-actions">
-      <a className="button cta-accent" data-cta="portfolio_contact" href="/contact?intent=portfolio">Talk about your data <span className="arrow" aria-hidden="true">↗</span></a>
+      <a className="button cta-accent" data-cta="portfolio_contact" href="/contact?intent=portfolio">Discuss a reporting problem <span className="arrow" aria-hidden="true">↗</span></a>
       <a className="text-link" href="/portfolio">Explore another operating model <span aria-hidden="true">↗</span></a>
     </div>
     <div className="pl-related">{portfolioStudies.filter(s=>s.slug!==slug).map(s=>
-      <a href={"/portfolio/"+(s.slug==="supply"?"supply-chain":s.slug)} key={s.slug}>{s.title}<span aria-hidden="true">↗</span></a>)}</div>
+      <a href={"/portfolio/"+(s.slug==="supply"?"supply-chain":s.slug)+"#operating-room"} key={s.slug}>{s.title}<span aria-hidden="true">↗</span></a>)}</div>
   </section>
  </PageShell>;
 }
