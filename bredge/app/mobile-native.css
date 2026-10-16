@@ -23,7 +23,7 @@ html { scroll-padding-top: calc(90px + env(safe-area-inset-top, 0px)); }
 :where([id]) { scroll-margin-top: calc(90px + env(safe-area-inset-top, 0px)); }
 
 /* Desktop narrative: the scene owns ONE CSS sticky viewport, not a GSAP pin. */
-@media (min-width:1001px) and (min-height:720px) and (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+@media (min-width:1251px) and (min-height:720px) and (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
   .hero-morph.morph-enhanced {
     height: 275svh;
     min-height: 0;
@@ -40,6 +40,131 @@ html { scroll-padding-top: calc(90px + env(safe-area-inset-top, 0px)); }
   .morph-enhanced .morph-decision { opacity: 0; }
   .morph-enhanced .morph-result { transform: translate(-50%, -42%) translateY(24px); }
   .morph-enhanced .morph-decision { transform: translateY(16px); }
+
+  /* The heading stays on screen while five measured arrows show the systems
+     feeding the shared reconciliation point. On smaller screens, a simpler
+     static grid and downward flow arrow preserve the reading order. */
+  .morph-enhanced .hero-morph-tease { z-index: 6; max-width: 545px; opacity: 1; }
+  .morph-enhanced .hero-morph-tease h2 {
+    font-size: clamp(2.75rem, 4.2vw, 4.35rem);
+    line-height: 1.01;
+  }
+  .morph-enhanced .hero-morph-tease > p:not(.eyebrow) { max-width: 505px; }
+  .morph-enhanced .morph-cards {
+    top: 53%; right: 3.5%; width: min(700px,54vw); height: 400px;
+    z-index: 3;
+  }
+  .morph-enhanced .morph-card.card-3 { left: 0; }
+  .morph-enhanced .morph-card.card-4 { right: 0; }
+  .morph-enhanced .morph-card.card-5 { top: 0; left: 38%; transform: rotate(6deg); }
+  /* Exception labels are part of the heading's NORMAL document flow.
+     Fixed vertical percentages collided with the description at 720px-high
+     desktop windows. Their actual position now follows title/copy wrapping,
+     while the measured arrows occupy the separate right-hand illustration. */
+  .morph-enhanced .morph-exceptions {
+    position: relative; z-index: 4;
+    inset: auto;
+    display: flex; flex-wrap: wrap; gap: 8px;
+    max-width: 540px;
+    margin-top: 24px;
+  }
+  .morph-enhanced .morph-exception {
+    position: relative;
+    inset: auto !important;
+    margin: 0;
+    transform: translateY(10px);
+  }
+  .morph-enhanced .morph-result {
+    top: 58%; left: 69%; z-index: 5;
+  }
+  .morph-enhanced .morph-decision { z-index: 5; right: 2.5%; bottom: 6.5vh; }
+  /* Stronger than the later baseline .hero-morph .morph-flow and
+     .hero-morph .morph-static-flow rules. Keep FIVE dynamic arrows visible
+     on desktop while hiding the separate static mobile arrow. */
+  .hero-morph.morph-enhanced .morph-flow { display: block; }
+  .hero-morph.morph-enhanced .morph-static-flow { display: none; }
+}
+
+@media (min-width:1251px) and (max-width:1380px) and (min-height:720px) {
+  .morph-enhanced .hero-morph-tease { max-width: 410px; }
+  .morph-enhanced .hero-morph-tease h2 { font-size: clamp(2.5rem, 3.5vw, 3.6rem); }
+  .morph-enhanced .hero-morph-tease > p:not(.eyebrow) { max-width: 405px; font-size: 15px; }
+  .morph-enhanced .morph-result { width: 242px; }
+}
+
+/* Measured flow connections between the five real cards and the shared
+   model. Geometry is updated by the GSAP timeline and ResizeObserver.
+   Paths deliberately sit behind cards and the result, never above text. */
+.hero-morph .morph-flow {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  overflow: visible;
+  pointer-events: none;
+}
+.morph-flow-route {
+  fill: none;
+  stroke: #a7e990;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  vector-effect: non-scaling-stroke;
+}
+.morph-flow-tip {
+  fill: none;
+  stroke: #c2f5aa;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 0;
+  vector-effect: non-scaling-stroke;
+}
+.morph-flow-hub { fill: #b6ef9d; opacity: 0; }
+.hero-morph .morph-chapters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px 17px;
+  margin-top: 26px;
+  max-width: 545px;
+}
+.hero-morph .morph-chapter {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(192,225,198,.24);
+  color: #a6bcb0;
+  font: 10px/1.4 var(--font-mono);
+  letter-spacing: .025em;
+  opacity: .55;
+}
+.hero-morph .morph-chapter.is-active {
+  border-color: #b6ef9d;
+  color: #d7f9c7;
+  opacity: 1;
+}
+/* Static/mobile visitors see the whole progression at once, so highlighting
+   only stage 01 would imply reconciliation has not happened. */
+.hero-morph:not(.morph-enhanced) .morph-chapter,
+.hero-morph:not(.morph-enhanced) .morph-chapter.is-active {
+  border-color: rgba(192,225,198,.35);
+  color: #c3d8ca;
+  opacity: 1;
+}
+.hero-morph .morph-static-flow {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: min(100%, 680px);
+  margin: 22px 0 12px;
+  color: #b6ef9d;
+}
+.morph-static-flow > span { font-size: 30px; line-height: 1; }
+.morph-static-flow > small {
+  font: 10px/1.4 var(--font-mono);
+  letter-spacing: .12em;
 }
 
 /* A no-JS, pre-hydration or failed-GSAP browser must show the same
@@ -98,7 +223,9 @@ html { scroll-padding-top: calc(90px + env(safe-area-inset-top, 0px)); }
     min-height: 125px;
     background: #26473b;
   }
-  .hero-morph:where(:not(.morph-enhanced)) .morph-exceptions { display: none; }
+  .hero-morph:where(:not(.morph-enhanced)) .morph-exceptions {
+    display: none; position: static; inset: auto;
+  }
   .hero-morph:where(:not(.morph-enhanced)) .morph-result {
     position: relative;
     inset: auto;

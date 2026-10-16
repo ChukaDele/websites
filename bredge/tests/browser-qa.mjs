@@ -34,7 +34,12 @@ async function assertPageBasics(page, path) {
   const response = await page.goto(`${base}${path}`, { waitUntil: "domcontentloaded", timeout: 30_000 });
   assert.ok(response, `${path}: no navigation response`);
   assert.ok(response.status() < 400, `${path}: HTTP ${response.status()}`);
-  await page.waitForTimeout(120);
+  // A missing CSS asset used to masquerade as a layout defect because the
+  // SSR HTML contains unbounded code snippets until its stylesheet loads.
+  // This must fail closed for actual 404 styles rather than measuring raw HTML.
+  await page.waitForFunction(() => getComputedStyle(document.body).fontFamily.includes("Instrument Sans"),
+    null, {timeout:12000});
+  await page.waitForTimeout(80);
 
   // Playwright locators pierce open shadow roots. The Cal.com widget inserts
   // its own H1 inside a shadow root on /schedule; this is not a page heading.
@@ -127,10 +132,9 @@ async function testScrollNarratives(browser) {
   await page.goto(base, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(800);
 
-  // The hero legitimately uses one GSAP pin. What broke production was the SQL
-  // narrative pinning a descendant scene as a second, competing pin system.
-  // Scope the regression to the SQL section instead of banning pin-spacers
-  // globally.
+  // The Five Systems scene is CSS-sticky, without a GSAP pin spacer.
+  // The SQL narrative also uses one CSS-owned sticky viewport; no nested
+  // ScrollTrigger pins may be introduced on either section.
   const iqPinState = await page.locator(".iq").evaluate((root) => {
     const scene = root.querySelector(".iq-scene");
     return {
@@ -211,6 +215,73 @@ async function testMobileFirstVisitWithoutPreloader(browser) {
   console.log("✓ first-visit phone shows content without GSAP preloader");
 }
 
+async function testMeasuredArrowResponsiveLayout(browser) {
+  // Check the first eligible desktop width and wide desktops independently
+  // of the fixed 1440px story test. Old percentage-based lines failed this.
+  for (const viewport of [
+    { width: 1251, height: 720 },
+    { width: 1251, height: 900 },
+    { width: 1280, height: 900 },
+    { width: 1440, height: 800 },
+    { width: 1920, height: 1080 },
+  ]) {
+    const page = await browser.newPage({ viewport, reducedMotion:"no-preference" });
+    await page.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
+    await page.goto(base, { waitUntil:"domcontentloaded" });
+    await page.locator(".hero-morph.morph-enhanced").waitFor({state:"attached",timeout:12000});
+    const geometry=await page.locator(".hero-morph").evaluate(root=>{
+      const r=root.getBoundingClientRect();
+      return { top:r.top+scrollY, height:r.height };
+    });
+    await page.evaluate(({top,height})=>
+      scrollTo({top:top+(height-innerHeight)*.53,behavior:"instant"}),geometry);
+    await page.waitForTimeout(860);
+    const state=await page.locator(".hero-morph").evaluate(root=>{
+      const rect=root.querySelector(".morph-flow").getBoundingClientRect();
+      const view=root.querySelector(".morph-flow").viewBox.baseVal;
+      const head=root.querySelector(".hero-morph-tease").getBoundingClientRect();
+      const targets=[...root.querySelectorAll(".morph-card")].map(el=>el.getBoundingClientRect());
+      const dest=root.querySelector(".morph-result").getBoundingClientRect();
+      const tx=dest.left+dest.width/2, ty=dest.top+dest.height/2;
+      const headingOverlap=targets.some(r=>Math.min(r.right,head.right)>Math.max(r.left,head.left)
+        &&Math.min(r.bottom,head.bottom)>Math.max(r.top,head.top));
+      const chapters=root.querySelector(".morph-chapters").getBoundingClientRect();
+      const chips=[...root.querySelectorAll(".morph-exception")].filter(el=>
+        Number(getComputedStyle(el).opacity)>.1).map(el=>el.getBoundingClientRect());
+      const chipOverlap=chips.some(r=>r.top<chapters.bottom-2||r.bottom>innerHeight-3);
+      const routes=[...root.querySelectorAll(".morph-flow-route")].map((route,i)=>{
+        const d=route.getAttribute("d")||"";
+        const values=(d.match(/-?[0-9]+(?:\.[0-9]+)?/g)||[]).map(Number);
+        if(values.length<8)return {anchored:false,converged:false,visible:false};
+        const sx=rect.left+values[0]*rect.width/view.width;
+        const sy=rect.top+values[1]*rect.height/view.height;
+        const ex=rect.left+values[6]*rect.width/view.width;
+        const ey=rect.top+values[7]*rect.height/view.height;
+        const src=targets[i];
+        return {
+          anchored:sx>=src.left-10&&sx<=src.right+10&&sy>=src.top-10&&sy<=src.bottom+10,
+          converged:Math.hypot(ex-tx,ey-ty)<=20,
+          visible:Number(getComputedStyle(route).opacity)>.5,
+        };
+      });
+      return { headingOverlap, chipOverlap, chipsCount:chips.length,
+        headingOpacity:Number(getComputedStyle(root.querySelector(".hero-morph-tease")).opacity),
+        stage:root.querySelector(".morph-chapter.is-active")?.textContent?.trim(), routes };
+    });
+    assert.equal(state.headingOverlap,false,`desktop ${viewport.width}x${viewport.height}: sources obscure header`);
+    assert.equal(state.chipOverlap,false,
+      `desktop ${viewport.width}x${viewport.height}: exception labels obscure heading or leave viewport`);
+    assert.equal(state.chipsCount,3,`desktop ${viewport.width}x${viewport.height}: all three exception types must be visible`);
+    assert.ok(state.headingOpacity>.95,`desktop ${viewport.width}: heading disappears during arrows`);
+    assert.match(state.stage||"",/^02 \/ Reconcile differences/);
+    assert.equal(state.routes.length,5);
+    assert.ok(state.routes.every(r=>r.anchored&&r.converged&&r.visible),
+      `desktop ${viewport.width}: disconnected arrows ${JSON.stringify(state.routes)}`);
+    await page.close();
+  }
+  console.log("✓ responsive desktop arrows and warning labels: 1251x720, 1251x900, 1280x900, 1440x800, 1920x1080");
+}
+
 async function testMobileMotionFallbacks(browser) {
   for (const reducedMotion of ["no-preference", "reduce"]) {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion });
@@ -259,7 +330,11 @@ async function testHeroCompositionAndMobileNative(browser) {
         grid: getComputedStyle(document.querySelector(".morph-cards")).display,
         resultOpacity: Number(getComputedStyle(outcome).opacity),
         viewportOverflow: document.documentElement.scrollWidth - innerWidth,
-        arrowConnectors: document.querySelectorAll(".morph-links line").length,
+        arrowConnectors: document.querySelectorAll(".morph-flow-route").length,
+        dynamicArrowsHidden: getComputedStyle(document.querySelector(".morph-flow")).display === "none",
+        staticFlowVisible: getComputedStyle(document.querySelector(".morph-static-flow")).display !== "none",
+        warningLabelsHidden:getComputedStyle(document.querySelector(".morph-exceptions")).display === "none",
+        headingVisible: Number(getComputedStyle(document.querySelector(".hero-morph-tease")).opacity) >= .99,
         navTapSize: nav.getBoundingClientRect().height,
         heroVideo: document.querySelector(".hero-video")?.getAttribute("src"),
       };
@@ -268,7 +343,11 @@ async function testHeroCompositionAndMobileNative(browser) {
     assert.deepEqual(result.overlap, [], `mobile ${config.width}: source cards overlap`);
     assert.equal(result.grid, "grid", `mobile ${config.width}: layout must be a real grid`);
     assert.ok(result.resultOpacity >= 0.99, `mobile ${config.width}: summary hidden`);
-    assert.equal(result.arrowConnectors, 0, "unanchored SVG connector lines must not be rendered");
+    assert.equal(result.arrowConnectors, 5, "all five sources need their own connector path");
+    assert.equal(result.dynamicArrowsHidden, true, "narrow viewport should use a clear static arrow rather than overlaid SVG routes");
+    assert.equal(result.staticFlowVisible, true, "narrow viewport must visually connect separate systems to the reconciled model");
+    assert.equal(result.warningLabelsHidden, true, "fallback warning chips must not cover the heading");
+    assert.equal(result.headingVisible, true, "section heading must remain visible above the sources");
     assert.ok(result.navTapSize >= 44, `mobile ${config.width}: menu control too small`);
     assert.ok(result.viewportOverflow <= 2, `mobile ${config.width}: horizontal overflow ${result.viewportOverflow}px`);
     const contact = await page.goto(`${base}/contact`, { waitUntil: "domcontentloaded" });
@@ -291,6 +370,24 @@ async function testHeroCompositionAndMobileNative(browser) {
       `mobile ${config.width}: contact sections not in vertical reading order`);
     await context.close();
   }
+
+  // An 1100px browser is wide but deliberately below the precise-pointer
+  // 1251px animation threshold. It must keep the readable flow and full model.
+  const intermediate = await browser.newPage({viewport:{width:1100,height:900}});
+  await intermediate.goto(base,{waitUntil:"load"});
+  const mediumState=await intermediate.locator(".hero-morph").evaluate(root=>({
+    enhanced:root.classList.contains("morph-enhanced"),
+    grid:getComputedStyle(root.querySelector(".morph-cards")).display,
+    resultOpacity:Number(getComputedStyle(root.querySelector(".morph-result")).opacity),
+    staticArrow:getComputedStyle(root.querySelector(".morph-static-flow")).display,
+    exceptionDisplay:getComputedStyle(root.querySelector(".morph-exceptions")).display,
+  }));
+  assert.equal(mediumState.enhanced,false,"1100px desktop should not force the large GSAP stage");
+  assert.equal(mediumState.grid,"grid","1100px desktop must use readable cards");
+  assert.ok(mediumState.resultOpacity>.99,"1100px desktop must reveal the summary");
+  assert.notEqual(mediumState.staticArrow,"none","1100px desktop must show source-to-result arrow");
+  assert.equal(mediumState.exceptionDisplay,"none","fallback exception chips must never cover heading");
+  await intermediate.close();
 
   // Short and reduced-motion desktops must get the SAME no-overlap static
   // fallback as phones. A visible result card cannot sit on top of source
@@ -323,6 +420,7 @@ async function testHeroCompositionAndMobileNative(browser) {
         resultOpacity:Number(getComputedStyle(result).opacity),
         position:getComputedStyle(root.querySelector(".hero-morph-content")).position,
         cardsDisplay:getComputedStyle(root.querySelector(".morph-cards")).display,
+        staticArrowVisible:getComputedStyle(root.querySelector(".morph-static-flow")).display!=="none",
         resultAfterCards:rr.top>=lastBottom-3,
         decisionAfterResult:dr.top>=rr.bottom-3,
         overlap, overflow:document.documentElement.scrollWidth-innerWidth,
@@ -332,6 +430,7 @@ async function testHeroCompositionAndMobileNative(browser) {
     assert.equal(state.enhanced,false, `${cfg.name} must not activate the scroll animation`);
     assert.equal(state.position,"relative", `${cfg.name} should use natural flow`);
     assert.equal(state.cardsDisplay,"grid", `${cfg.name} cards need a nonoverlapping layout`);
+    assert.equal(state.staticArrowVisible,true,`${cfg.name} must show flow from inputs to output`);
     assert.deepEqual(state.overlap, [], `${cfg.name} source cards overlap`);
     assert.equal(state.resultAfterCards,true, `${cfg.name} reconciled result overlays source cards`);
     assert.equal(state.decisionAfterResult,true, `${cfg.name} decision overlays result`);
@@ -368,6 +467,7 @@ async function testHeroCompositionAndMobileNative(browser) {
     return {
       enhanced:root.classList.contains("morph-enhanced"),
       cardsDisplay:getComputedStyle(root.querySelector(".morph-cards")).display,
+      staticArrowVisible:getComputedStyle(root.querySelector(".morph-static-flow")).display!=="none",
       overlap,
       resultAfterCards:rr.top>=Math.max(...cards.map(c=>c.bottom))-3,
       decisionAfterResult:dr.top>=rr.bottom-3,
@@ -380,6 +480,7 @@ async function testHeroCompositionAndMobileNative(browser) {
   });
   assert.equal(plain.enhanced,false,"no-JS browser must never activate GSAP");
   assert.equal(plain.cardsDisplay,"grid","no-JS desktop must use readable source grid");
+  assert.equal(plain.staticArrowVisible,true,"no-JS desktop must show how inputs become the result");
   assert.deepEqual(plain.overlap,[],"no-JS desktop source cards overlap");
   assert.equal(plain.resultAfterCards,true,"no-JS desktop result overlays source cards");
   assert.equal(plain.decisionAfterResult,true,"no-JS desktop decision overlays result");
@@ -413,11 +514,66 @@ async function testHeroCompositionAndMobileNative(browser) {
   const stickyTop = await desktop.locator(".hero-morph-content").evaluate(el=>el.getBoundingClientRect().top);
   assert.ok(Math.abs(stickyTop)<=4,
     `Hero sticky scene moved by ${stickyTop}px at mid-scroll. Check ancestor overflow and CSS sticky containment.`);
+  await desktop.waitForTimeout(650);
+  // Five measured routes must connect actual DOM cards to one hub, remain
+  // visible WITH the section heading, and follow transformed source cards.
+  const measuredFlow = await desktop.locator(".hero-morph").evaluate(root => {
+    const flow=root.querySelector(".morph-flow");
+    const svgBox=flow.getBoundingClientRect();
+    const view=flow.viewBox.baseVal;
+    const heading=root.querySelector(".hero-morph-tease");
+    const cards=[...root.querySelectorAll(".morph-card")];
+    const paths=[...root.querySelectorAll(".morph-flow-route")];
+    const tips=[...root.querySelectorAll(".morph-flow-tip")];
+    const output=root.querySelector(".morph-result").getBoundingClientRect();
+    const ox=output.left+output.width/2;
+    const oy=output.top+output.height/2;
+    const sx=svgBox.width/view.width;
+    const sy=svgBox.height/view.height;
+    return {
+      headingOpacity:Number(getComputedStyle(heading).opacity),
+      activeChapter:root.querySelector(".morph-chapter.is-active")?.textContent?.trim(),
+      headingVisible:heading.getBoundingClientRect().top < innerHeight
+        && heading.getBoundingClientRect().bottom>0,
+      svgDisplay:getComputedStyle(flow).display,
+      pathCount:paths.length, tipCount:tips.length,
+      pathChecks:paths.map((path,index)=>{
+        const nums=(path.getAttribute("d").match(/-?[0-9]+(?:\.[0-9]+)?/g)||[]).map(Number);
+        const r=cards[index].getBoundingClientRect();
+        const startX=svgBox.left+nums[0]*sx, startY=svgBox.top+nums[1]*sy;
+        const endX=svgBox.left+nums[6]*sx, endY=svgBox.top+nums[7]*sy;
+        return {
+          measured:nums.length>=8,
+          beginsAtSource:startX>=r.left-9&&startX<=r.right+9&&startY>=r.top-9&&startY<=r.bottom+9,
+          endsAtHub:Math.hypot(endX-ox,endY-oy)<20,
+          opacity:Number(getComputedStyle(path).opacity),
+          dash:getComputedStyle(path).strokeDashoffset,
+        };
+      }),
+    };
+  });
+  assert.equal(measuredFlow.headingVisible,true,"section header must remain in view while sources converge");
+  assert.ok(measuredFlow.headingOpacity>=.95,"section heading must not fade out before the arrows appear");
+  assert.match(measuredFlow.activeChapter || "", /^02 \/ Reconcile differences/,
+    "when arrows converge, the section should identify the reconciliation stage");
+  assert.equal(measuredFlow.svgDisplay,"block","desktop must display the measured arrow field");
+  assert.equal(measuredFlow.pathCount,5,"each source must have one route to the shared model");
+  assert.equal(measuredFlow.tipCount,5,"each route must end with a directional arrowhead");
+  assert.ok(measuredFlow.pathChecks.every(p=>p.measured&&p.beginsAtSource&&p.endsAtHub),
+    `connectors are no longer anchored to the actual cards / result: ${JSON.stringify(measuredFlow.pathChecks)}`);
+  assert.ok(measuredFlow.pathChecks.filter(p=>p.opacity>.3).length>=4,
+    "arrows should be visible before the final result, not hidden or drawn too late");
+
   await desktop.evaluate(({top,height})=>
     window.scrollTo({top:top+height-innerHeight-12,behavior:"instant"}),scene);
   await desktop.waitForTimeout(650);
   const reveal = await desktop.locator(".morph-result").evaluate(el=>Number(getComputedStyle(el).opacity));
   assert.ok(reveal > 0.9, `desktop narrative never reveals outcome (opacity ${reveal})`);
+  const finalHeading = await desktop.locator(".hero-morph-tease").evaluate(el=>Number(getComputedStyle(el).opacity));
+  assert.ok(finalHeading >= .95, "heading must still contextualise the reconciled result");
+  const finalChapter=await desktop.locator(".morph-chapter.is-active").textContent();
+  assert.match(finalChapter || "", /^03 \/ One trusted model/,
+    "once the output appears the section should label the trusted model");
   await desktop.close();
 
   const llms = await browser.newPage();
@@ -586,6 +742,7 @@ try {
   await testInternalLinks(browser);
   await testScrollNarratives(browser);
   await testHeroCompositionAndMobileNative(browser);
+  await testMeasuredArrowResponsiveLayout(browser);
   await testMobileFirstVisitWithoutPreloader(browser);
   await testMobileMotionFallbacks(browser);
   await testShortAndReducedMotion(browser);
