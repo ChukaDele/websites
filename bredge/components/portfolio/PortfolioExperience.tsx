@@ -20,6 +20,7 @@ export function PortfolioExperience({slug}:{slug:string}){
       <p className="lede">{study.lede}</p>
       <p className="pl-hero-audience">{study.who}</p>
       <a className="pl-model-jump" href="#operating-room">Open the interactive dashboard <span aria-hidden="true">↓</span></a>
+      {slug==="finance"&&<a className="pl-bi-studio-link" href="/portfolio/finance/studio">Try the full Finance BI Studio <span aria-hidden="true">↗</span></a>}
     </div>
     <figure className="pl-cover">
       <img src={art.src} alt={art.alt} width="1536" height="860" fetchPriority="high" decoding="async"/>
