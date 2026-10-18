@@ -1,34 +1,52 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useRef } from "react";
 
-/* "Where we've worked" — organisations Bredge team members have worked with.
- * Typographic marks (no recreated logos). One behaviour everywhere: desktop rows
+/* "Where we've worked" — genuine website identity marks with names for
+ * organisations where Bredge team members previously worked. One behaviour everywhere: desktop rows
  * are SCROLL-LINKED (opposing directions, translated by the real measured
  * overflow so every name is revealed during the section's passage);
  * reduced-motion and tablet/mobile fall back to a fully-readable static grid. */
 
-/* Prior experience of individual Bredge team members — text marks, not a logo
- * wall (a logo wall would imply a commercial/endorsement relationship this
- * section deliberately does not claim). Display names are the exact approved
+/* Prior experience of Bredge team members with website marks; the section
+ * clearly disclaims any client relationship, partnership or endorsement. Display names are the exact approved
  * forms: no acronym+full-name duplication, no invented Ltd/Inc/LLC suffixes.
  * Trimmed from 16 to 8: sixteen names behind a legal disclaimer read as borrowed
  * credibility, eight recognisable ones read as an honest CV. Split BY WIDTH
  * across the two rows so, where the track still overflows, both reveal at a
  * comparable rate; where it doesn't, `.xp-row` drops its edge mask (see
  * `no-overflow` below) so a stationary first name is never clipped by the fade. */
-const ROW_A = ["TriWest Healthcare Alliance", "Sedgwick", "Moniepoint", "Nutrafol"];
-const ROW_B = ["University of Vermont", "Westinghouse", "Penn Foster", "Fullscript"];
+type ExperienceName={name:string;mark:string};
+const ROW_A:ExperienceName[] = [
+ {name:"TriWest Healthcare Alliance",mark:"triwest"},
+ {name:"Sedgwick",mark:"sedgwick"},
+ {name:"Moniepoint",mark:"moniepoint"},
+ {name:"Nutrafol",mark:"nutrafol"},
+];
+const ROW_B:ExperienceName[] = [
+ {name:"University of Vermont",mark:"uvm"},
+ {name:"Westinghouse",mark:"westinghouse"},
+ {name:"Penn Foster",mark:"pennfoster"},
+ {name:"Fullscript",mark:"fullscript"},
+];
 
-const DISCLAIMER = "These are places Bredge team members have worked. They aren’t clients and this isn’t an endorsement.";
+const DISCLAIMER = "Bredge team members have worked at these organisations. They are not Bredge clients or endorsers.";
 
-function TeamTrack({ names }: { names: string[] }) {
-  return (
-    <div className="xp-track">
-      {names.map((name) => <span key={name}>{name}</span>)}
-      {names.map((name) => <span key={`${name}-repeat`} aria-hidden="true">{name}</span>)}
-    </div>
-  );
+function TeamTrack({ names }: { names: ExperienceName[] }) {
+  const render=(entry:ExperienceName,repeat:boolean)=>{
+    const child=<>
+      <img className="xp-brand-mark" src={"/brand/experience/"+entry.mark+".png"} width="32" height="32" alt="" loading="lazy" decoding="async" />
+      <span className="xp-company-name">{entry.name}</span>
+    </>;
+    return repeat
+     ? <span className="xp-company" key={entry.mark+"-repeat"} aria-hidden="true">{child}</span>
+     : <span className="xp-company" key={entry.mark}>{child}</span>;
+  };
+  return <div className="xp-track">
+    {names.map(name=>render(name,false))}
+    {names.map(name=>render(name,true))}
+  </div>;
 }
 
 export function ExperienceRows() {
