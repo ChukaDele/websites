@@ -7,8 +7,10 @@ const workflow = readFileSync(
   "utf8"
 );
 
-test("production requires manual dispatch, a protected environment and the reviewed main SHA", () => {
-  assert.match(workflow, /github\.event_name == 'workflow_dispatch'/);
+test("production accepts validated main pushes or exact-SHA manual retries, never a PR", () => {
+  assert.match(workflow, /if: github\.event_name == 'workflow_dispatch' \|\| \(github\.event_name == 'push' && github\.ref == 'refs\/heads\/main'\)/);
+  assert.match(workflow, /REQUESTED_SHA: \$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.release_sha \|\| github\.sha \}\}/);
+  assert.doesNotMatch(workflow.slice(workflow.indexOf("  bredge-production:")), /if:\s*github\.event_name == 'pull_request'/);
   assert.match(workflow, /environment:\s*\n\s*name: Cloudflare/);
   assert.match(workflow, /current_main=.*gh api/);
   assert.match(workflow, /REQUESTED_SHA.*GITHUB_SHA/);
@@ -16,7 +18,7 @@ test("production requires manual dispatch, a protected environment and the revie
 
 test("Google workbook and native rate-limit binding are verified before release", () => {
   const preflight = workflow.indexOf("Verify Google webhook readiness and native rate limit");
-  const deploy = workflow.indexOf("Publish reviewed code and secret bindings atomically");
+  const deploy = workflow.indexOf("Publish validated code and secret bindings atomically");
   assert.ok(preflight >= 0 && deploy > preflight);
   assert.match(workflow.slice(preflight, deploy), /verify-contact-rate-limit-config-cli/);
   assert.match(workflow.slice(preflight, deploy), /workbookId == \$wb and \.revision == \$rev/);
@@ -24,7 +26,7 @@ test("Google workbook and native rate-limit binding are verified before release"
 });
 
 test("production code and new secrets publish in one Worker version", () => {
-  const deploy = workflow.slice(workflow.indexOf("Publish reviewed code and secret bindings atomically"));
+  const deploy = workflow.slice(workflow.indexOf("Publish validated code and secret bindings atomically"));
   assert.match(deploy, /wrangler deploy -c dist\/server\/wrangler\.json --secrets-file \/dev\/stdin/);
   assert.doesNotMatch(workflow, /\bwrangler (?:secret (?:put|bulk)|versions secret (?:put|bulk))\b/);
   assert.match(deploy, /Previous Worker version for rollback/);
