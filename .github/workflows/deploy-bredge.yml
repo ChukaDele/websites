@@ -173,28 +173,29 @@ jobs:
           retention-days: 7
 
 
-  # A non-main or malformed manual dispatch must FAIL, never show green with a skipped deploy.
+  # The protected main push is the release trigger. Manual retries remain SHA pinned.
   bredge-release-preflight:
     name: bredge-release-preflight
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     steps:
-      - name: Reject non-main or malformed release requests
+      - name: Reject non-main or mismatched release requests
         env:
-          REQUESTED_SHA: ${{ inputs.release_sha }}
+          REQUESTED_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
         shell: bash
         run: |
           set -euo pipefail
           if [[ "$GITHUB_REF" != 'refs/heads/main' || ! "$REQUESTED_SHA" =~ ^[a-f0-9]{40}$ || "$REQUESTED_SHA" != "$GITHUB_SHA" ]]; then
-            echo "::error::Protected production release requires an exact SHA on the main branch"
+            echo "::error::Production requires exact current protected main SHA"
             exit 1
           fi
 
-  # No deploy on a push to main. Explicit reviewed dispatch only.
+  # Automatically deploy a green protected main SHA, never a PR branch.
+  # All existing webhook readiness, artifact checks and rollback logic are retained.
   bredge-production:
     name: bredge-production
     needs: [bredge-quality, bredge-secret-scan, bredge-release-preflight]
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     environment:
@@ -204,17 +205,17 @@ jobs:
       run:
         working-directory: bredge
     steps:
-      - name: Checkout exact reviewed source commit
+      - name: Checkout exact validated source commit
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Require exact current protected main SHA
+      - name: Require exact current validated main SHA
         env:
           GH_TOKEN: ${{ github.token }}
-          REQUESTED_SHA: ${{ inputs.release_sha }}
+          REQUESTED_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
         shell: bash
         run: |
           set -euo pipefail

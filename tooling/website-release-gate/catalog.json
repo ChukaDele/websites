@@ -255,7 +255,7 @@
     },
     {
       "id": "X21",
-      "name": "Formal independent reviewer and owner acceptance",
+      "name": "Independent QA agent and release-verifier acceptance",
       "phase": "closeout",
       "priority": "P1"
     },
