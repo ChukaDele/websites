@@ -334,7 +334,7 @@ jobs:
 
       - name: Prove live production build and critical public routes
         env:
-          EXPECTED_SHA: ${{ inputs.release_sha }}
+          EXPECTED_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
         shell: bash
         run: |
           set -euo pipefail

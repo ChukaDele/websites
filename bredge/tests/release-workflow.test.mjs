@@ -16,6 +16,13 @@ test("production accepts validated main pushes or exact-SHA manual retries, neve
   assert.match(workflow, /REQUESTED_SHA.*GITHUB_SHA/);
 });
 
+test("live fingerprint uses the validated SHA for automatic pushes and manual retries", () => {
+  const live = workflow.split("- name: Prove live production build and critical public routes")[1]
+    .split("- name: Restore previous Worker version")[0];
+  assert.match(live, /EXPECTED_SHA: \$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.release_sha \|\| github\.sha \}\}/);
+  assert.match(live, /--arg sha "\$EXPECTED_SHA" '\.sha == \$sha and \.worker == "bredge"'/);
+});
+
 test("Google workbook and native rate-limit binding are verified before release", () => {
   const preflight = workflow.indexOf("Verify Google webhook readiness and native rate limit");
   const deploy = workflow.indexOf("Publish validated code and secret bindings atomically");
