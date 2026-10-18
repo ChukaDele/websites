@@ -55,3 +55,13 @@ The owner refreshed the isolated real-key staging page and could not proceed thr
 **Production remains unchanged and P0 CLOSEOUT_BLOCKED.** A new exact-SHA GitHub artifact, isolated Cloudflare staging deployment, positive browser-to-Google Sheet/email test, independent review and approved protected production release are still required. Staging and production must not claim positive lead delivery based only on an HTTP 200 frontend response. Cal.com booking lifecycle remains [P1 issue #14](https://github.com/ChukaDele/websites/issues/14).
 
 **Secret lifecycle:** the old `TURNSTILE_SECRET_KEY` may remain in the protected environment/previous Worker as a dormant legacy secret; the new code does not read it and the reviewed release does not require it. Any later cleanup must be separately authorized and must not accidentally roll back the active Worker or alter shared accounts.
+
+## 18 October 2026: owner-operated, three-agent workflow policy
+
+This section **supersedes the historical human-review and manual-deployment instructions above**. Earlier entries record the state and evidence observed at those dates; they are not instructions to require Simi or another GitHub account for future PRs.
+
+- Builder agent, QA agent and release verifier operate in separate contexts and submit evidence for the same exact commit. The three labels are not GitHub reviewer accounts, and an assertion without actual provider logs remains blocked.
+- After the repository administrator changes the active GitHub ruleset to **zero required human approvals** and removes the Cloudflare environment's required reviewers, the owner can merge their own PR after all status checks pass. Keep PR requirements, branch protections, secret scan and browser/lead tests.
+- Protected `main` pushes now initiate the exact-SHA Cloudflare release automatically after green checks. Manual exact-SHA retry remains available. Do not claim LIVE until the public build fingerprint, routes and actual contact-delivery receipt are verified. Preserve rollback logic.
+- Production and permissions are **not automatically updated by this document**. The code changes remain in [release workflow PR #23](https://github.com/ChukaDele/websites/pull/23) until accepted and deployed. The previous live contact-form issue is unresolved until provider receipts prove otherwise.
+- Keep dashboard PRs #19, #20 and #21 out of the website-only release. Avoid AI co-author trailers and any model attribution in PR authorship.

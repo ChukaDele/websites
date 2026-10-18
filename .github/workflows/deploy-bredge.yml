@@ -136,7 +136,7 @@ jobs:
           fi
           test -f dist/server/wrangler.json
 
-      - name: Preserve browser-tested Worker bundle for approved release
+      - name: Preserve browser-tested Worker bundle for controlled release
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: bredge-tested-bundle-${{ github.sha }}
@@ -220,7 +220,7 @@ jobs:
         run: |
           set -euo pipefail
           if [[ ! "$REQUESTED_SHA" =~ ^[a-f0-9]{40}$ ]]; then
-            echo "::error::An exact 40-character reviewed SHA is required"
+            echo "::error::An exact 40-character validated SHA is required"
             exit 1
           fi
           current_main="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)"
@@ -285,7 +285,7 @@ jobs:
             exit 1
           fi
 
-      - name: Publish reviewed code and secret bindings atomically
+      - name: Publish validated code and secret bindings atomically
         id: publish
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.API }}

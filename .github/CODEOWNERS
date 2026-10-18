@@ -1,5 +1,6 @@
-# Changes to the website release controls require an explicitly accountable code-owner review.
-# Keep other website implementation work unblocked when it passes executable checks.
+# Code owners are listed for accountability on sensitive release surfaces.
+# Independent human GitHub approval is optional; protected CI and distinct agent
+# QA/release evidence remain mandatory. No special bypass permissions.
 /.github/CODEOWNERS @ChukaDele
 /.github/workflows/website-release-gate.yml @ChukaDele
 /.github/workflows/website-release-gate-tests.yml @ChukaDele
