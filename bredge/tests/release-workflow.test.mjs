@@ -24,12 +24,13 @@ test("production depends on the same-run validator-tests required check", () => 
   assert.equal(existsSync(new URL("../../.github/workflows/website-release-gate-tests.yml", import.meta.url)), false);
 });
 
-test("publishing rechecks main after rollback capture and before any deployment attempt", () => {
+test("publishing rechecks main after previous-version capture and before deployment", () => {
   const publish = workflow.split("- name: Publish validated code and secret bindings atomically")[1]
-    .split("- name: Prove live production build")[0];
+    .split("- name: Verify active Worker version and attempt public smoke")[0];
   assert.match(publish, /GH_TOKEN: \$\{\{ github.token \}\}/);
   const guard = publish.indexOf('current_main="$(gh api');
-  assert.ok(guard > publish.indexOf('echo "previous_sha=$previous_sha"'));
+  assert.ok(guard > publish.indexOf('echo "previous=$previous"'));
+  assert.doesNotMatch(publish.slice(0, guard), /thebredge\.com\/__build\?before=/);
   const guarded = publish.slice(guard);
   assert.match(guarded, /if \[\[ "\$current_main" != "\$GITHUB_SHA" \]\]; then[\s\S]*?exit 1\s+fi/);
   assert.ok(guard < publish.indexOf('echo "attempted=true"'));
@@ -46,10 +47,13 @@ test("production accepts validated main pushes or exact-SHA manual retries, neve
 });
 
 test("live fingerprint uses the validated SHA for automatic pushes and manual retries", () => {
-  const live = workflow.split("- name: Prove live production build and critical public routes")[1]
+  const live = workflow.split("- name: Verify active Worker version and attempt public smoke")[1]
     .split("- name: Restore previous Worker version")[0];
   assert.match(live, /EXPECTED_SHA: \$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.release_sha \|\| github\.sha \}\}/);
   assert.match(live, /--arg sha "\$EXPECTED_SHA" '\.sha == \$sha and \.worker == "bredge"'/);
+  assert.match(live, /active" != "\$DEPLOYED_VERSION"/);
+  assert.match(live, /PUBLIC_DOMAIN_UNVERIFIED/);
+  assert.match(live, /"403" \|\| "\$status" == "429"/);
 });
 
 test("Google workbook and native rate-limit binding are verified before release", () => {
