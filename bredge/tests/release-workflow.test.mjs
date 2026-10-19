@@ -10,8 +10,8 @@ const workflow = readFileSync(
 test("push and manual releases share a non-cancelling concurrency group for each ref", () => {
   const concurrency = workflow.split("\nconcurrency:\n")[1]?.split("\njobs:\n")[0];
   assert.ok(concurrency);
-  assert.match(concurrency, /^  group: bredge-\$\{\{ github\.ref \}\}$/m);
-  assert.match(concurrency, /^  cancel-in-progress: false$/m);
+  assert.match(concurrency, /^ {2}group: bredge-\$\{\{ github\.ref \}\}$/m);
+  assert.match(concurrency, /^ {2}cancel-in-progress: false$/m);
   assert.doesNotMatch(concurrency, /github\.event_name|github\.run_id|github\.sha/);
 });
 
