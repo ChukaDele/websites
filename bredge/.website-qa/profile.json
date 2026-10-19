@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "standard": "Website Launch QA v2.0",
+  "project": "The Bredge marketing website",
+  "repository": "ChukaDele/websites",
+  "site_type": "leadgen",
+  "production_url": "https://thebredge.com",
+  "staging_url": "https://bredge-release-qa.thebredge.workers.dev",
+  "markets": [
+    "Global"
+  ],
+  "critical_journeys": [
+    "Browse services and schedule a call",
+    "Send contact enquiry and verify actual inbox or CRM delivery",
+    "Access articles, resources, legal pages and recover from an unknown route"
+  ],
+  "owners": {
+    "builder": "Bredge implementation agent",
+    "reviewer": "Bredge independent QA agent",
+    "approver": "Bredge release verification agent"
+  },
+  "enforcement": {
+    "status": "ENFORCEMENT_PARTIAL",
+    "reason": "Three distinct agent roles now cover build, independent technical QA and final release verification. Required GitHub tests, exact source SHA, provider-confirmed lead delivery and rollback evidence remain mandatory. GitHub branch ruleset and Cloudflare environment reviewer settings still require one-time authenticated repository administration updates before owner-only merges and automatic production releases can function."
+  }
+}

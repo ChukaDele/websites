@@ -2,8 +2,10 @@
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
 import buildInfo from "./build-info.json";
+import { enforceContactRateLimit, type ContactRateLimitBinding } from "../lib/contact-rate-limit";
 
 interface Env {
+  CONTACT_RATE_LIMITER?: ContactRateLimitBinding;
   ASSETS: Fetcher;
   DB: D1Database;
   IMAGES: {
@@ -32,6 +34,11 @@ function withResponseHeaders(response: Response, request: Request): Response {
   headers.set("X-Frame-Options", "SAMEORIGIN");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  const hostname = new URL(request.url).hostname;
+  // Dedicated PR and Workers.dev previews must never be indexed as separate sites.
+  if (hostname !== "thebredge.com" && hostname !== "www.thebredge.com") {
+    headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
   if (new URL(request.url).protocol === "https:") {
     headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
   }
@@ -64,6 +71,10 @@ const worker = {
         },
       }), request);
     }
+
+    // Protect submission before application code or the Sheets webhook runs.
+    const rateLimitResponse = await enforceContactRateLimit(request, env.CONTACT_RATE_LIMITER);
+    if (rateLimitResponse) return withResponseHeaders(rateLimitResponse, request);
 
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];

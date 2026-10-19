@@ -1,28 +1,83 @@
-name: Deploy Bredge
+name: Bredge Website QA and Protected Release
 
 on:
+  pull_request:
   push:
     branches: [main]
-    paths:
-      - "bredge/**"
-      - ".github/workflows/deploy-bredge.yml"
   workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Exact approved 40-character main SHA
+        required: true
+        type: string
+
+permissions:
+  contents: read
 
 concurrency:
-  group: deploy-bredge
-  cancel-in-progress: true
+  # Main pushes and manual retries must serialize publish and rollback together.
+  group: bredge-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  # Keep this required status in the release DAG, on every PR and main run.
+  validator-tests:
+    name: validator-tests
     runs-on: ubuntu-latest
-    environment: Cloudflare
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile gate
+        run: python -m py_compile tooling/website-release-gate/validate.py tooling/website-release-gate/scaffold.py
+      - name: Run fail-closed contract regression suite
+        run: python -m unittest discover -s tooling/website-release-gate/tests -v
+
+  bredge-secret-scan:
+    name: bredge-secret-scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: 'false'
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'
+
+  bredge-quality:
+    name: bredge-quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # These are PUBLIC measurement IDs only, not credentials. Compile them
+    # into the same tested artifact that the protected release later deploys.
+    # Configure as repo Actions variables, never as environment secrets.
+    env:
+      NEXT_PUBLIC_GA4_MEASUREMENT_ID: ${{ vars.BREDGE_GA4_MEASUREMENT_ID }}
+      NEXT_PUBLIC_CLARITY_PROJECT_ID: ${{ vars.BREDGE_CLARITY_PROJECT_ID }}
+      NEXT_PUBLIC_GTM_ID: ${{ vars.BREDGE_GTM_ID }}
     defaults:
       run:
         working-directory: bredge
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - name: Validate website SOP intake contract
+        run: python3 ../tooling/website-release-gate/validate.py --catalog ../tooling/website-release-gate/catalog.json --profile .website-qa/profile.json --phase intake
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 22
           cache: npm
@@ -31,11 +86,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify approved analytics IDs and source-backed agent index
+        run: |
+          node scripts/verify-public-analytics-config.mjs
+          npm run agent-index:check
+
       - name: Lint
         run: npm run lint
 
       - name: Build and source regression tests
         run: npm test
+
+      - name: Validate Cloudflare bindings and TypeScript
+        run: npm run typecheck
+
+      - name: Verify atomic Worker deployment packaging without publishing
+        run: |
+          node scripts/verify-contact-rate-limit-config-cli.mjs dist/server/wrangler.json
+          printf '{"QA_ATOMIC_DEPLOY_TEST_ONLY":"dummy"}' |
+            npx --no-install wrangler deploy -c dist/server/wrangler.json --dry-run --secrets-file /dev/stdin
 
       - name: Install browser QA runtime
         run: |
@@ -68,18 +137,279 @@ jobs:
             cat /tmp/bredge-wrangler.log
             exit 1
           fi
+          # Assert the running Worker never acknowledges rejected enquiries.
+          # Keep this inside the same job step, before Wrangler's EXIT trap.
+          bash scripts/verify-contact-negatives.sh http://127.0.0.1:8787 local
+
+      - name: Remove Wrangler development state without altering tested deployment files
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Wrangler dev writes ephemeral runtime state under dist/server/.wrangler.
+          # This is not a build artifact; its nested processes may still be
+          # running when the browser test step exits. Do not upload it.
+          if [[ -d dist/server/.wrangler ]]; then
+            rm -rf -- dist/server/.wrangler
+          fi
+          test -f dist/server/wrangler.json
+
+      - name: Preserve browser-tested Worker bundle for controlled release
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: bredge-tested-bundle-${{ github.sha }}
+          path: bredge/dist/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Restore the browser-tested Worker artifact in this same CI run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: bredge-tested-bundle-${{ github.sha }}
+          path: bredge/qa-bundle-roundtrip/
+
+      - name: Prove deployable Worker bytes match the Chromium-tested bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Include hidden files in the artifact rather than quietly ignoring
+          # .assetsignore, .vite and other generated files. Exact byte parity
+          # is mandatory, even for hidden deployment metadata.
+          diff -qr dist qa-bundle-roundtrip
+          test -f qa-bundle-roundtrip/server/wrangler.json
+          printf '{"QA_ATOMIC_DEPLOY_TEST_ONLY":"dummy"}' |
+            npx --no-install wrangler deploy -c qa-bundle-roundtrip/server/wrangler.json --dry-run --secrets-file /dev/stdin
 
       - name: Upload QA screenshots
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: bredge-browser-qa
           path: bredge/qa-artifacts
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: Deploy to Cloudflare Workers
-        run: npx wrangler deploy -c dist/server/wrangler.json
+
+  # The protected main push is the release trigger. Manual retries remain SHA pinned.
+  bredge-release-preflight:
+    name: bredge-release-preflight
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reject non-main or mismatched release requests
+        env:
+          REQUESTED_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF" != 'refs/heads/main' || ! "$REQUESTED_SHA" =~ ^[a-f0-9]{40}$ || "$REQUESTED_SHA" != "$GITHUB_SHA" ]]; then
+            echo "::error::Production requires exact current protected main SHA"
+            exit 1
+          fi
+
+  # Automatically deploy a green protected main SHA, never a PR branch.
+  # All existing webhook readiness, artifact checks and rollback logic are retained.
+  bredge-production:
+    name: bredge-production
+    needs: [bredge-quality, bredge-secret-scan, validator-tests, bredge-release-preflight]
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment:
+      name: Cloudflare
+      url: https://thebredge.com
+    defaults:
+      run:
+        working-directory: bredge
+    steps:
+      - name: Checkout exact validated source commit
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Require exact current validated main SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$REQUESTED_SHA" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "::error::An exact 40-character validated SHA is required"
+            exit 1
+          fi
+          current_main="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)"
+          if [[ "$REQUESTED_SHA" != "$GITHUB_SHA" || "$(git rev-parse HEAD)" != "$REQUESTED_SHA" || "$current_main" != "$REQUESTED_SHA" ]]; then
+            echo "::error::Requested release does not match protected main"
+            exit 1
+          fi
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: bredge/package-lock.json
+
+      - name: Install locked dependencies for the approved main SHA
+        run: npm ci
+
+      - name: Restore Worker bundle verified by the Chromium QA job
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: bredge-tested-bundle-${{ github.sha }}
+          path: bredge/dist/
+
+      - name: Check downloaded bundle and repeat source tests without rebuilding
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/server/wrangler.json
+          test "$(node -p 'JSON.parse(require("node:fs").readFileSync("dist/server/wrangler.json", "utf8")).name')" = "bredge"
+          npm run lint
+          node --test tests/*.test.mjs
+          npm run typecheck
+
+      - name: Verify Google webhook readiness and native rate limit without production write access
+        env:
+          GOOGLE_LEADS_URL: ${{ secrets.GOOGLE_LEADS_WEBHOOK_URL }}
+          GOOGLE_LEADS_SECRET: ${{ secrets.GOOGLE_LEADS_WEBHOOK_SECRET }}
+          BREDGE_GOOGLE_SCRIPT_DEPLOYMENT_ID: ${{ vars.BREDGE_GOOGLE_SCRIPT_DEPLOYMENT_ID }}
+          BREDGE_GOOGLE_WORKBOOK_ID: ${{ vars.BREDGE_GOOGLE_WORKBOOK_ID }}
+          BREDGE_GOOGLE_SCRIPT_REVISION: ${{ vars.BREDGE_GOOGLE_SCRIPT_REVISION }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$GOOGLE_LEADS_URL" || -z "$GOOGLE_LEADS_SECRET" ]]; then
+            echo "::error::Webhook URL and protected shared token must be in the approved environment."
+            exit 1
+          fi
+          if [[ "${#GOOGLE_LEADS_SECRET}" -lt 48 ]]; then
+            echo "::error::Shared webhook token is shorter than the minimum accepted length."
+            exit 1
+          fi
+          if [[ -z "$BREDGE_GOOGLE_WORKBOOK_ID" || -z "$BREDGE_GOOGLE_SCRIPT_REVISION" ]]; then
+            echo "::error::Pinned workbook and version are required."
+            exit 1
+          fi
+          node scripts/verify-contact-rate-limit-config-cli.mjs dist/server/wrangler.json
+          node -e 'const u = new URL(process.env.GOOGLE_LEADS_URL); const id = process.env.BREDGE_GOOGLE_SCRIPT_DEPLOYMENT_ID; if (!id || u.protocol !== "https:" || u.hostname !== "script.google.com" || u.pathname !== "/macros/s/" + id + "/exec" || u.search || u.hash) process.exit(1);'
+          if ! jq -n '{secret:env.GOOGLE_LEADS_SECRET}' |
+            curl --silent --show-error --fail --location --max-time 30 --proto "=https" --proto-redir "=https"               -H "Content-Type: application/json" --data-binary @- "$GOOGLE_LEADS_URL?health=1" |
+            jq -e --arg wb "$BREDGE_GOOGLE_WORKBOOK_ID" --arg rev "$BREDGE_GOOGLE_SCRIPT_REVISION" '.ok == true and .service == "bredge-workbook" and .workbookId == $wb and .revision == $rev' >/dev/null; then
+            echo "::error::Google webhook did not confirm authenticated workbook availability; release blocked."
+            exit 1
+          fi
+
+      - name: Publish validated code and secret bindings atomically
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.API }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          GOOGLE_LEADS_URL: ${{ secrets.GOOGLE_LEADS_WEBHOOK_URL }}
+          GOOGLE_LEADS_SECRET: ${{ secrets.GOOGLE_LEADS_WEBHOOK_SECRET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$CLOUDFLARE_API_TOKEN" || -z "$CLOUDFLARE_ACCOUNT_ID" ]]; then
+            echo "::error::Production deployment credentials are missing."
+            exit 1
+          fi
+          worker_name="$(node -p 'JSON.parse(require("node:fs").readFileSync("dist/server/wrangler.json", "utf8")).name')"
+          if [[ "$worker_name" != "bredge" ]]; then
+            echo "::error::The target Worker differs from approved production."
+            exit 1
+          fi
+
+          # Record the previous active version before altering production.
+          history="$(npx --no-install wrangler deployments list --name "$worker_name" --json)"
+          previous="$(printf '%s' "$history" | node scripts/select-rollback-version-cli.mjs)"
+          if [[ ! "$previous" =~ ^[0-9a-f-]{36}$ ]]; then
+            echo "::error::Could not verify the current rollback version."
+            exit 1
+          fi
+          echo "Previous Worker version for rollback: $previous" >> "$GITHUB_STEP_SUMMARY"
+          echo "previous=$previous" >> "$GITHUB_OUTPUT"
+          previous_sha="$(curl --fail --silent --show-error --max-time 15 -H 'Cache-Control: no-cache' "https://thebredge.com/__build?before=$GITHUB_RUN_ID" | jq -er '.sha')"
+          if [[ ! "$previous_sha" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "::error::Cannot prove which public commit was active before release."
+            exit 1
+          fi
+          echo "previous_sha=$previous_sha" >> "$GITHUB_OUTPUT"
+
+          # Wrangler deploy --secrets-file uploads new source and secrets
+          # in ONE version. Prior secret put/bulk would activate old code
+          # with new credentials, causing a conversion outage on failed builds.
+          # Read secret values from environment and stream them through stdin.
+          current_main="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)"
+          if [[ "$current_main" != "$GITHUB_SHA" ]]; then
+            echo "::error::Protected main advanced before publish; release blocked."
+            exit 1
+          fi
+          echo "attempted=true" >> "$GITHUB_OUTPUT"
+          jq -n '{GOOGLE_LEADS_WEBHOOK_URL:env.GOOGLE_LEADS_URL, GOOGLE_LEADS_WEBHOOK_SECRET:env.GOOGLE_LEADS_SECRET}' |
+            npx --no-install wrangler deploy -c dist/server/wrangler.json --secrets-file /dev/stdin
+
+          npx --no-install wrangler secret list --config dist/server/wrangler.json --format json --name "$worker_name" |
+            node scripts/assert-lead-secrets-cli.mjs
+
+      - name: Prove live production build and critical public routes
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          verified=0
+          for attempt in 1 2 3 4 5; do
+            if curl -fsS -H "Cache-Control: no-cache" --max-time 20 "https://thebredge.com/__build?verify=$GITHUB_RUN_ID-$attempt" |
+               jq -e --arg sha "$EXPECTED_SHA" '.sha == $sha and .worker == "bredge"' >/dev/null; then
+              verified=1
+              break
+            fi
+            echo "Production SHA not yet current; retry $attempt"
+            sleep 10
+          done
+          if [[ "$verified" != 1 ]]; then
+            echo "::error::Live Worker fingerprint does not match approved SHA"
+            exit 1
+          fi
+          bash scripts/verify-live.sh https://thebredge.com expect-index
+          # Live negative journeys cannot write a row or claim delivery.
+          bash scripts/verify-contact-negatives.sh https://thebredge.com production
+
+      - name: Restore previous Worker version on failed production release
+        if: ${{ failure() && steps.publish.outputs.attempted == 'true' }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.API }}
-          CLOUDFLARE_ACCOUNT_ID: "884cc27299a9de91243e17e4919fa9bd"
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          PREVIOUS: ${{ steps.publish.outputs.previous }}
+          PREVIOUS_SHA: ${{ steps.publish.outputs.previous_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$PREVIOUS" =~ ^[0-9a-f-]{36}$ || ! "$PREVIOUS_SHA" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "::error::No verified rollback version and SHA."
+            exit 1
+          fi
+          npx --no-install wrangler rollback "$PREVIOUS" --config dist/server/wrangler.json --name bredge --message "Automatic rollback after failed GitHub run $GITHUB_RUN_ID" --yes
+          for attempt in 1 2 3 4 5; do
+            if curl -fsS -H "Cache-Control: no-cache" --max-time 20 "https://thebredge.com/__build?rollback=$GITHUB_RUN_ID-$attempt" |
+              jq -e --arg sha "$PREVIOUS_SHA" '.sha == $sha' >/dev/null; then
+              echo "Prior production SHA restored: $PREVIOUS_SHA" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::Rollback attempted, but public SHA does not match the prior version."
+          exit 1
+
+      - name: Preserve failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: bredge-release-failure-${{ github.run_id }}
+          path: bredge/qa-artifacts
+          if-no-files-found: ignore
+          retention-days: 7

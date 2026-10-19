@@ -69,7 +69,7 @@ class BypassTests(unittest.TestCase):
                     "expires_at": (NOW + dt.timedelta(days=2)).isoformat()}}
         out = result(change=alter)
         self.assertEqual(out["status"], "CLOSEOUT_EVIDENCE_PASS")
-        self.assertTrue(any("separate human verification" in x for x in out["warnings"]))
+        self.assertTrue(any("separate, evidenced release-verifier decision" in x for x in out["warnings"]))
 
     def test_expired_deferral_fails(self):
         def alter(p, e):

@@ -33,7 +33,7 @@ export function DecisionTree() {
       },
     });
     return () => { st.kill(); fillTween.scrollTrigger?.kill(); fillTween.kill(); };
-  }, "(prefers-reduced-motion: no-preference)");
+  }, "(min-width: 1001px) and (prefers-reduced-motion: no-preference)");
 
   return (
     <div ref={rootRef}>

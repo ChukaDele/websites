@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { TURNSTILE_SITE_KEY } from "../../lib/config";
 import { PhoneField, type PhoneValue } from "./PhoneField";
 import { trackEvent, trackOnce, trafficGroup } from "../../lib/analytics";
 
@@ -22,7 +21,14 @@ const CAPABILITY = { label: "What does your data capability look like today?", o
 const URGENT = { label: "Which area is most urgent?", options: ["Data engineering", "Analytics", "BI / reporting", "Data quality", "Automation", "Not sure"] };
 
 const timelines = ["As soon as possible", "Within 1–2 months", "This quarter", "Exploring"];
-const INTENT_TO_NEED: Record<string, string> = { project: "Data engineering", embedded: "Embedded Data Team", diagnostic: "Data Diagnostic" };
+const INTENT_TO_NEED: Record<string, string> = {
+ project: "Data engineering", embedded: "Embedded Data Team",
+ diagnostic: "Data Diagnostic", portfolio: "BI & reporting", research: "Analytics",
+};
+const INTENT_HELP: Record<string, {label:string;details:string}> = {
+ portfolio:{label:"Interactive portfolio enquiry",details:"We can discuss a reporting or operating model for your team."},
+ research:{label:"Research and market intelligence enquiry",details:"Tell us the business question you need evidence to answer."},
+};
 
 type State = { kind: "idle" | "sending" | "ok" | "error"; message?: string };
 
@@ -34,6 +40,7 @@ function readUtm() {
 
 export function ContactForm({ formType = "contact" }: { formType?: string }) {
   const [needs, setNeeds] = useState<string[]>([]);
+  const [intent, setIntent] = useState("");
   const [capability, setCapability] = useState("");
   const [urgentArea, setUrgentArea] = useState("");
   const [timeline, setTimeline] = useState("");
@@ -41,18 +48,16 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
   const [phoneTouched, setPhoneTouched] = useState(false);
   const [state, setState] = useState<State>({ kind: "idle" });
   const lastLead = useRef<{ name: string; email: string; phone: string } | null>(null);
+  // One stable identifier per attempted enquiry; preserve it across retries to
+  // prevent duplicate Google Sheet rows if the network response is lost.
+  const submissionIdRef = useRef<string | null>(null);
   const startedAt = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     startedAt.current = performance.now();
     const intent = new URLSearchParams(window.location.search).get("intent");
-    if (intent && INTENT_TO_NEED[intent]) queueMicrotask(() => setNeeds([INTENT_TO_NEED[intent]]));
-    if (!TURNSTILE_SITE_KEY) return;
-    const s = document.createElement("script");
-    s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-    s.async = true; s.defer = true; document.head.appendChild(s);
-    return () => { s.remove(); };
+    if (intent && INTENT_TO_NEED[intent]) queueMicrotask(() => { setNeeds([INTENT_TO_NEED[intent]]); setIntent(intent); });
   }, []);
 
   function toggleNeed(n: string) {
@@ -77,7 +82,11 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
     const data = new FormData(e.currentTarget);
     const email = String(data.get("email") || "").trim().toLowerCase();
     const projectType = [capability, urgentArea].filter(Boolean).join(" · ");
+    // Modern browsers keep one UUID through retries. Older browsers without
+    // randomUUID still submit: the Worker generates a server-side identifier.
+    if (!submissionIdRef.current) submissionIdRef.current = window.crypto?.randomUUID?.() ?? null;
     const payload = {
+      ...(submissionIdRef.current ? { submissionId: submissionIdRef.current } : {}),
       formType,
       name: String(data.get("name") || "").trim(),
       email,
@@ -94,7 +103,6 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
       page: window.location.pathname,
       intent: new URLSearchParams(window.location.search).get("intent") || "",
       utm: readUtm(),
-      turnstileToken: String(data.get("cf-turnstile-response") || ""),
       company_website: String(data.get("company_website") || ""),
       elapsedMs: Math.round(performance.now() - startedAt.current),
     };
@@ -105,20 +113,25 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
     if (!phone.valid) { setPhoneTouched(true); setState({ kind: "error", message: "Check that phone number." }); focusField("#phone-input"); return; }
     if (needs.length === 0) { setState({ kind: "error", message: "Please select at least one area we can help with." }); focusField("#needs-group"); return; }
     if (!payload.message) { setState({ kind: "error", message: "Tell us a little about what you’re trying to solve." }); focusField("#message"); return; }
-    if (TURNSTILE_SITE_KEY && !payload.turnstileToken) { setState({ kind: "error", message: "Please complete the verification and try again." }); return; }
 
     setState({ kind: "sending" });
     trackEvent("contact_submit", { selected_needs_count: needs.length, intent: payload.intent, page_path: payload.page });
     try {
       const res = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       if (res.ok) {
+        // The next distinct enquiry must receive a new UUID. Preserve the same
+        // ID only across uncertain/failed attempts of this enquiry.
+        submissionIdRef.current = null;
         lastLead.current = { name: payload.name, email: payload.email, phone: payload.phoneE164 };
         trackEvent("contact_success", { selected_needs_count: needs.length, intent: payload.intent });
         setState({ kind: "ok" });
       } else {
-        const b = await res.json().catch(() => ({}));
+        const b: unknown = await res.json().catch(() => ({}));
+        const message = b !== null && typeof b === "object" && "error" in b && typeof b.error === "string"
+          ? b.error
+          : "That didn’t send. Please try again.";
         trackEvent("contact_error", { page_path: payload.page });
-        setState({ kind: "error", message: b.error || "That didn’t send. Please try again." });
+        setState({ kind: "error", message });
       }
     } catch {
       trackEvent("contact_error", { page_path: payload.page });
@@ -137,7 +150,7 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
         <span className="success-mark" aria-hidden="true">✓</span>
         <h2>Thanks — we’ve got it.</h2>
         <p>Your note has been sent to the Bredge team. We’ll review the context and reply by email.</p>
-        <button type="button" className="button" onClick={goSchedule}>Schedule a 30-minute call <span className="arrow" aria-hidden="true">↗</span></button>
+        <button type="button" className="button cta-accent" onClick={goSchedule}>Schedule a 30-minute call <span className="arrow" aria-hidden="true">↗</span></button>
       </div>
     );
   }
@@ -152,6 +165,7 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
 
   return (
     <form className="contact-form" ref={formRef} onSubmit={onSubmit} noValidate data-clarity-mask="true">
+      {INTENT_HELP[intent] && <p className="contact-intent-context"><strong>{INTENT_HELP[intent].label}</strong> {INTENT_HELP[intent].details}</p>}
       <div className="field">
         <label htmlFor="name">Name <i aria-hidden="true">*</i></label>
         <input id="name" name="name" autoComplete="name" required />
@@ -227,9 +241,8 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
         <input id="company_website" name="company_website" tabIndex={-1} autoComplete="off" />
       </div>
 
-      {TURNSTILE_SITE_KEY && <div className="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-theme="light" />}
 
-      <button className="button" type="submit" disabled={state.kind === "sending"}>
+      <button className="button cta-accent" type="submit" disabled={state.kind === "sending"}>
         {state.kind === "sending" ? "Sending…" : "Send it to a data lead"} <span className="arrow" aria-hidden="true">↗</span>
       </button>
 

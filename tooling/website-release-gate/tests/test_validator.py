@@ -66,6 +66,21 @@ class GateTests(unittest.TestCase):
         r = result(change=lambda p, e: e.update(release_sha="b" * 40))
         self.assertTrue(any("does not match" in s for s in r["blockers"]))
 
+    def test_distinct_agent_roles_support_closeout(self):
+        profile, evidence = sample()
+        profile["owners"] = {
+            "builder": "Bredge implementation agent",
+            "reviewer": "Bredge independent QA agent",
+            "approver": "Bredge release verification agent",
+        }
+        for item in evidence["controls"].values():
+            item["tested_by"] = "Bredge implementation agent"
+            item["reviewed_by"] = "Bredge independent QA agent"
+        for approval in evidence["approvals"].values():
+            approval["approved_by"] = "Bredge release verification agent"
+        output = gate.audit(CATALOG, profile, evidence, "closeout", expected_sha=SHA, now=NOW)
+        self.assertEqual(output["status"], "CLOSEOUT_EVIDENCE_PASS")
+
     def test_pass_requires_independent_review(self):
         r = result(change=lambda p, e: e["controls"]["X02"].update(reviewed_by="Engineer"))
         self.assertTrue(any("independent reviewer" in s for s in r["blockers"]))

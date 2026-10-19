@@ -1,0 +1,32 @@
+{
+  "name": "bredge-astro-pilot",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "scripts": {
+    "predev": "node scripts/sync-public.mjs",
+    "dev": "astro dev --host 127.0.0.1 --port 4326",
+    "prebuild": "node scripts/sync-public.mjs",
+    "build": "astro build",
+    "preview": "astro preview --host 127.0.0.1 --port 4326",
+    "test": "node scripts/verify-build.mjs"
+  },
+  "dependencies": {
+    "@astrojs/react": "7.1.0",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.2.8",
+    "astro": "7.4.0",
+    "gsap": "3.15.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.6",
+    "oxc-transform-react": "^0.145.0",
+    "typescript": "5.9.3"
+  }
+}

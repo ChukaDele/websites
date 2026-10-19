@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import "@fontsource-variable/instrument-sans";
 import "@fontsource/ibm-plex-mono/400.css";
@@ -6,13 +6,21 @@ import "@fontsource/ibm-plex-mono/500.css";
 import "./globals.css";
 import "./pages.css";
 import "./qa-fixes.css";
+import "./mobile-native.css";
+import "./conversion.css";
+import "./research.css";
+import "./typography-rag.css";
+import "./sitewide-editorial.css";
+import "./sitewide-fixes.css";
 import { Preloader } from "../components/site/Preloader";
 import { Analytics } from "../components/site/Analytics";
+
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#142321" };
 
 // Runs before first paint: mark first-entry (this session, motion allowed) so the
 // preloader overlay is present on the very first frame — no flash for returning
 // visitors, and it decides synchronously so there's no layout jump.
-const preloadInit = `(function(){try{if(!sessionStorage.getItem('bredge_preloaded')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('preload-active');}}catch(e){}})();`;
+const preloadInit = `(function(){try{if(!sessionStorage.getItem('bredge_preloaded')&&!matchMedia('(max-width:1000px), (prefers-reduced-motion: reduce)').matches&&!navigator.connection?.saveData){document.documentElement.classList.add('preload-active');}}catch(e){}})();`;
 
 // Search and social descriptions deliberately summarise the visible homepage
 // proposition. They do not introduce claims that a visitor cannot verify.
@@ -62,7 +70,6 @@ const structuredData = {
       "@type": "Organization",
       "@id": "https://thebredge.com/#organization",
       name: "The Bredge",
-      legalName: "The Bredge, LLC",
       alternateName: ["Bredge"],
       url: "https://thebredge.com",
       logo: "https://thebredge.com/brand/bredge-logo.svg",

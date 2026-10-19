@@ -4,7 +4,7 @@
 This checks completeness and consistency of a release evidence contract.
 It does NOT perform the underlying browser/security/legal tests, verify linked
 artifacts, configure branch protections, or authorise production deployment.
-Those must run separately in CI and be attested by independent reviewers.
+Those must run separately in CI and be attested by distinct accountable execution roles, which may be isolated subagents. A role label is not an authenticated identity.
 """
 from __future__ import annotations
 
@@ -201,7 +201,7 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
             end = parse_time(waiver.get("expires_at"))
             if end is None or not now < end <= now + dt.timedelta(days=90):
                 blockers.append(f"{cid}: waiver expiry must be future and within 90 days")
-            warnings.append(f"{cid}: P1 owner-approved waiver requires separate human verification")
+            warnings.append(f"{cid}: P1 waiver requires a separate, evidenced release-verifier decision")
             continue
 
         # PASS: check the evidence contract. A link is an audit trail, not proof
@@ -247,7 +247,7 @@ def audit(catalog: dict, profile: dict, evidence: dict, phase: str,
     return {"status": label, "phase": phase, "project": profile.get("project"),
             "release_sha": release_sha, "checked_controls": checked,
             "blockers": blockers, "warnings": warnings,
-            "disclaimer": "Evidence contract validation only. CI browser, security and integration tests; real rule enforcement; and independent owner review remain separate."}
+            "disclaimer": "Evidence contract validation only. CI browser, security and integration tests; real rule enforcement; and evidence authentication and accountable release decisions remain separate."}
 
 
 def main() -> int:

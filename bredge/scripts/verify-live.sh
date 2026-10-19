@@ -68,8 +68,12 @@ FC=$(curl -s -m 20 "$HOST/favicon.ico?$CB" | head -c 4 | xxd -p)
 echo "[crawler access — 200, no challenge]"
 for ua in "OAI-SearchBot/1.0" "ChatGPT-User/1.0" "Googlebot/2.1" "Bingbot/2.0"; do
   c=$(curl -s -m 20 -A "$ua" -o /dev/null -w "%{http_code}" "$HOST/?$CB")
-  ch=$(curl -s -m 20 -A "$ua" "$HOST/?$CB" | grep -ciE "Just a moment|cf_chl|challenge-platform")
-  { [ "$c" = "200" ] && [ "$ch" = "0" ]; } && ok "$ua -> 200, no challenge" || bad "$ua -> $c challenge=$ch"
+  # JS Detection bootstrap is included in ordinary HTTP 200 canonical pages.
+  # The challenge-platform JS URL alone does not mean crawler access was blocked.
+  page=$(curl -s -m 20 -A "$ua" "$HOST/?$CB")
+  ch=$(printf '%s' "$page" | grep -ciE "Just a moment|cf_chl" || true)
+  semantic=$(printf '%s' "$page" | grep -ci 'rel="canonical" href="https://thebredge.com' || true)
+  { [ "$c" = "200" ] && [ "$ch" = "0" ] && [ "$semantic" -gt 0 ]; } && ok "$ua -> 200, canonical HTML, no challenge" || bad "$ua -> $c challenge=$ch canonical=$semantic"
 done
 
 echo "[all 10 articles + 6 resources + legal + 404]"

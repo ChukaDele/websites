@@ -1,0 +1,176 @@
+---
+import Base from "../layouts/Base.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { HeroMorph } from "../../../bredge/components/landing/HeroMorph";
+import { PageMotion } from "../../../bredge/components/landing/PageMotion";
+import { ReferenceDashboards } from "../../../bredge/components/landing/Visuals";
+import { HeroVideo } from "../../../bredge/components/site/HeroVideo";
+import { InvisibleQuery } from "../../../bredge/components/landing/InvisibleQuery";
+import { ExperienceRows } from "../../../bredge/components/site/ExperienceRows";
+import { problems, outcomes, capabilities, principles } from "../../../bredge/lib/marketing-content";
+import { dataBriefs } from "../../../bredge/lib/data-briefs";
+
+const outcomesArt=[6,18,3,4];
+const homepageStructuredData={
+  "@context":"https://schema.org", "@type":"WebPage",
+  "@id":"https://thebredge.com/#webpage",
+  "url":"https://thebredge.com/",
+  "name":"When your numbers disagree, we find out why. | The Bredge",
+  "description":"The Bredge is the experienced data team you hire by the project or by the month.",
+  "inLanguage":"en",
+  "isPartOf":{"@id":"https://thebredge.com/#website"},
+  "mainEntity":{"@id":"https://thebredge.com/#organization"}
+};
+---
+<Base>
+  <script type="application/ld+json" set:html={JSON.stringify(homepageStructuredData)} />
+  <PageMotion client:media="(min-width: 1001px)" />
+  <SiteHeader />
+
+  <main>
+    <section class="hero section-wrap" id="top">
+      <div class="hero-copy">
+        <p class="eyebrow">DATA ENGINEERING <i></i> ANALYTICS <i></i> BUSINESS INTELLIGENCE</p>
+        <h1>When your numbers disagree, we find out why.</h1>
+        <p class="hero-summary">The Bredge is the experienced data team you hire by the project or by the month. We connect the systems you already have, reconcile the numbers, and build reporting your team stops arguing with.</p>
+        <div class="hero-actions">
+          <a class="button cta-accent" href="/schedule">Book a 30-minute call <span class="arrow" aria-hidden="true">↗</span></a>
+          <a class="text-link" href="#story">See how the work looks <span aria-hidden="true">↓</span></a>
+        </div>
+        <p class="microcopy">Most engagements ship something usable inside the first month.</p>
+      </div>
+      <HeroVideo client:visible />
+    </section>
+
+    <!-- React island stays SSR-readable but GSAP only loads on suitable desktops. -->
+    <HeroMorph client:media="(min-width: 1251px) and (min-height: 720px)" />
+    <ExperienceRows client:media="(min-width: 801px)" />
+
+    <section class="reassurance section-wrap">
+      <p class="eyebrow">WHO YOU’LL WORK WITH</p>
+      <div>
+        <h2>You work with the person who builds it.</h2>
+        <p>There’s no account manager between you and the person writing the SQL. When you ask why a number looks wrong, the answer comes from whoever built it. We bring in specialists when a project needs them, and you’ll know who they are and what they’re doing.</p>
+      </div>
+    </section>
+
+    <section class="problem-section section-wrap">
+      <div class="section-heading"><h2>Four versions of this show up in almost every call.</h2></div>
+      <div class="problem-grid">
+        {problems.map(([number,title,description])=><article class="problem-card">
+          <span>{number}</span><h3>{title}</h3><p>{description}</p>
+        </article>)}
+      </div>
+    </section>
+
+    <section class="outcomes section-wrap">
+      <div class="section-heading"><h2>The questions each team actually asks.</h2></div>
+      <div class="outcome-grid">
+        {outcomes.map(([name,question,details],i)=><article class={`outcome-card outcome-${i+1}`}>
+          <span>0{i+1}</span><h3>{name}</h3><p>{question}</p><small>{details}</small>
+          <div class={`outcome-art art-${i+1}`} aria-hidden="true">{Array.from({length:outcomesArt[i]},()=> <i></i>)}</div>
+        </article>)}
+      </div>
+    </section>
+
+    <section id="services" class="capabilities section-wrap">
+      <div class="capability-intro"><h2>What we actually do.</h2></div>
+      <div class="capability-list">
+        {capabilities.map(([title,description,items],i)=><article>
+          <span>0{i+1}</span><div><h3>{title}</h3><p>{description}</p></div><small>{items}</small>
+        </article>)}
+      </div>
+    </section>
+
+    <section id="work" class="work-section section-wrap">
+      <div class="section-heading work-intro">
+        <p class="eyebrow">SYNTHETIC DATA</p>
+        <h2>We can’t show you a client’s dashboard. So we built our own.</h2>
+        <p>Client work is under NDA. These are the same patterns on synthetic data, with the SQL and the tests left visible, so you can judge the thinking instead of the screenshot.</p>
+      </div>
+      <ReferenceDashboards client:media="(min-width: 1001px)" />
+    </section>
+
+    <!-- React hydrates only near the section; its own mobile guard never imports GSAP. -->
+    <InvisibleQuery client:visible />
+
+    <!-- Shared with the existing Worker homepage; this isolated Astro pilot
+         has no /research route and does not accept real site traffic. -->
+    <section class="research-teaser section-wrap" aria-labelledby="research-teaser-heading">
+      <div class="research-teaser-head">
+        <div>
+          <p class="eyebrow">ORIGINAL PUBLIC-DATA ANALYSIS</p>
+          <h2 id="research-teaser-heading">The source comes first.</h2>
+          <p>Research briefs built from published Nigerian statistical releases. We make the data period, methodology and limitations visible rather than relying on a persuasive dashboard alone.</p>
+        </div>
+        <a class="text-link" href="https://thebredge.com/research">Explore the data briefs <span class="arrow" aria-hidden="true">↗</span></a>
+      </div>
+      <div class="research-teaser-grid">
+        {dataBriefs.map(brief=>(
+          <a class="research-teaser-card" href={"https://thebredge.com/research#" + brief.slug}>
+            <span>{brief.category} · {brief.period}</span>
+            <b>{brief.number}</b>
+            <p>{brief.title}</p>
+            <small>Source and limitations <span aria-hidden="true">↗</span></small>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="trust section-wrap">
+      <div class="section-heading">
+        <p class="eyebrow">OUR PRINCIPLES</p>
+        <h2>Don’t take the dashboard on trust.</h2>
+      </div>
+      <div class="principles">
+        {principles.map(([number,title,description])=><article>
+          <span>{number}</span><h3>{title}</h3><p>{description}</p>
+        </article>)}
+      </div>
+      <p class="trust-statement">Stay because we’re useful, not because only we understand what we built.</p>
+    </section>
+
+    <section class="engagements section-wrap">
+      <div class="section-heading"><h2>Two ways to hire us.</h2></div>
+      <div class="engagement-stack">
+        <article class="engagement-card ongoing">
+          <p>ONGOING</p><h3>Your data team, without building one from scratch.</h3>
+          <div><span>Embedded data team</span>
+            <p>A senior engineer and analyst working your backlog every week, for less than one full-time hire. You get the range of a whole team without recruiting four people who each do one thing.</p>
+            <ul><li>Ongoing delivery</li><li>Engineering, analytics and BI</li><li>Shared backlog</li><li>Scale hours up or down monthly</li></ul>
+            <small>Best when data is a standing part of how you run the business.</small>
+            <a class="engagement-link" href="/services/embedded-data-team">Explore embedded teams <span class="arrow" aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="engagement-card projects">
+          <p>DEFINED SCOPE</p><h3>One problem. The right team. Delivered.</h3>
+          <div><span>Data projects</span>
+            <p>Tell us the problem. We scope it, quote it, build it, and hand it over documented. No six-month consulting programme.</p>
+            <ul><li>Pipelines</li><li>Warehouses and models</li><li>BI and reporting</li><li>Reconciliation and automation</li></ul>
+            <small>Best when you know what’s broken.</small>
+            <a class="engagement-link" href="/services/data-projects">Explore data projects <span class="arrow" aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="diagnostic section-wrap">
+      <p class="eyebrow">DATA DIAGNOSTIC</p>
+      <div><h2>Not sure what needs fixing first?</h2>
+        <p>Start with a Data Diagnostic. We map what you’ve got, test the numbers you already rely on, and give you a written list of what’s broken, ranked by what it’s costing you.</p>
+        <small>You keep the document either way. If you want us to fix any of it, we’ll quote it. If you’d rather hand it to your own team, that works too.</small>
+        <a class="text-link" href="/data-diagnostic">Start with a diagnostic <span class="arrow" aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+
+    <section id="practice" class="technology">
+      <div class="section-wrap">
+        <h2>We work with whatever you already have.</h2>
+        <p>We won’t sell you Snowflake if Postgres is fine.</p>
+        <div class="tech-line"><span>PYTHON</span><i></i><span>SQL</span><i></i><span>POSTGRESQL</span><i></i><span>POWER BI</span><i></i><span>GITHUB</span></div>
+      </div>
+    </section>
+  </main>
+  <SiteFooter />
+</Base>

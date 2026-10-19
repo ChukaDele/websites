@@ -1,0 +1,138 @@
+---
+const links = [
+ ["Services","/services"],["How we work","/how-we-work"],
+ ["Insights","/insights"],["About","/about"]
+];
+---
+<header class="site-header is-top" data-astro-nav>
+  <a class="brand" href="/" aria-label="The Bredge home">
+    <img src="/brand/bredge-logo.svg" alt="The Bredge" width="80" height="31" />
+  </a>
+  <nav class="site-nav" aria-label="Primary navigation">
+    {links.map(([name,href]) => <a class="nav-item" href={href}>{name}</a>)}
+  </nav>
+  <a class="button cta-accent button-small header-cta" href="/schedule">Schedule a call <span aria-hidden="true" class="arrow">↗</span></a>
+  <button class="nav-toggle" type="button" aria-controls="astro-mobile-menu" aria-label="Open menu" aria-expanded="false" data-mobile-menu-trigger>
+    <span></span>
+  </button>
+</header>
+<nav id="astro-mobile-menu" class="mobile-menu" aria-label="Mobile navigation" hidden data-astro-menu>
+  <p class="mobile-eyebrow">SERVICES</p>
+  <a href="/services">Services overview</a>
+  <a href="/services/embedded-data-team">Embedded Data Team</a>
+  <a href="/services/data-projects">Data Projects</a>
+  <a href="/data-diagnostic">Data Diagnostic</a>
+  <p class="mobile-eyebrow">COMPANY</p>
+  {links.slice(1).map(([label,url]) => <a href={url}>{label}</a>)}
+  <a class="button cta-accent mobile-cta" href="/schedule">Schedule a call <span aria-hidden="true">↗</span></a>
+</nav>
+<style>
+  .mobile-menu[hidden] { display:none !important; }
+  .mobile-menu { overscroll-behavior:contain; }
+</style>
+<script>
+  const header = document.querySelector<HTMLElement>("[data-astro-nav]");
+  const trigger = document.querySelector<HTMLButtonElement>("[data-mobile-menu-trigger]");
+  const menu = document.querySelector<HTMLElement>("[data-astro-menu]");
+  const behind = [...document.querySelectorAll<HTMLElement>("main, footer")];
+  let originalOverflow = "";
+  const isMenuOpen = () => Boolean(menu && !menu.hidden);
+
+  const close = (returnFocus = false) => {
+    if (!trigger || !menu || menu.hidden) return;
+    trigger.setAttribute("aria-expanded", "false");
+    trigger.setAttribute("aria-label", "Open menu");
+    trigger.querySelector("span")?.classList.remove("open");
+    menu.hidden = true;
+    document.body.style.overflow = originalOverflow;
+    behind.forEach((element) => { element.inert = false; });
+    if (returnFocus) trigger.focus();
+    updateHeader();
+  };
+
+  const open = () => {
+    if (!trigger || !menu || !menu.hidden) return;
+    originalOverflow = document.body.style.overflow;
+    menu.hidden = false;
+    trigger.setAttribute("aria-expanded", "true");
+    trigger.setAttribute("aria-label", "Close menu");
+    trigger.querySelector("span")?.classList.add("open");
+    document.body.style.overflow = "hidden";
+    behind.forEach((element) => { element.inert = true; });
+    header?.classList.remove("is-hidden", "is-top");
+    header?.classList.add("is-compact");
+    menu.querySelector<HTMLAnchorElement>("a[href]")?.focus();
+  };
+
+  trigger?.addEventListener("click", () => {
+    if (isMenuOpen()) close(true);
+    else open();
+  });
+
+  menu?.addEventListener("click", (event) => {
+    if ((event.target as Element).closest("a[href]")) close();
+  });
+
+  // The overlay has a single clear keyboard route: toggle → visible links.
+  // Tab must not jump into hidden background content while the menu is open.
+  document.addEventListener("keydown", (event) => {
+    if (!isMenuOpen() || !trigger || !menu) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      close(true);
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const controls = [trigger, ...menu.querySelectorAll<HTMLAnchorElement>("a[href]")];
+    const current = document.activeElement;
+    if (!controls.includes(current as HTMLAnchorElement)) {
+      event.preventDefault();
+      controls[0].focus();
+    } else if (event.shiftKey && current === controls[0]) {
+      event.preventDefault();
+      controls[controls.length - 1].focus();
+    } else if (!event.shiftKey && current === controls[controls.length - 1]) {
+      event.preventDefault();
+      controls[0].focus();
+    }
+  });
+
+  const desktop = window.matchMedia("(min-width:1001px)");
+  desktop.addEventListener("change", (event) => { if (event.matches) close(true); });
+
+  // Match the main Bredge header: top, compact on scroll-up, hidden when
+  // scrolling down. Keep a focused or open header visible.
+  let lastY = window.scrollY;
+  let accumulated = 0;
+  let scheduled = false;
+  function updateHeader() {
+    if (!header) return;
+    const y = Math.max(0, window.scrollY);
+    const dy = y - lastY;
+    if ((dy > 0 && accumulated < 0) || (dy < 0 && accumulated > 0)) accumulated = 0;
+    accumulated += dy;
+    const hasFocus = header.contains(document.activeElement);
+    if (isMenuOpen() || hasFocus) {
+      header.classList.remove("is-top", "is-hidden");
+      header.classList.add("is-compact");
+    } else if (y < 80) {
+      header.classList.remove("is-hidden", "is-compact");
+      header.classList.add("is-top");
+    } else if (accumulated > 16 && y > 140) {
+      header.classList.remove("is-compact", "is-top");
+      header.classList.add("is-hidden");
+      accumulated = 0;
+    } else if (accumulated < -16) {
+      header.classList.remove("is-hidden", "is-top");
+      header.classList.add("is-compact");
+      accumulated = 0;
+    }
+    lastY = y;
+  }
+  window.addEventListener("scroll", () => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => { scheduled = false; updateHeader(); });
+  }, { passive: true });
+  updateHeader();
+</script>

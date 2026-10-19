@@ -21,12 +21,17 @@ test("Invisible 90% uses one bounded CSS sticky system, never a GSAP pin", async
 
 test("hero video subscribes before loading its source", async () => {
   const component = await read("components/site/HeroVideo.tsx");
-  const listener = component.indexOf('video.addEventListener("canplay", onCanPlay, { once: true });');
+  const listener = component.indexOf('video.addEventListener("canplay", onCanPlay);');
   const load = component.indexOf("video.load();");
+  const source = component.indexOf("video.src = nextSource;");
+  const activate = component.lastIndexOf("    configure();");
 
   assert.ok(listener >= 0, "hero video must subscribe to canplay");
-  assert.ok(load >= 0, "hero video must load its selected source");
-  assert.ok(listener < load, "hero video must subscribe before load() so a warm cache cannot lose canplay");
+  assert.ok(load >= 0 && source >= 0, "hero video must load its selected source");
+  // configure() is a declared closure, so its textual body appears before the
+  // listener. The last invocation is after event subscriptions are installed.
+  assert.ok(activate > listener,
+    "hero video must subscribe before invoking source configuration");
 });
 
 test("brand and commercial SEO signals are explicit and canonical", async () => {

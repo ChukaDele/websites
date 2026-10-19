@@ -10,7 +10,7 @@ export default function NotFound() {
           <h1>We couldn’t reconcile this one.</h1>
           <p className="lede">The page you’re looking for isn’t in the model.</p>
           <div className="hero-cta-row">
-            <a className="button" href="/">Back to a reliable source <span className="arrow" aria-hidden="true">↗</span></a>
+            <a className="button cta-accent" href="/">Back to a reliable source <span className="arrow" aria-hidden="true">↗</span></a>
             <a className="text-link" href="/schedule">Schedule a call <span className="arrow" aria-hidden="true">↗</span></a>
           </div>
         </div>

@@ -27,9 +27,9 @@ In each website repository, create a versioned .website-qa/profile.json with rea
   "markets": ["GB"],
   "critical_journeys": ["Enquiry CTA -> validation -> confirmed lead inbox/CRM"],
   "owners": {
-    "builder": "Engineer or service account",
-    "reviewer": "Independent QA person",
-    "approver": "Accountable site owner"
+    "builder": "Implementation agent (execution role)",
+    "reviewer": "Independent QA agent (separate context)",
+    "approver": "Release verification agent (separate context)"
   }
 }
 ~~~
@@ -48,13 +48,13 @@ Evidence must bind to the actual deployed candidate source commit and be generat
 ~~~sh
 SHA="$(git rev-parse HEAD)"
 python3 tooling/website-release-gate/scaffold.py --catalog tooling/website-release-gate/catalog.json --sha "$SHA" --output /tmp/website-evidence.json
-# Complete independent test evidence and reviewer/owner approvals.
+# Attach actual CI results, independent QA-agent evidence, and release-verifier acceptance.
 python3 tooling/website-release-gate/validate.py --catalog tooling/website-release-gate/catalog.json --profile .website-qa/profile.json --evidence /tmp/website-evidence.json --sha "$SHA" --phase closeout --report /tmp/website-closeout-report.json
 ~~~
 
-For each PASS: status, HTTPS evidence_url, release_sha, observed_at ISO 8601 timezone, tested_by and reviewed_by. P0/P1 reviewer cannot be the builder; PASS tester and reviewer cannot be the same person. For NOT_APPLICABLE: only conditional controls, with reason and independent reviewer. P1 owner-approved WAIVED controls need risk reason, mitigation, ticket, approver and unexpired deadline; P0 and non-waivable legal/privacy/security checks cannot be waived. P2 may be DEFERRED with issue, owner and due date. All other open controls fail. Prelaunch/live/closeout approvals must bind to the same SHA.
+For each PASS: status, HTTPS evidence_url, release_sha, observed_at ISO 8601 timezone, tested_by and reviewed_by. P0/P1 reviewer must be separate from the builder agent; PASS tester and QA reviewer must be independent executions. For NOT_APPLICABLE: only conditional controls, with reason and independent reviewer. P1 owner-approved WAIVED controls need risk reason, mitigation, ticket, approver and unexpired deadline; P0 and non-waivable legal/privacy/security checks cannot be waived. P2 may be DEFERRED with issue, owner and due date. All other open controls fail. Prelaunch/live/closeout approvals must bind to the same SHA.
 
-The scaffold sets all 47 controls to NOT_TESTED. It never manufactures evidence. Human review remains indispensable for legal accuracy, consent, UX, copy, WCAG compliance, real uptime and data protection.
+The scaffold sets all 47 controls to NOT_TESTED. It never manufactures evidence. Legal, privacy, consent, accessibility, uptime and delivery evidence remain mandatory. An agent report counts only when backed by actual test artefacts and provider confirmations. Obtain qualified human review where law or contract requires it.
 
 ## GitHub Actions adoption
 A public reusable workflow lives at .github/workflows/website-release-gate.yml in ChukaDele/websites. Each website calls it from its own workflow using an immutable full commit SHA of the audited standard and the same SHA as standard_ref input:
@@ -72,7 +72,7 @@ jobs:
       profile_path: .website-qa/profile.json
 ~~~
 
-Replace placeholders after merging and auditing the standards repository. Set the status check as required in the site's branch ruleset. Require separate build/test/browser/security checks and independent code review.
+Replace placeholders after merging and auditing the standards repository. Set the status check as required in the site's branch ruleset. Require build/test/browser/security checks and independent QA-agent evaluation. Human GitHub PR review is optional for an owner-operated project.
 
 To run prelaunch/live/closeout automatically, prepare evidence JSON as a CI artifact for the deployed candidate SHA, base64 encode it, and pass its string to the reusable workflow evidence_base64 input. The workflow decodes to a temporary file and fails closed on missing/invalid input. Never include personal data, tokens or secrets in evidence files or logs.
 
@@ -81,7 +81,7 @@ The reusable workflow validates the contract. It does NOT run Lighthouse, Playwr
 ## Enforcing across projects
 1. A new repo includes .website-qa/profile.json with real values and reusable gate on every PR.
 2. Required checks include intake-contract, build/test, browser/accessibility, secrets/dependencies, and critical end-to-end journeys.
-3. Protect production branch with status checks, PR review and no bypass. Protect deployments in Vercel/Cloudflare/other host and control direct CLI deploy rights.
+3. Protect production branch with required status checks and PR creation, but zero mandatory human approvals for an owner-operated project. Do not bypass tests. Protect deployments in Vercel/Cloudflare/other host and control direct CLI deploy rights.
 4. Prelaunch and live tests generate evidence. Block project DONE/handover without passing closeout report and accountable owner approval.
 5. Postlaunch monitoring and support ownership is documented. Track exceptions with deadlines.
 
@@ -96,12 +96,12 @@ WARNING: The JSON approvals are untrusted assertions, even when the validator re
 
 Mandatory external controls for each website repository:
 - Use an organisation or repository ruleset requiring a centrally managed workflow, or independently administered equivalent. Otherwise a PR can replace its caller workflow with a fake success under the same job name.
-- Add CODEOWNERS for .github/workflows/** and .website-qa/**, require independent code-owner review, and dismiss stale approvals. A one-person repository needs a separate trusted reviewer or a distinct controlled owner-approval mechanism.
-- Bind authenticated approvals to GitHub Environments with required reviewers or approved GitHub reviews via API. Review the identity behind any claimed waiver; a string match is insufficient.
-- Protect deployment to production against bypass by direct Cloudflare/Vercel/CLI actions. Match live deployment commit to independently approved release commit.
+- Keep CODEOWNERS for traceability. For a single-owner repository, do not require a second GitHub user as code-owner; enforce required checks and SHA-bound evidence from separate build, QA and release-agent roles.
+- For owner-only releases, remove required-human-review gates in the Cloudflare GitHub Environment. Keep exact-SHA deployment, secret checks and authentic CI evidence. Agent role strings do not count as GitHub review approvals.
+- Protect production against bypass by direct Cloudflare/Vercel/CLI actions. Match live deployment commit to the exact CI-tested release commit.
 - Make both contract checks and real build, browser, accessibility, performance, security and application-specific integration tests required on the protected branch.
-- The reusable caller must use a reviewed pinned commit SHA and match the latest approved main standard. Update pinned refs on new standard releases.
+- The reusable caller must use a validated pinned commit SHA and match the latest main standard. Update pinned refs on new standard releases.
 - Evidence base64 is only for small, non-sensitive metadata. Do not include customer details, credentials, secrets or contact-form payloads in Actions inputs or logs. Prefer secure artifact retrieval for large test evidence.
-- Keep the final owner-reviewed evidence pack and issue register outside untrusted PR content. Confirm LIVE_VERIFIED and CLOSEOUT_APPROVED only after independently authenticated human decisions.
+- Keep the final SHA-bound evidence pack and issue register outside untrusted PR content. Confirm LIVE_VERIFIED only after independently checked provider responses, site smoke tests and real delivery evidence.
 
-Until those protections and test runs are verified on the actual target repository and host, release enforcement is ENFORCEMENT_PARTIAL. This source repository PR installs the mechanism, but does not change or protect production websites on its own.
+Until the actual host permissions and test runs are verified on the target repository, release enforcement is ENFORCEMENT_PARTIAL. This source repository PR installs the mechanism, but does not change or protect production websites on its own.
