@@ -332,12 +332,9 @@ jobs:
           fi
           echo "Previous Worker version for rollback: $previous" >> "$GITHUB_STEP_SUMMARY"
           echo "previous=$previous" >> "$GITHUB_OUTPUT"
-          previous_sha="$(curl --fail --silent --show-error --max-time 15 -H 'Cache-Control: no-cache' "https://thebredge.com/__build?before=$GITHUB_RUN_ID" | jq -er '.sha')"
-          if [[ ! "$previous_sha" =~ ^[a-f0-9]{40}$ ]]; then
-            echo "::error::Cannot prove which public commit was active before release."
-            exit 1
-          fi
-          echo "previous_sha=$previous_sha" >> "$GITHUB_OUTPUT"
+          # The live origin can reject GitHub runner traffic (HTTP 403 from
+          # Cloudflare WAF/Access). Do not depend on public HTTP for rollback.
+          # The captured active 100% Worker version ID is sufficient for it.
 
           # Wrangler deploy --secrets-file uploads new source and secrets
           # in ONE version. Prior secret put/bulk would activate old code
@@ -352,32 +349,90 @@ jobs:
           jq -n '{GOOGLE_LEADS_WEBHOOK_URL:env.GOOGLE_LEADS_URL, GOOGLE_LEADS_WEBHOOK_SECRET:env.GOOGLE_LEADS_SECRET}' |
             npx --no-install wrangler deploy -c dist/server/wrangler.json --secrets-file /dev/stdin
 
+          # Verify the control plane actually activated a new 100% Worker
+          # version, independently of the domain's bot/WAF policies.
+          deployed="$(npx --no-install wrangler deployments list --name "$worker_name" --json |
+            node scripts/select-rollback-version-cli.mjs)"
+          if [[ ! "$deployed" =~ ^[0-9a-f-]{36}$ || "$deployed" == "$previous" ]]; then
+            echo "::error::Cloudflare did not activate a new Worker version."
+            exit 1
+          fi
+          echo "deployed=$deployed" >> "$GITHUB_OUTPUT"
+
           npx --no-install wrangler secret list --config dist/server/wrangler.json --format json --name "$worker_name" |
             node scripts/assert-lead-secrets-cli.mjs
 
-      - name: Prove live production build and critical public routes
+      - name: Verify active Worker version and attempt public smoke
         env:
           EXPECTED_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
+          DEPLOYED_VERSION: ${{ steps.publish.outputs.deployed }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.API }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         shell: bash
         run: |
           set -euo pipefail
-          verified=0
+          # The Cloudflare deployment control plane is the authoritative
+          # activation check. A blocked GitHub egress IP must not trigger
+          # a false rollback of an otherwise healthy Worker.
+          active=""
           for attempt in 1 2 3 4 5; do
-            if curl -fsS -H "Cache-Control: no-cache" --max-time 20 "https://thebredge.com/__build?verify=$GITHUB_RUN_ID-$attempt" |
-               jq -e --arg sha "$EXPECTED_SHA" '.sha == $sha and .worker == "bredge"' >/dev/null; then
-              verified=1
+            active="$(npx --no-install wrangler deployments list --name bredge --json |
+              node scripts/select-rollback-version-cli.mjs)"
+            if [[ "$active" == "$DEPLOYED_VERSION" && "$active" =~ ^[0-9a-f-]{36}$ ]]; then
               break
             fi
-            echo "Production SHA not yet current; retry $attempt"
-            sleep 10
+            sleep 5
           done
-          if [[ "$verified" != 1 ]]; then
-            echo "::error::Live Worker fingerprint does not match approved SHA"
+          if [[ "$active" != "$DEPLOYED_VERSION" || -z "$DEPLOYED_VERSION" ]]; then
+            echo "::error::Cloudflare active deployment differs from the uploaded Worker version."
             exit 1
           fi
-          bash scripts/verify-live.sh https://thebredge.com expect-index
-          # Live negative journeys cannot write a row or claim delivery.
-          bash scripts/verify-contact-negatives.sh https://thebredge.com production
+          echo "Active Cloudflare Worker version: $active" >> "$GITHUB_STEP_SUMMARY"
+
+          # Browser/CDN verification is still valuable, but some Cloudflare
+          # edge policies intentionally reject GitHub's automated runner IPs.
+          # Distinguish blocked telemetry from a broken Worker.
+          probe="$RUNNER_TEMP/bredge-public-build.json"
+          verified=0
+          blocked=0
+          for attempt in 1 2 3 4 5; do
+            status="$(curl --silent --show-error --location --max-time 20               -H 'Cache-Control: no-cache'               -o "$probe" -w '%{http_code}'               "https://thebredge.com/__build?verify=$GITHUB_RUN_ID-$attempt" || true)"
+            if [[ "$status" == "200" ]]; then
+              if jq -e --arg sha "$EXPECTED_SHA" '.sha == $sha and .worker == "bredge"' "$probe" >/dev/null 2>&1; then
+                verified=1
+                break
+              fi
+              echo "::error::Public Worker returned HTTP 200 but the wrong or malformed release fingerprint."
+              exit 1
+            fi
+            if [[ "$status" == "403" || "$status" == "429" ]]; then
+              blocked=1
+              break
+            fi
+            echo "Public build probe returned HTTP $status; retry $attempt."
+            sleep 5
+          done
+          if [[ "$verified" == 1 ]]; then
+            bash scripts/verify-live.sh https://thebredge.com expect-index
+            bash scripts/verify-contact-negatives.sh https://thebredge.com production
+            echo "LIVE_VERIFIED: domain and active Worker SHA match $EXPECTED_SHA" >> "$GITHUB_STEP_SUMMARY"
+          elif [[ "$blocked" == 1 ]]; then
+            # Distinct alternative Worker hostname; never use a successful
+            # deployment status as evidence the public custom domain passed.
+            alias_probe="$RUNNER_TEMP/bredge-worker-build.json"
+            alias_status="$(curl --silent --show-error --max-time 20               -o "$alias_probe" -w '%{http_code}'               "https://bredge.thebredge.workers.dev/__build?verify=$GITHUB_RUN_ID" || true)"
+            if [[ "$alias_status" == 200 ]] &&
+              jq -e --arg sha "$EXPECTED_SHA" '.sha == $sha and .worker == "bredge"' "$alias_probe" >/dev/null 2>&1; then
+              echo "WORKER_RUNTIME_VERIFIED: workers.dev returned expected SHA." >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::warning::Workers.dev runtime probe did not independently verify the SHA (HTTP $alias_status)."
+            fi
+            echo "::warning::Public domain blocked CI probes (HTTP 403/429). Cloudflare Worker activation verified; public-domain smoke remains UNVERIFIED. Review zone security events rather than rolling back solely for runner blocking."
+            echo "PUBLIC_DOMAIN_UNVERIFIED: edge policy blocks the CI probe. Requires a separate browser/user-network check." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::error::Public domain did not return a verifiable response after retries."
+            exit 1
+          fi
 
       - name: Restore previous Worker version on failed production release
         if: ${{ failure() && steps.publish.outputs.attempted == 'true' }}
@@ -385,24 +440,30 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.API }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           PREVIOUS: ${{ steps.publish.outputs.previous }}
-          PREVIOUS_SHA: ${{ steps.publish.outputs.previous_sha }}
         shell: bash
         run: |
           set -euo pipefail
-          if [[ ! "$PREVIOUS" =~ ^[0-9a-f-]{36}$ || ! "$PREVIOUS_SHA" =~ ^[a-f0-9]{40}$ ]]; then
-            echo "::error::No verified rollback version and SHA."
+          if [[ ! "$PREVIOUS" =~ ^[0-9a-f-]{36}$ ]]; then
+            echo "::error::No verified previous Worker version ID for rollback."
             exit 1
+          fi
+          current="$(npx --no-install wrangler deployments list --name bredge --json |
+            node scripts/select-rollback-version-cli.mjs)"
+          if [[ "$current" == "$PREVIOUS" ]]; then
+            echo "Cloudflare remains on the previous version; no rollback required." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
           npx --no-install wrangler rollback "$PREVIOUS" --config dist/server/wrangler.json --name bredge --message "Automatic rollback after failed GitHub run $GITHUB_RUN_ID" --yes
           for attempt in 1 2 3 4 5; do
-            if curl -fsS -H "Cache-Control: no-cache" --max-time 20 "https://thebredge.com/__build?rollback=$GITHUB_RUN_ID-$attempt" |
-              jq -e --arg sha "$PREVIOUS_SHA" '.sha == $sha' >/dev/null; then
-              echo "Prior production SHA restored: $PREVIOUS_SHA" >> "$GITHUB_STEP_SUMMARY"
+            restored="$(npx --no-install wrangler deployments list --name bredge --json |
+              node scripts/select-rollback-version-cli.mjs)"
+            if [[ "$restored" == "$PREVIOUS" ]]; then
+              echo "Prior Cloudflare Worker version restored: $PREVIOUS" >> "$GITHUB_STEP_SUMMARY"
               exit 0
             fi
-            sleep 10
+            sleep 5
           done
-          echo "::error::Rollback attempted, but public SHA does not match the prior version."
+          echo "::error::Rollback attempted, but active Worker version is not the previous version."
           exit 1
 
       - name: Preserve failure screenshots

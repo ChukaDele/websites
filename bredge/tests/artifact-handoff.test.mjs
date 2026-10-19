@@ -17,11 +17,13 @@ test("the approved release restores precisely the browser-tested artifact", () =
   assert.match(workflow, /download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093/);
 });
 
-test("a failed production deployment is recoverable without a guessed version", () => {
+test("rollback is bound to the captured active Worker version, not a WAF-blockable SHA URL", () => {
   assert.match(workflow, /Previous Worker version for rollback/);
-  assert.match(workflow, /previous_sha=/);
+  assert.match(workflow, /echo "previous=\$previous"/);
+  assert.doesNotMatch(workflow, /thebredge\.com\/__build\?before=/);
+  assert.match(workflow, /echo "deployed=\$deployed"/);
   assert.match(workflow, /attempted=true/);
   assert.match(workflow, /failure\(\) && steps\.publish\.outputs\.attempted/);
   assert.match(workflow, /wrangler rollback/);
-  assert.match(workflow, /Rollback attempted, but public SHA does not match/);
+  assert.match(workflow, /Rollback attempted, but active Worker version is not the previous version/);
 });
