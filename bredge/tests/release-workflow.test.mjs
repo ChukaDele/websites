@@ -1,11 +1,32 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 
 const workflow = readFileSync(
   new URL("../../.github/workflows/deploy-bredge.yml", import.meta.url),
   "utf8"
 );
+
+test("production depends on the same-run validator-tests required check", () => {
+  const validator = workflow.split("  validator-tests:")[1]?.split("  bredge-secret-scan:")[0];
+  assert.ok(validator);
+  assert.match(validator, /name: validator-tests/);
+  assert.match(validator, /python -m unittest discover -s tooling\/website-release-gate\/tests -v/);
+  assert.match(workflow, /needs: \[bredge-quality, bredge-secret-scan, validator-tests, bredge-release-preflight\]/);
+  assert.equal(existsSync(new URL("../../.github/workflows/website-release-gate-tests.yml", import.meta.url)), false);
+});
+
+test("publishing rechecks main after rollback capture and before any deployment attempt", () => {
+  const publish = workflow.split("- name: Publish validated code and secret bindings atomically")[1]
+    .split("- name: Prove live production build")[0];
+  assert.match(publish, /GH_TOKEN: \$\{\{ github.token \}\}/);
+  const guard = publish.indexOf('current_main="$(gh api');
+  assert.ok(guard > publish.indexOf('echo "previous_sha=$previous_sha"'));
+  const guarded = publish.slice(guard);
+  assert.match(guarded, /if \[\[ "\$current_main" != "\$GITHUB_SHA" \]\]; then[\s\S]*?exit 1\s+fi/);
+  assert.ok(guard < publish.indexOf('echo "attempted=true"'));
+  assert.ok(guard < publish.indexOf('npx --no-install wrangler deploy -c'));
+});
 
 test("production accepts validated main pushes or exact-SHA manual retries, never a PR", () => {
   assert.match(workflow, /if: github\.event_name == 'workflow_dispatch' \|\| \(github\.event_name == 'push' && github\.ref == 'refs\/heads\/main'\)/);
