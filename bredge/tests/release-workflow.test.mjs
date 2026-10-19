@@ -7,6 +7,14 @@ const workflow = readFileSync(
   "utf8"
 );
 
+test("push and manual releases share a non-cancelling concurrency group for each ref", () => {
+  const concurrency = workflow.split("\nconcurrency:\n")[1]?.split("\njobs:\n")[0];
+  assert.ok(concurrency);
+  assert.match(concurrency, /^  group: bredge-\$\{\{ github\.ref \}\}$/m);
+  assert.match(concurrency, /^  cancel-in-progress: false$/m);
+  assert.doesNotMatch(concurrency, /github\.event_name|github\.run_id|github\.sha/);
+});
+
 test("production depends on the same-run validator-tests required check", () => {
   const validator = workflow.split("  validator-tests:")[1]?.split("  bredge-secret-scan:")[0];
   assert.ok(validator);

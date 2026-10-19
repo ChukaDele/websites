@@ -15,7 +15,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: bredge-${{ github.event_name }}-${{ github.ref }}
+  # Main pushes and manual retries must serialize publish and rollback together.
+  group: bredge-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
