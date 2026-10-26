@@ -1,0 +1,121 @@
+/* Bredge conversion polish. No extra runtime library or font download.
+   The existing Instrument Sans variable display face is Bredge's best fit:
+   high legibility, strong numerals, editorial credibility and brand continuity. */
+:root {
+  --cta-hover:#b6ef9d;
+  --cta-hover-ink:#142321;
+}
+/* Genuine hover feedback, readable focus, restrained arrow movement.
+   Underlined body links retain their original link affordance. */
+.button.cta-accent {
+  cursor:pointer;
+  justify-content:space-between;
+  font-weight:580;
+  border-radius:2px;
+  transition:
+    background-color 300ms var(--ease-out),
+    border-color 300ms var(--ease-out),
+    color 300ms var(--ease-out),
+    box-shadow 300ms var(--ease-out),
+    transform 140ms var(--ease-out);
+}
+.button.cta-accent .arrow,
+.button.cta-accent > span[aria-hidden="true"]:last-child {
+  flex:none;
+  display:inline-grid;
+  place-items:center;
+  width:28px;
+  height:28px;
+  border:1px solid currentColor;
+  border-radius:2px;
+  background:rgba(255,255,255,.05);
+  font-size:16px;
+  line-height:1;
+  transition:
+    transform 300ms var(--ease-out),
+    background-color 300ms var(--ease-out),
+    border-color 300ms var(--ease-out);
+}
+.button.cta-accent.button-small .arrow { width:23px;height:23px;font-size:14px; }
+.button.cta-accent:active:not(:disabled) { transform:translate(1px,1px) scale(.99);box-shadow:none; }
+.button.cta-accent:disabled,.button.cta-accent[disabled] { cursor:not-allowed; }
+
+@media (hover:hover) and (pointer:fine) {
+  .button.cta-accent:not(:disabled):hover {
+    background:var(--cta-hover);
+    border-color:var(--cta-hover);
+    color:var(--cta-hover-ink);
+    box-shadow:4px 4px 0 rgba(20,35,33,.15);
+  }
+  .button.cta-accent:not(:disabled):hover .arrow,
+  .button.cta-accent:not(:disabled):hover > span[aria-hidden="true"]:last-child {
+    transform:translate(3px,-3px);
+    background:rgba(20,35,33,.08);
+    border-color:rgba(20,35,33,.46);
+  }
+  /* In a dark footer, reverse the lime CTA to ink while keeping contrast. */
+  .button.cta-accent.footer-button:hover {
+    background:var(--ink);
+    border-color:var(--lime);
+    color:var(--paper);
+    box-shadow:4px 4px 0 rgba(182,239,157,.22);
+  }
+  .button.cta-accent.footer-button:hover .arrow,
+  .button.cta-accent.footer-button:hover > span[aria-hidden="true"]:last-child {
+    background:rgba(182,239,157,.18);
+    border-color:var(--lime);
+  }
+  .text-link:hover .arrow,
+  .engagement-link:hover .arrow,
+  .footer-alt:hover > span[aria-hidden="true"]:last-child {
+    transform:translate(3px,-3px);
+  }
+}
+/* Touch devices should preserve the original CTA backgrounds. Global
+   hover rules still exist for the default .button, so reset only opted-in
+   commercial CTAs without affecting consent, recovery or utility controls. */
+@media (hover:none),(pointer:coarse) {
+  .button.cta-accent:hover {
+    background:var(--ink);border-color:var(--ink);color:var(--paper);box-shadow:none;
+  }
+  .section.ink .button.cta-accent:hover,
+  .button.cta-accent.footer-button:hover {
+    background:var(--brand);border-color:var(--brand);color:var(--ink);box-shadow:none;
+  }
+}
+
+.button.cta-accent:focus-visible {
+  outline:3px solid #568d52;
+  outline-offset:4px;
+}
+.footer-experience .button.cta-accent:focus-visible,.section.ink .button.cta-accent:focus-visible { outline-color:var(--lime); }
+.button.cta-accent:not([disabled])[type="submit"]:focus-visible { outline-offset:5px; }
+
+/* Useful on services pages for clients, snippet retrieval and assistive tech.
+   Visible SSR copy, real links and no hidden FAQ schema. */
+.service-answers {padding:clamp(62px,8vw,120px) 0;}
+.service-answers h2 {margin-bottom:32px;}
+.service-answers-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 35px;border-top:1px solid var(--line);}
+.service-answers article {padding:30px 0 32px;border-bottom:1px solid var(--line);min-width:0;}
+.service-answers article h3 {font-size:clamp(22px,2vw,31px);margin-bottom:15px;}
+.service-answers article p {max-width:62ch;font-size:15px;line-height:1.6;color:#52635b;margin:0 0 16px;}
+.service-answers article a {display:inline-flex;gap:7px;align-items:center;font-weight:600;text-decoration:underline;text-underline-offset:4px;font-size:13px;}
+.service-answers article a:hover {color:#467e47;}
+@media(max-width:760px) {
+  .service-answers-grid {grid-template-columns:minmax(0,1fr);}
+  .service-answers article {padding:27px 0;}
+  .button.cta-accent {min-height:52px;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .button.cta-accent,.button.cta-accent .arrow,.button.cta-accent > span[aria-hidden="true"]:last-child,
+  .text-link .arrow,.engagement-link .arrow {transition:none !important;}
+  .button.cta-accent:active { transform:none; }
+  .button.cta-accent:not(:disabled):hover .arrow,
+  .button.cta-accent:not(:disabled):hover > span[aria-hidden="true"]:last-child,
+  .text-link:hover .arrow,.engagement-link:hover .arrow,
+  .footer-alt:hover > span[aria-hidden="true"]:last-child {transform:none;}
+}
+
+
+/* Supporting copy is reassurance, so it needs to remain legible on phone. */
+.microcopy { font-size:13px;line-height:1.55;letter-spacing:.025em;color:#586660; }

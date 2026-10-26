@@ -254,12 +254,34 @@ export function ParticleField({ className, stream = false }: { className?: strin
     // hydration or the LCP text.
     let gate: IntersectionObserver | null = null;
     let idle = 0;
+    // Phones and low-power devices get the static CSS field (same dark hero,
+    // no Three.js download or GPU work): narrow viewport, coarse pointer, or
+    // little memory / few cores.
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const lowPower = window.matchMedia("(max-width: 700px)").matches
+      || window.matchMedia("(pointer: coarse)").matches
+      || (nav.deviceMemory !== undefined && nav.deviceMemory <= 4)
+      || (nav.hardwareConcurrency !== undefined && nav.hardwareConcurrency <= 4);
+    if (lowPower) { host.setAttribute("data-static", ""); return; }
+    // Boot only after the preloader has lifted, so the 2.2s intro and first
+    // paint never share the main thread with Three.js parsing.
+    const html = document.documentElement;
+    const afterPreloader = () => new Promise<void>((resolve) => {
+      if (!html.classList.contains("preload-active")) { resolve(); return; }
+      const mo = new MutationObserver(() => {
+        if (!html.classList.contains("preload-active")) { mo.disconnect(); resolve(); }
+      });
+      mo.observe(html, { attributes: true, attributeFilter: ["class"] });
+      window.setTimeout(() => { mo.disconnect(); resolve(); }, 3600);
+    });
     const whenReady = new Promise<void>((resolve) => {
       gate = new IntersectionObserver((entries) => {
         if (!entries.some((e) => e.isIntersecting)) return;
         gate?.disconnect();
-        if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(() => resolve(), { timeout: 1200 });
-        else idle = window.setTimeout(resolve, 200);
+        afterPreloader().then(() => {
+          if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(() => resolve(), { timeout: 1200 });
+          else idle = window.setTimeout(resolve, 200);
+        });
       }, { rootMargin: "400px 0px" });
       gate.observe(host);
     });

@@ -109,7 +109,7 @@ export function Globe({ className }: { className?: string }) {
 
       // Land mask, equirectangular.
       const tc = document.createElement("canvas");
-      tc.width = 2048; tc.height = 1024;
+      tc.width = 1536; tc.height = 768;
       const g = tc.getContext("2d")!;
       g.fillStyle = "#000"; g.fillRect(0, 0, tc.width, tc.height);
       g.fillStyle = "#fff";
@@ -126,7 +126,7 @@ export function Globe({ className }: { className?: string }) {
       tex.anisotropy = 4;
 
       const renderer = new T.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "low-power" });
-      renderer.setPixelRatio(Math.min(1.75, window.devicePixelRatio || 1));
+      renderer.setPixelRatio(Math.min(1.5, window.devicePixelRatio || 1));
       host.appendChild(renderer.domElement);
       const scene = new T.Scene();
       const camera = new T.PerspectiveCamera(28, 1, 0.1, 50);
@@ -138,8 +138,8 @@ export function Globe({ className }: { className?: string }) {
       const spin = new T.Group();
       world.add(spin);
 
-      spin.add(new T.Mesh(new T.SphereGeometry(1, 96, 64), new T.ShaderMaterial({ uniforms: { map: { value: tex } }, vertexShader: VERT, fragmentShader: FRAG })));
-      world.add(new T.Mesh(new T.SphereGeometry(1.025, 64, 48), new T.ShaderMaterial({ vertexShader: VERT, fragmentShader: SHELL_FRAG, transparent: true, depthWrite: false, blending: T.AdditiveBlending })));
+      spin.add(new T.Mesh(new T.SphereGeometry(1, 64, 48), new T.ShaderMaterial({ uniforms: { map: { value: tex } }, vertexShader: VERT, fragmentShader: FRAG })));
+      world.add(new T.Mesh(new T.SphereGeometry(1.025, 48, 32), new T.ShaderMaterial({ vertexShader: VERT, fragmentShader: SHELL_FRAG, transparent: true, depthWrite: false, blending: T.AdditiveBlending })));
 
       // Pins and arcs ride on the spinning globe.
       const pinPos = new Float32Array(PINS.flatMap(([la, lo]) => toVec(la, lo, 1.004)));
@@ -183,9 +183,13 @@ export function Globe({ className }: { className?: string }) {
       if (fine && !reduce) hero.addEventListener("pointermove", onMove as EventListener, { passive: true });
 
       const t0 = performance.now();
+      // 30fps is plenty for a slow sway and halves GPU/main-thread cost.
+      let last = 0;
       const loop = (now: number) => {
         raf = 0;
         if (!visible || disposed) return;
+        if (now - last < 33) { raf = requestAnimationFrame(loop); return; }
+        last = now;
         spin.rotation.y = FACE + Math.sin(((now - t0) / 1000) * 0.12) * 0.3;
         lx += (tx - lx) * 0.05; ly += (ty - ly) * 0.05;
         world.rotation.y = lx; world.rotation.x = 0.32 + ly;
@@ -208,9 +212,24 @@ export function Globe({ className }: { className?: string }) {
     };
 
     // Load Three.js only once the globe is close to the screen.
-    const near = new IntersectionObserver(([e]) => { if (e.isIntersecting) { near.disconnect(); start(); } }, { rootMargin: "200px" });
+    // It is decoration: begin only after the page has loaded and the browser is
+    // idle, so text and controls are interactive first.
+    let idleId = 0, timer = 0;
+    const near = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      near.disconnect();
+      const go = () => { timer = window.setTimeout(() => {
+        const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+        if (ric) idleId = ric(() => start(), { timeout: 3000 }); else start();
+      }, 800); };
+      if (document.readyState === "complete") go(); else window.addEventListener("load", go, { once: true });
+    }, { rootMargin: "200px" });
     near.observe(host);
-    return () => { disposed = true; near.disconnect(); cleanup(); };
+    return () => {
+      disposed = true; near.disconnect(); window.clearTimeout(timer);
+      (window as unknown as { cancelIdleCallback?: (n: number) => void }).cancelIdleCallback?.(idleId);
+      cleanup();
+    };
   }, []);
 
   return <div ref={ref} className={className} aria-hidden="true" />;

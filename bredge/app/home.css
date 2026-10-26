@@ -175,3 +175,8 @@
    (650ms asking, 1.5s answered in TeamSuite.tsx). */
 .ts-w { transition-duration:480ms, 480ms, 320ms, 480ms, 480ms, 320ms, 320ms; }
 .ts-w[data-pos="open"] .ts-w-body { transition:opacity 300ms ease 160ms; }
+
+/* Static field for phones / low-power devices: no WebGL, same dark hero. */
+.hero-sd-canvas[data-static] { background:
+  radial-gradient(ellipse 60% 45% at 70% 38%, color-mix(in srgb, var(--brand) 38%, transparent), transparent 70%),
+  radial-gradient(circle at 1px 1px, rgba(255,255,255,.22) 1px, transparent 1.4px) 0 0 / 14px 14px; }
