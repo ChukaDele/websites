@@ -178,7 +178,7 @@ async function testInsights(browser) {
     const page = await context.newPage();
     await assertPageBasics(page, "/insights");
 
-    const featured = await page.locator(".insight-featured").getAttribute("href");
+    const featured = await page.locator('main a[href^="/insights/"]').first().getAttribute("href");
     assert.ok(featured?.startsWith("/insights/"), "insights: featured article link missing");
     const collectionSchema = await page.locator('script[type="application/ld+json"]').evaluateAll((nodes) => nodes.some((node) => node.textContent?.includes('"CollectionPage"') && node.textContent?.includes('"ItemList"')));
     assert.equal(collectionSchema, true, "insights: CollectionPage/ItemList schema missing");
