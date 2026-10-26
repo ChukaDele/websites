@@ -124,6 +124,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preload" href="/brand/bredge-logo-preloader.webp" as="image" type="image/webp" fetchPriority="high" />
         <link rel="preload" href={instrumentSansLatin} as="font" type="font/woff2" crossOrigin="anonymous" />
         <script dangerouslySetInnerHTML={{ __html: preloadInit }} />
         <script dangerouslySetInnerHTML={{ __html: `window.__BREDGE_CFG=${JSON.stringify(analyticsCfg)};` }} />

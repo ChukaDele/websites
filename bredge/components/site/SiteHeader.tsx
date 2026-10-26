@@ -117,7 +117,7 @@ export function SiteHeader({ variant = "solid", tone = "light" }: { variant?: "s
                 <img className="navq-logo-mark" src="/brand/bredge-logo-preloader.webp" alt="" />
               </span>
             ) : (
-              <img src="/brand/bredge-logo.svg" alt="" width="80" height="31" />
+              <img src="/brand/bredge-logo.webp" alt="" width="80" height="31" />
             )}
           </a>
           <NavLinks pathname={pathname} servicesActive={servicesActive} />

@@ -51,7 +51,7 @@ export function SiteFooter() {
       <div className="sf-wrap">
         <div className="sf-top">
           <div className="sf-lead">
-            <img className="sf-logo" src="/brand/bredge-logo.svg" alt="The Bredge" width="80" height="31" />
+            <img className="sf-logo" src="/brand/bredge-logo.webp" alt="The Bredge" width="80" height="31" />
             <p className="sf-about">We connect the systems you already have, reconcile the numbers, and build reporting your team stops arguing with.</p>
           </div>
           <div className="sf-contact">
