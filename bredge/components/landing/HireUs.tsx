@@ -170,7 +170,7 @@ export function HireUs({
             {aside && <p>{aside}</p>}
             <div className="hu-proof">
               <span className="hu-stack" aria-hidden="true">
-                {TOOLS.map((name) => <i key={name} title={name}><img src={TOOL_LOGOS[name].src} alt="" width={17} height={17} /></i>)}
+                {TOOLS.map((name) => <i key={name} title={name}><img src={TOOL_LOGOS[name].src} alt="" width={17} height={17} loading="lazy" decoding="async" /></i>)}
               </span>
               <span className="hu-proof-text"><b>Power BI, Tableau, dbt, Snowflake, BigQuery</b>We work in the stack you already have</span>
             </div>

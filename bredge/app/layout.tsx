@@ -14,6 +14,7 @@ import "./qa-fixes.css";
 // is preloaded; the same hashed file the @font-face rule above points at.
 import instrumentSansLatin from "@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2?url";
 import { Preloader } from "../components/site/Preloader";
+import { PRELOADER_CSS, GATE_CSS } from "../components/site/preloader-critical-css";
 import { Analytics } from "../components/site/Analytics";
 import { Spotlight } from "../components/site/Spotlight";
 
@@ -126,6 +127,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <link rel="preload" href="/brand/bredge-logo-preloader.webp" as="image" type="image/webp" fetchPriority="high" />
         <link rel="preload" href={instrumentSansLatin} as="font" type="font/woff2" crossOrigin="anonymous" />
+        <style dangerouslySetInnerHTML={{ __html: PRELOADER_CSS + GATE_CSS }} />
+        <noscript><style dangerouslySetInnerHTML={{ __html: "html body{visibility:visible!important}" }} /></noscript>
         <script dangerouslySetInnerHTML={{ __html: preloadInit }} />
         <script dangerouslySetInnerHTML={{ __html: `window.__BREDGE_CFG=${JSON.stringify(analyticsCfg)};` }} />
       </head>

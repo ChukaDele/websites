@@ -34,6 +34,8 @@ async function assertPageBasics(page, path) {
   const response = await page.goto(`${base}${path}`, { waitUntil: "domcontentloaded", timeout: 30_000 });
   assert.ok(response, `${path}: no navigation response`);
   assert.ok(response.status() < 400, `${path}: HTTP ${response.status()}`);
+  // Stylesheets load without blocking the first paint; measure the styled page.
+  await page.waitForSelector("html.css-ready", { state: "attached", timeout: 10_000 });
   await page.waitForTimeout(120);
 
   // Third-party calendar markup (Cal.com) is not our page structure.

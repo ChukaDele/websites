@@ -372,37 +372,7 @@
   .steps, .steps.four, .steps.six { grid-template-columns:1fr; }
 }
 
-/* ---------- Preloader, each time the site opens (Second Direction) ---------- */
-.preloader { display:none; }
-.preload-active { overflow:hidden; }
-.preload-active body { overflow:hidden; }
-.preload-active .preloader {
-  display:block; position:fixed; inset:0; z-index:100;
-  /* No-JS safety only: fires after the JS sequence would have finished, so it
-     never fades the overlay mid-animation. */
-  animation:pl-safety 0.4s 3.4s forwards;
-}
-/* Tiles are the overlay's background; the shutter exit shrinks each one. */
-.pl-tiles { position:absolute; inset:0; display:grid; grid-template-rows:repeat(4, 1fr); }
-.pl-row { display:grid; grid-template-columns:repeat(12, 1fr); }
-/* 1px overlap hides hairline seams between tiles at fractional widths. */
-.pl-row span { display:block; margin-right:-1px; background:var(--surface); }
-/* Phones and low-power devices: one surface wipe instead of 48 animated tiles. */
-.pl-low .pl-tiles { background:var(--surface); }
-.pl-low .pl-row span { display:none; }
-.pl-logo {
-  --fill:0px; --shift:0px; --pitch:7px;
-  position:absolute; top:50%; left:50%; width:min(380px, 64vw); aspect-ratio:995 / 330; transform:translate(-50%,-50%);
-  -webkit-mask-image:repeating-linear-gradient(to bottom, #000 0 var(--fill), transparent var(--fill) var(--pitch));
-  mask-image:repeating-linear-gradient(to bottom, #000 0 var(--fill), transparent var(--fill) var(--pitch));
-  -webkit-mask-position:0 var(--shift); mask-position:0 var(--shift);
-}
-.pl-logo img { position:absolute; inset:0; width:100%; height:100%; display:block; }
-.pl-word-layer { clip-path:inset(0 0 0 100%); }
-.pl-mark-layer { clip-path:inset(0 74.7% 0 0); }
-@keyframes pl-safety { to { opacity:0; visibility:hidden; } }
-@media (max-width:650px) { .pl-logo { --pitch:5px; } }
-@media (prefers-reduced-motion:reduce) { .preload-active .preloader { display:none; } }
+/* Preloader styles are inlined in <head> (components/site/preloader-critical-css.ts) so it paints before this stylesheet arrives. */
 
 /* ---------- Route transition (subtle, not a full preloader) ---------- */
 .page-transition { animation:page-in var(--motion-base) var(--ease-out) both; }

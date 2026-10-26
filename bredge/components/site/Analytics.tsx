@@ -12,9 +12,16 @@ function getCfg(): Cfg {
 }
 
 let loaded = false;
+// Vendor scripts never sit in the critical path: wait for the browser to be idle.
 function loadVendors(cfg: Cfg) {
   if (loaded || typeof window === "undefined") return;
   loaded = true;
+  const run = () => injectVendors(cfg);
+  if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(run, { timeout: 4000 });
+  else window.setTimeout(run, 2500);
+}
+
+function injectVendors(cfg: Cfg) {
   const w = window as any;
 
   if (cfg.ga4) {

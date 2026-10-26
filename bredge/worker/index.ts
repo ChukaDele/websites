@@ -102,6 +102,30 @@ function withResponseHeaders(response: Response, request: Request): Response {
   });
 }
 
+// Stylesheets must not block the first paint: the preloader (inline CSS) paints
+// at once and lifts only after they are applied. Each hashed build stylesheet is
+// requested as print media and switched to all on load (<noscript> keeps it
+// working without JS). The script at the end of <body> marks `css-ready`.
+const CSS_READY_SCRIPT = `<script>(function(){var d=document,h=d.documentElement,done=0;function f(){if(done)return;done=1;h.classList.add("css-ready")}function chk(){var l=d.querySelectorAll("link[data-nb]");for(var i=0;i<l.length;i++)if(l[i].media==="print")return setTimeout(chk,40);f()}chk();setTimeout(f,4000)})()</script>`;
+
+function deferStylesheets(response: Response, request: Request): Response {
+  if (request.method !== "GET" || response.status !== 200) return response;
+  if (!(response.headers.get("content-type") || "").startsWith("text/html")) return response;
+  return new HTMLRewriter()
+    .on('link[rel="stylesheet"]', {
+      element(el) {
+        const href = el.getAttribute("href");
+        if (!href || !href.startsWith("/_next/static/css/")) return;
+        el.setAttribute("media", "print");
+        el.setAttribute("data-nb", "");
+        el.setAttribute("onload", "this.media='all'");
+        el.after(`<noscript><link rel="stylesheet" href="${href}"></noscript>`, { html: true });
+      },
+    })
+    .on("body", { element(el) { el.append(CSS_READY_SCRIPT, { html: true }); } })
+    .transform(response);
+}
+
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
@@ -134,7 +158,7 @@ const worker = {
     }
 
     const response = await handler.fetch(request, env, ctx);
-    return withResponseHeaders(response, request);
+    return withResponseHeaders(deferStylesheets(response, request), request);
   },
 };
 

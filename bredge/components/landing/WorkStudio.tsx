@@ -363,7 +363,7 @@ export function WorkStudio({ builds = BUILDS, groups = GROUPS, walkthrough = tru
                       const logo = TOOL_LOGOS[t];
                       return (
                         <li key={t} className={logo.wordmark ? "is-wordmark" : undefined}>
-                          <img src={logo.src} alt="" width={logo.wordmark ? 80 : 16} height={16} />
+                          <img src={logo.src} alt="" width={logo.wordmark ? 80 : 16} height={16} loading="lazy" decoding="async" />
                           {!logo.wordmark && <span>{t}</span>}
                         </li>
                       );

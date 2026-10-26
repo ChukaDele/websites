@@ -65,6 +65,16 @@ export function Preloader() {
         applySlide();
 
         const tl = gsap.timeline({ onComplete: finish });
+        // Stylesheets load without blocking the first paint; the overlay holds
+        // here until they are applied, so the page never lifts onto unstyled content.
+        tl.call(() => {
+          if (html.classList.contains("css-ready")) return;
+          tl.pause();
+          const watch = new MutationObserver(() => {
+            if (html.classList.contains("css-ready")) { watch.disconnect(); tl.resume(); }
+          });
+          watch.observe(html, { attributes: true, attributeFilter: ["class"] });
+        }, [], 1.15);
         // 1. The mark draws in as stripes that thicken to solid.
         tl.fromTo(logo, { "--fill": "0px", "--shift": "-14px" },
           { "--fill": "7px", "--shift": "0px", duration: 0.35, ease: "power2.out" }, 0.1)
