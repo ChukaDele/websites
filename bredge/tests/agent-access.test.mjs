@@ -11,8 +11,8 @@ const robots = read("../app/robots.ts");
 
 test("agent-visible contact requirements match actual validated fields", () => {
   assert.deepEqual(manifest.user_authorised_actions.contact.required_fields,
-    ["name", "email", "company", "phone", "needs", "message"]);
-  for (const condition of ["!payload.name", "!payload.company", "!phone.valid", "needs.length === 0", "!payload.message"]) {
+    ["name", "email", "message"]);
+  for (const condition of ["!payload.name", "!payload.message"]) {
     assert.ok(contact.includes(condition), "missing required field contract: " + condition);
   }
   assert.match(contact, /test\(payload\.email\)/);

@@ -1,0 +1,64 @@
+name: Bredge Lighthouse
+
+on:
+  pull_request:
+    paths:
+      - "bredge/**"
+      - ".github/workflows/bredge-lighthouse.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    name: lighthouse
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: bredge
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: bredge/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Serve the exact production build on the runner
+        run: |
+          nohup npx wrangler dev -c dist/server/wrangler.json --ip 127.0.0.1 --port 8787 > /tmp/wrangler.log 2>&1 &
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:8787/__build >/dev/null && break; sleep 2; done
+          curl -fsS http://127.0.0.1:8787/__build
+      - name: Lighthouse mobile and desktop
+        run: |
+          mkdir -p lh
+          for page in "" services insights contact resources research how-we-work; do
+            name="${page:-home}"
+            for form in mobile desktop; do
+              extra=""
+              [ "$form" = desktop ] && extra="--preset=desktop"
+              npx --yes lighthouse@12.6.1 "http://127.0.0.1:8787/$page" $extra \
+                --chrome-flags="--headless=new --no-sandbox" --quiet \
+                --output=json --output=html --output-path="lh/$name-$form" || true
+            done
+          done
+      - name: Score summary
+        run: |
+          node -e '
+          const fs=require("fs");const rows=[];
+          for(const f of fs.readdirSync("lh").filter(f=>f.endsWith(".report.json"))){
+            const r=JSON.parse(fs.readFileSync("lh/"+f));const c=r.categories,a=r.audits;
+            rows.push(`| ${f.replace(".report.json","")} | ${Math.round(c.performance.score*100)} | ${Math.round(c.accessibility.score*100)} | ${Math.round(c["best-practices"].score*100)} | ${Math.round(c.seo.score*100)} | ${a["first-contentful-paint"].displayValue} | ${a["largest-contentful-paint"].displayValue} | ${a["speed-index"].displayValue} | ${a["total-blocking-time"].displayValue} | ${a["cumulative-layout-shift"].displayValue} |`);
+          }
+          const t="| run | perf | a11y | best | seo | FCP | LCP | SI | TBT | CLS |\n|---|---|---|---|---|---|---|---|---|---|\n"+rows.join("\n");
+          console.log(t);fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,t+"\n");'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bredge-lighthouse
+          path: bredge/lh

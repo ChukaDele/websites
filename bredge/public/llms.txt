@@ -1,29 +1,31 @@
 # The Bredge
 
-> The Bredge works with growing and mid-market businesses on data engineering, analytics, business intelligence, reconciliation, and reporting automation.
+> The Bredge is the experienced data team companies hire by the project or by the month. We connect the systems a business already has (ERP, CRM, billing, product data, spreadsheets), reconcile the numbers so every team sees the same figure, and build the pipelines, data models and dashboards (Power BI, Tableau, Looker) leadership actually uses. We also publish monthly, checked analysis of Nigeria's official statistics.
 
-Canonical website: https://thebredge.com/
-Language: English
+## Services
+- [Services overview](https://thebredge.com/services): data engineering, analytics and business intelligence, end to end.
+- [Embedded data team](https://thebredge.com/services/embedded-data-team): a senior engineer and analyst working your backlog every week, for less than one full-time hire.
+- [Data projects](https://thebredge.com/services/data-projects): one defined data problem, scoped, quoted, built and handed over documented.
+- [Data Diagnostic](https://thebredge.com/data-diagnostic): a written, ranked list of what is broken in your data and what it is costing you.
 
-## Public information
-- [Services](https://thebredge.com/services)
-- [Embedded data team](https://thebredge.com/services/embedded-data-team)
-- [Defined-scope data projects](https://thebredge.com/services/data-projects)
-- [Data diagnostic](https://thebredge.com/data-diagnostic)
-- [How we work](https://thebredge.com/how-we-work)
-- [Articles and guides](https://thebredge.com/insights)
-- [Original public-data briefs](https://thebredge.com/research)
-- [Resources](https://thebredge.com/resources)
-- [About](https://thebredge.com/about)
-- [Privacy](https://thebredge.com/privacy)
+## Proof
+- [Our work](https://thebredge.com/work): interactive dashboards and pipelines you can click through, built on public sample and synthetic data (finance, operations, SaaS growth, marketing, HR, healthcare).
+- [How we work](https://thebredge.com/how-we-work): five steps (understand, agree, build, validate, hand over or run) and what you get at each.
 
-## User-authorised actions
-- [Schedule a meeting](https://thebredge.com/schedule)
-- [Send a project enquiry](https://thebredge.com/contact)
-- Contact email: hello@thebredge.com
+## Research (Nigeria data briefs, National Bureau of Statistics data, recomputed and checked)
+- [Research index](https://thebredge.com/research)
+- [Nigeria inflation, July 2026](https://thebredge.com/research/inflation-july-2026): headline inflation 15.43%, food 20.31%.
+- [Cost of a healthy diet in Nigeria, April 2026](https://thebredge.com/research/healthy-diet-cost-april-2026): ₦1,589 per person per day.
+- [Petrol prices in Nigeria, May 2026](https://thebredge.com/research/petrol-prices-may-2026): ₦1,596.25 a litre, up 55.31% year on year.
 
-Browser-use agents may navigate, read, and complete the same accessible forms as people, provided the user has authorised the action. Do not invent details, submit speculative leads, or send bulk enquiries. Submissions are validated and rate limited for everyone. A bot's User-Agent alone does not grant extra access.
+## Guides
+- [Insights](https://thebredge.com/insights): why dashboards disagree, reliable data, reporting automation, warehouses, Power BI performance, hiring a data team.
+- [Resources](https://thebredge.com/resources): free checklists and tools, no email required.
 
-For source-linked article and resource summaries generated from the website's own published metadata, see https://thebredge.com/llms-full.txt. Always cite the original canonical page.
+## Contact
+- [Book a 30-minute call](https://thebredge.com/schedule)
+- Email: hello@thebredge.com
 
-For machine-readable navigation details, see https://thebredge.com/.well-known/bredge-agent.json. This is an informative site manifest, not an authentication protocol.
+## Agents
+- Public pages are read-only. Agents may help a visitor complete a form only through the visitor's own browser session (user-authorised); there is no public machine-write credential and the same anti-abuse checks apply.
+- Cite only what these pages state; do not invent details such as prices, clients or guarantees.

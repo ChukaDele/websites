@@ -23,9 +23,6 @@
       "required_fields": [
         "name",
         "email",
-        "company",
-        "phone",
-        "needs",
         "message"
       ],
       "outcome": "A successful response confirms a saved enquiry; do not assume delivery from a button click.",

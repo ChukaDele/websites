@@ -18,65 +18,34 @@ export function HeroVideo() {
   useEffect(() => {
     const video = ref.current;
     if (!video) return;
-    const viewport = window.matchMedia("(max-width: 1000px)");
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    // @ts-expect-error Network Information is not yet in the standard DOM types.
+
+    const mobile = window.matchMedia("(max-width: 1000px)").matches;
+    const base = mobile ? "/media/bredge-hero-mobile" : "/media/bredge-hero-final-v2";
+    video.poster = `${base}-poster.webp`; // correct aspect per viewport
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // @ts-expect-error saveData is non-standard
     const saveData = navigator.connection?.saveData === true;
-    let intersecting = false;
-    let isReady = false;
-    let disposed = false;
+    if (reduced || saveData) return; // poster only
 
-    const pause = () => video.pause();
-    const mayPlay = () => !disposed && !document.hidden && intersecting && !reduced.matches && !saveData;
-    const resume = () => { if (mayPlay() && isReady) void video.play().catch(() => {}); };
+    const onCanPlay = () => { setReady(true); void video.play().catch(() => {}); };
+    // Subscribe before assigning the source. A warm media cache can emit canplay
+    // synchronously during load(), before a later listener registration.
+    video.addEventListener("canplay", onCanPlay, { once: true });
 
-    const configure = () => {
-      pause();
-      const base = viewport.matches ? "/media/bredge-hero-mobile" : "/media/bredge-hero-final-v2";
-      const nextPoster = `${base}-poster.webp`;
-      if (video.poster !== new URL(nextPoster, location.href).href) video.poster = nextPoster;
-      // Neither reduced-motion nor Save-Data should download motion at all.
-      if (reduced.matches || saveData) {
-        video.removeAttribute("src");
-        video.load();
-        isReady = false;
-        setReady(false);
-        return;
-      }
-      const nextSource = video.canPlayType('video/webm; codecs="vp9"') ? `${base}.webm` : `${base}.mp4`;
-      if (!intersecting || video.getAttribute("src") === nextSource) return;
-      isReady = false;
-      setReady(false);
-      video.src = nextSource;
-      video.load();
-    };
+    const canWebm = video.canPlayType('video/webm; codecs="vp9"') !== "";
+    video.src = canWebm ? `${base}.webm` : `${base}.mp4`;
+    video.load();
 
-    const onCanPlay = () => { isReady = true; setReady(true); resume(); };
-    video.addEventListener("canplay", onCanPlay);
-
-    const io = new IntersectionObserver(([entry]) => {
-      intersecting = entry.isIntersecting;
-      if (intersecting) { configure(); resume(); } else pause();
-    }, { rootMargin: "160px 0px", threshold: 0.01 });
+    const io = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) void video.play().catch(() => {}); else video.pause(); },
+      { threshold: 0.05 },
+    );
     io.observe(video);
+    const onVis = () => { if (document.hidden) video.pause(); else void video.play().catch(() => {}); };
+    document.addEventListener("visibilitychange", onVis);
 
-    const onVisibility = () => { if (document.hidden) pause(); else resume(); };
-    document.addEventListener("visibilitychange", onVisibility);
-    viewport.addEventListener("change", configure);
-    reduced.addEventListener("change", configure);
-    configure();
-
-    return () => {
-      disposed = true;
-      pause();
-      io.disconnect();
-      video.removeEventListener("canplay", onCanPlay);
-      document.removeEventListener("visibilitychange", onVisibility);
-      viewport.removeEventListener("change", configure);
-      reduced.removeEventListener("change", configure);
-      video.removeAttribute("src");
-      video.load();
-    };
+    return () => { io.disconnect(); document.removeEventListener("visibilitychange", onVis); video.removeEventListener("canplay", onCanPlay); };
   }, []);
 
   return (

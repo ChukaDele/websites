@@ -1,26 +1,23 @@
-import type { Metadata } from "next";
 import { PageShell } from "../../../components/site/PageShell";
-import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram } from "../../../components/insights/Article";
-import { pageMetadata } from "../../../lib/seo";
+import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram, Example, Pull, ForYourDataPerson } from "../../../components/insights/Article";
+import { insightMetadata } from "../../../lib/insights";
 
 const SLUG = "power-bi-warehouse-or-both";
 const TOC = [
-  { id: "short-answer", label: "The short answer" },
+  { id: "three-problems", label: "Three problems, one phrase" },
   { id: "usual", label: "What this usually looks like" },
-  { id: "try-first", label: "Separate the three problems first" },
-  { id: "what-it-tells-you", label: "What the answer tells you" },
-  { id: "underneath", label: "Reporting layer, model, and integration" },
+  { id: "try-first", label: "Sort complaints by layer" },
+  { id: "what-it-tells-you", label: "What to buy first, by layer" },
+  { id: "underneath", label: "Reporting layer, model and integration" },
+  { id: "erp", label: "SAP B1, Sage or QuickBooks to Power BI" },
+  { id: "example", label: "Worked example: a distributor's first buy" },
   { id: "good", label: "What good looks like" },
   { id: "wrong", label: "Common ways this goes wrong" },
-  { id: "boundary", label: "When you genuinely need the warehouse too" },
+  { id: "boundary", label: "When you need the warehouse too" },
   { id: "decision", label: "A decision guide" },
 ];
 
-export const metadata: Metadata = pageMetadata({
-  title: "Power BI, a Data Warehouse, or Both? A Reporting Architecture Guide | The Bredge",
-  description: "Do you need Power BI, a data warehouse, or both? Separate the reporting-layer, model and integration problems to decide what to build, and in what order.",
-  path: "/insights/power-bi-warehouse-or-both",
-});
+export const metadata = insightMetadata(SLUG);
 
 export default function Page() {
   return (
@@ -85,22 +82,24 @@ export default function Page() {
           </Diagram>
         }
       >
-        <section id="short-answer">
-          <h2>The short answer</h2>
+        <section id="three-problems">
+          <h2>What does &ldquo;we need better reporting&rdquo; actually mean?</h2>
           <p>&ldquo;We need better reporting&rdquo; sounds like one problem. It is usually three, wearing the same words. Until you separate them, any tool you buy is a guess.</p>
           <p>The three problems are these. First, a <strong>reporting-layer problem</strong>: the report itself is slow, confusing, or wrong, even though the data behind it is fine. The <strong>reporting layer</strong> is the software where charts and dashboards are built and read; a <strong>BI tool</strong> (business intelligence tool) such as Power BI is one. Second, a <strong>model problem</strong>: the same metric is calculated differently in different places because nothing defines it once. Third, an <strong>integration problem</strong>: the data you need lives in several systems that are never combined reliably, so someone stitches it together by hand.</p>
           <p>These map onto different fixes. A reporting-layer problem is fixed inside the BI tool. A model problem is fixed by defining each metric once. An integration problem is what a <strong>data warehouse</strong> addresses. So the honest answer to &ldquo;Power BI, a warehouse, or both?&rdquo; is that it depends which of the three problems you actually have, and in what proportion. Work out that first, and the tool question answers itself.</p>
+          <Pull>Until you separate the three problems, any tool you buy is a guess.</Pull>
+          <p>This guide is about what to buy first. If you are still asking whether you need a warehouse at all, start with the <a href="/insights/before-you-build-a-data-warehouse">data warehouse readiness guide</a>. If you already know the answer is an ordered build across all three layers, that sequencing is what our <a href="/services/data-projects">data projects</a> are for.</p>
         </section>
 
         <section id="usual">
-          <h2>What this usually looks like</h2>
+          <h2>Signs your reporting problem is the model, not the tool</h2>
           <p>The request nearly always arrives as a tool question. &ldquo;Should we move to a warehouse?&rdquo; Or &ldquo;should we switch BI tool?&rdquo; The framing has already skipped the diagnosis and jumped to a purchase.</p>
-          <p>It is easy to see why. One vendor demonstration makes a warehouse look like the answer to everything. Another makes a shinier dashboard tool look like the answer to everything. Both demonstrations are honest about their own layer and silent about the other two. Meanwhile the real symptoms are mixed together: reports that take thirty seconds to load, a revenue figure that differs between two dashboards, and a finance analyst who spends the first three days of every month exporting and pasting spreadsheets.</p>
+          <p>The confusion is understandable. One vendor demonstration makes a warehouse look like the answer to everything. Another makes a shinier dashboard tool look like the answer to everything. Both demonstrations are honest about their own layer and silent about the other two. Meanwhile the real symptoms are mixed together: reports that take thirty seconds to load, a revenue figure that differs between two dashboards, and a finance analyst who spends the first three days of every month exporting and pasting spreadsheets.</p>
           <p>Those three symptoms live in three different layers. Buying one product to cure all of them is how organisations end up with an expensive warehouse feeding reports that are still slow, or a new BI tool that renders the same untrustworthy number in a nicer font.</p>
         </section>
 
         <section id="try-first">
-          <h2>Separate the three problems first</h2>
+          <h2>Sort your reporting complaints into three layers</h2>
           <p>You can sort the symptoms yourself in an afternoon, before you talk to any vendor. The goal is not to pick a product. It is to label each complaint by the layer it belongs to, so you can see which layer carries most of the pain.</p>
           <TryThisFirst title="Separate the three problems first">
             <ol>
@@ -115,7 +114,7 @@ export default function Page() {
         </section>
 
         <section id="what-it-tells-you">
-          <h2>What the answer tells you</h2>
+          <h2>What to buy first, layer by layer</h2>
           <p>Once the complaints are sorted, the shape of the answer appears. Read your tally like this.</p>
           <ul>
             <li><strong>Mostly reporting-layer.</strong> You do not need a warehouse, and you probably do not need a new BI tool. Fix the report and the model inside the tool you already own. If the complaint is speed, the cause is usually the data model rather than the visuals, which is the subject of <a href="/insights/power-bi-slow">why Power BI is slow</a>.</li>
@@ -126,14 +125,15 @@ export default function Page() {
         </section>
 
         <section id="underneath">
-          <h2>Reporting layer, model, and integration</h2>
+          <h2>Power BI vs a data warehouse: reporting layer, model and integration</h2>
           <p>Underneath the tool names are three layers that stack on top of one another. Each has a distinct job, and each can be the one that is broken.</p>
           <p>The <strong>reporting layer</strong> is where reports and dashboards are built and read. Power BI is one such tool; the same reasoning applies to any BI tool. Its job is to render whatever the layer below returns. A faithful renderer cannot invent a correct number from a wrong input, which is why a reporting-only fix so often fails to settle an argument about figures.</p>
           <p>The <strong>model</strong> is where data is shaped and metrics are defined. The important idea here is the <strong>semantic model</strong>: one governed place where a metric such as revenue or active customer is defined once, in plain terms, owned by a named person, and reused by every report. Power BI has its own model built in, which the tool now calls a semantic model, so for a handful of sources you can define metrics once inside Power BI without any warehouse at all.</p>
           <p>The <strong>integration</strong> layer is where separate source systems are combined into one query-ready shape. This is what a <strong>data warehouse</strong> is: a central database that pulls data from many systems and holds it modelled and joined, ready to query. Modern warehouses are usually loaded by <strong>ELT</strong> (extract, load, transform): raw data is copied into the warehouse first, then transformed inside it. The copying is done by <strong>managed connectors</strong>, pre-built links that pull from a source such as a CRM on a schedule, without you writing or maintaining the extraction code.</p>
           <p>So when is the BI tool&rsquo;s own model enough, and when do you need a warehouse? Power BI can import, model, and define metrics for a few sources feeding one team perfectly well. It outgrows that point when sources multiply, when data volumes grow past what the tool can refresh reliably, when the same modelled data is needed by more than one tool or team, or when you need history that the source systems overwrite. At that point the modelling and integration belong in a warehouse, and the BI tool reads from it rather than doing the heavy lifting itself.</p>
+          <ForYourDataPerson title="One revenue definition as a SQL view">
           <p>The model layer is worth making concrete. Below, one canonical revenue metric is defined once as a view over a small <strong>star schema</strong>, a common warehouse shape with one central fact table of measured events surrounded by descriptive dimension tables.</p>
-          <pre>{`-- One canonical revenue metric, defined once in the model layer.
+            <pre>{`-- One canonical revenue metric, defined once in the model layer.
 -- fact_invoice_line has one row per invoice line (its grain);
 -- the dimensions add date and customer context.
 create view reporting.revenue_monthly as
@@ -146,11 +146,41 @@ join   dim_date     d on d.date_key     = f.invoice_date_key
 join   dim_customer c on c.customer_key = f.customer_key
 where  f.is_intercompany = false
 group  by d.month_start, c.customer_id;`}</pre>
-          <p>The point of the view is not the SQL. It is that revenue is defined in exactly one place, with the intercompany exclusion written down once. Every report then reads <code>reporting.revenue_monthly</code> instead of re-implementing the rule, so two dashboards cannot quietly disagree. That is a model fix. Whether it lives in a warehouse view like this, or in the BI tool&rsquo;s own semantic model, depends entirely on your integration answer above.</p>
+            <p>The point of the view is not the SQL. It is that revenue is defined in exactly one place, with the intercompany exclusion written down once. Every report then reads <code>reporting.revenue_monthly</code> instead of re-implementing the rule, so two dashboards cannot quietly disagree. That is a model fix. Whether it lives in a warehouse view like this, or in the BI tool&rsquo;s own semantic model, depends entirely on your integration answer above.</p>
+          </ForYourDataPerson>
+        </section>
+
+        <section id="erp">
+          <h2>How to connect SAP Business One, Sage or QuickBooks to Power BI</h2>
+          <p>For many finance teams the first source is the accounting or ERP system. Power BI can read on-premises databases such as SAP Business One or Sage 200 without a warehouse. Cloud accounting tools are different: Microsoft lists its QuickBooks Online (Beta) connector as retired in its <a href="https://learn.microsoft.com/en-us/power-query/connectors/connector-end-of-support" target="_blank" rel="noopener noreferrer">connector end-of-support table</a>, and there is no Microsoft connector for Xero. For those, see <a href="/insights/connect-quickbooks-xero-to-power-bi">how to connect QuickBooks Online and Xero to Power BI</a>. The choice of route decides how robust the refresh is.</p>
+          <div className="in-table-wrap"><table>
+            <thead><tr><th>Route</th><th>How it works</th><th>Good for</th><th>Watch out for</th></tr></thead>
+            <tbody>
+              <tr><td>Read the database directly</td><td>SAP Business One runs on SQL Server or SAP HANA; Sage 200 and Sage 300 run on SQL Server</td><td>Full detail, fast refresh</td><td>Use a read-only user or reporting copy so reports never load the live system</td></tr>
+              <tr><td>Vendor API</td><td>SAP Business One Service Layer, Sage, Xero and QuickBooks Online APIs</td><td>Cloud editions; no database access</td><td>Rate limits and paging; usually needs a connector or small pipeline</td></tr>
+              <tr><td>ODBC or export</td><td>ODBC drivers (for example Sage 50) or scheduled exports to a shared folder</td><td>Older desktop editions</td><td>Fragile if exports are manual; schedule them</td></tr>
+              <tr><td>Third-party connector</td><td>A paid tool syncs the system into a database or straight into Power BI</td><td>Speed to first report</td><td>Licence cost, and you still own the mapping</td></tr>
+            </tbody>
+          </table></div>
+          <p>Whichever route you choose, the work is in the model: mapping branches, items, customers and accounts consistently, and reconciling to the trial balance. Check what your version and hosting allow before you commit to a route.</p>
+        </section>
+
+        <section id="example">
+          <h2>Worked example: what a distributor should buy first</h2>
+          <Example setting="UK FMCG distributor · SAP Business One, Sage payroll, Excel" title="Five complaints, sorted by layer">
+            <ol>
+              <li>&ldquo;The sales dashboard takes ages to load.&rdquo; Reporting layer (and model): one flat table in Power BI.</li>
+              <li>&ldquo;Gross margin is different in the sales report and the management accounts.&rdquo; Model: margin is defined in two places.</li>
+              <li>&ldquo;Branch stock does not match the warehouse count.&rdquo; Model and process: a reconciliation, not a tool.</li>
+              <li>&ldquo;We paste payroll from Sage into the P&amp;L by hand.&rdquo; Integration, but only one extra source.</li>
+              <li>&ldquo;We cannot see sales against field-team visits.&rdquo; Integration: the CRM is not connected at all.</li>
+            </ol>
+            <p>Tally: two model, one reporting, two light integration. First buy: nothing new. Rebuild the Power BI model on a read-only copy of SAP Business One with margin defined once, schedule the Sage payroll export into the same model, and agree the stock reconciliation. Revisit a warehouse when the CRM and a second system have to be combined every day.</p>
+          </Example>
         </section>
 
         <section id="good">
-          <h2>What good looks like</h2>
+          <h2>What a good reporting setup looks like</h2>
           <p>Good is not a particular product. It is three layers that are separable, each doing only its own job, each with an owner. In practice that looks like four things.</p>
           <ul>
             <li>Each metric is defined once in the model and reused by every report, rather than re-written per dashboard.</li>
@@ -162,7 +192,7 @@ group  by d.month_start, c.customer_id;`}</pre>
         </section>
 
         <section id="wrong">
-          <h2>Common ways this goes wrong</h2>
+          <h2>Common mistakes when choosing Power BI or a warehouse</h2>
           <ul>
             <li>Buying a warehouse to fix a slow report. Speed and clarity are reporting or model problems. Integrating more sources does not make a single report render faster; it adds cost the report never asked for.</li>
             <li>Rebuilding reports on an unmodelled source. New visuals over an undefined metric produce fresh disagreement within weeks, because nothing has been defined once.</li>
@@ -188,7 +218,7 @@ group  by d.month_start, c.customer_id;`}</pre>
         </section>
 
         <section id="decision">
-          <h2>A decision guide</h2>
+          <h2>Power BI, warehouse or both: a decision guide</h2>
           <p>Once each complaint is labelled by layer, the first move is usually clear. Use this as a quick lookup from the symptom you actually have.</p>
           <table className="article-table">
             <thead>
@@ -232,6 +262,8 @@ group  by d.month_start, c.customer_id;`}</pre>
             </tbody>
           </table>
           <p>The order in the last row is the rule for every case. Fix the lowest layer that is genuinely broken first, because the layers above it can only ever be as reliable as the one beneath. A warehouse under an undefined metric still produces disagreement; a polished report over a warehouse you did not need is expensive decoration. Diagnose the layer, fix it in order, and buy only what the diagnosis actually calls for.</p>
+          <p>For a small business, <a href="/insights/first-reporting-stack">how to automate reporting without a data team</a> shows the smallest setup at each stage. Write down what each report must answer in the <a href="/resources/kpi-dictionary-template">KPI dictionary template</a>, and turn the result into a scoped brief with the <a href="/resources/data-project-brief-template">data project brief template</a>. Finished examples are on <a href="/work">our work page</a>.</p>
+          <p>Before buying, check what each licence includes in <a href="/insights/power-bi-licensing-small-business">Power BI licensing for small businesses</a>.</p>
         </section>
       </ArticleLayout>
     </PageShell>

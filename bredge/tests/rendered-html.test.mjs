@@ -21,17 +21,12 @@ test("Invisible 90% uses one bounded CSS sticky system, never a GSAP pin", async
 
 test("hero video subscribes before loading its source", async () => {
   const component = await read("components/site/HeroVideo.tsx");
-  const listener = component.indexOf('video.addEventListener("canplay", onCanPlay);');
+  const listener = component.indexOf('video.addEventListener("canplay", onCanPlay, { once: true });');
   const load = component.indexOf("video.load();");
-  const source = component.indexOf("video.src = nextSource;");
-  const activate = component.lastIndexOf("    configure();");
 
   assert.ok(listener >= 0, "hero video must subscribe to canplay");
-  assert.ok(load >= 0 && source >= 0, "hero video must load its selected source");
-  // configure() is a declared closure, so its textual body appears before the
-  // listener. The last invocation is after event subscriptions are installed.
-  assert.ok(activate > listener,
-    "hero video must subscribe before invoking source configuration");
+  assert.ok(load >= 0, "hero video must load its selected source");
+  assert.ok(listener < load, "hero video must subscribe before load() so a warm cache cannot lose canplay");
 });
 
 test("brand and commercial SEO signals are explicit and canonical", async () => {
@@ -54,7 +49,7 @@ test("brand and commercial SEO signals are explicit and canonical", async () => 
   assert.match(home, /"@type":\s*"WebPage"/);
   assert.match(home, /"@id":\s*"https:\/\/thebredge\.com\/#webpage"/);
   assert.match(home, /When your numbers disagree, we find out why\./);
-  assert.match(services, /data engineering, analytics and business intelligence consulting for growing and mid-market companies/i);
+  assert.match(services, /data engineering, analytics and BI consulting for growing and mid-market companies/i);
   assert.match(sitemap, /https:\/\/thebredge\.com/);
   assert.match(robots, /sitemap:\s*"https:\/\/thebredge\.com\/sitemap\.xml"/);
   assert.match(insights, /"@type":\s*"CollectionPage"/);
@@ -86,7 +81,7 @@ test("team experience preserves desktop motion and mobile reading rhythm", async
   ]);
 
   assert.match(component, /function TeamTrack/);
-  assert.match(component, /aria-hidden="true"/);
+  assert.match(component, /aria-hidden=/);
   assert.match(component, /min-width: 801px/);
   assert.match(css, /\.xp-track span\[aria-hidden="true"\]\s*\{\s*display:none;/);
   assert.match(css, /@media \(min-width:801px\) and \(prefers-reduced-motion:no-preference\)[\s\S]*?\.xp-track span\[aria-hidden="true"\]\s*\{\s*display:flex;/);

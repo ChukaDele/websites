@@ -1,0 +1,93 @@
+/* Contact + schedule conversion additions. Tokens from globals.css. */
+
+/* Contact form */
+.ct-required-note { margin:4px 0 16px; color:var(--muted); font-size:.78rem; }
+.ct-required-note i { color:#b46d45; font-style:normal; }
+.ct-reassure { max-width:46ch; margin:14px 0 0; color:#55615c; font-size:.86rem; line-height:1.5; }
+.contact-form .optional { color:var(--muted); font-size:.74rem; font-weight:400; }
+.contact-form [aria-invalid="true"] { border-color:#a9552f; }
+.contact-form input:focus-visible, .contact-form textarea:focus-visible { outline:2px solid var(--ink); outline-offset:1px; }
+.contact-form .chip-opt:focus-visible, .contact-form .chip-check:has(input:focus-visible), .contact-form .phone-country:focus-visible, .contact-form .phone-opt:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+.contact-form .button:focus-visible { outline:2px solid var(--ink); outline-offset:3px; }
+.contact-form .phone-number:focus-visible, .contact-form .phone-search:focus-visible { outline:2px solid var(--ink); outline-offset:-2px; }
+
+/* Contact sidebar */
+.ct-hours { margin-top:10px; color:#55615c; font-size:.9rem; }
+.ct-alt { margin-top:14px; color:#55615c; font-size:.9rem; }
+
+/* Schedule: what happens on the call */
+.ct-call { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:64px; padding:8px 0 48px; align-items:start; }
+.ct-call h2.eyebrow { margin:0 0 10px; font-weight:inherit; }
+.ct-call-steps, .ct-call-side { padding-top:22px; border-top:1px solid var(--line); }
+.ct-steps { margin:0; padding:0; list-style:none; }
+.ct-steps li { display:grid; grid-template-columns:28px 1fr; gap:14px; padding:15px 0; border-bottom:1px solid var(--line); }
+.ct-steps li span { color:var(--muted); font:11px var(--font-mono); padding-top:3px; }
+.ct-steps li p { margin:0; color:#3c4b46; font-size:.98rem; line-height:1.45; }
+.ct-call-side > p:first-of-type { margin:0; color:var(--ink); font-size:var(--heading-md); line-height:1.25; letter-spacing:-.02em; }
+.ct-call .text-link:focus-visible, .contact-next .text-link:focus-visible { outline:2px solid var(--ink); outline-offset:3px; }
+@media (max-width:900px) { .ct-call { grid-template-columns:1fr; gap:32px; padding-bottom:32px; } }
+
+/* Chip checkboxes are visually hidden; make sure no border or outline paints a stray line. */
+.chip-check input[type="checkbox"] { border:0; padding:0; margin:0; outline:none; clip-path:inset(50%); }
+.chip-check:has(input:focus-visible) { outline:2px solid #2f6b3a; outline-offset:2px; }
+.chip-check { display:inline-flex; align-items:center; gap:8px; }
+.chip-check::before { flex:none; box-sizing:border-box; }
+form label.chip-opt.chip-check { display:inline-flex; align-items:center; gap:8px; }
+form label.chip-check::before { display:inline-block; flex:none; box-sizing:border-box; }
+
+/* One screen on desktop: the form packs into two columns (name/email,
+   company/phone), chips tighten, and send + reassurance share one row.
+   The intro and "what happens next" stack on the left. */
+@media (min-width:1000px) and (min-height:680px) {
+  .contact-layout { min-height:100svh; padding:clamp(84px, 11svh, 104px) 0 clamp(16px, 3svh, 32px); row-gap:20px; column-gap:clamp(40px, 5vw, 72px); align-content:start; }
+  .contact-intro h1 { font-size:clamp(2.2rem, 3.6vw, 3.2rem); }
+  .contact-intro .lede { margin-bottom:0; font-size:1rem; }
+  .contact-next { align-self:end; }
+  .contact-next .next-step { padding-block:8px; }
+  form.contact-form { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px 16px; padding:clamp(18px, 2.4svh, 26px) clamp(20px, 2vw, 28px); }
+  form.contact-form > * { grid-column:1 / -1; margin:0; }
+  form.contact-form > .field:nth-child(-n+4) { grid-column:auto; }
+  form.contact-form .field { gap:6px; }
+  form.contact-form .help-top { margin-top:-2px; }
+  form.contact-form .chip-select { gap:6px; }
+  form.contact-form .chip-opt { padding:6px 11px; font-size:.82rem; }
+  form.contact-form textarea { min-height:0; height:clamp(72px, 11svh, 104px); }
+  form.contact-form .help { font-size:.76rem; }
+  form.contact-form > .ct-required-note { grid-column:1; align-self:center; }
+  form.contact-form > .button { grid-column:2; justify-self:end; }
+  form.contact-form > .ct-reassure { font-size:.78rem; }
+}
+@media (min-width:1000px) and (min-height:680px) {
+  .contact-layout { padding-top:clamp(80px, 10svh, 96px); }
+  form.contact-form > .progressive:not(.open) { display:none; }
+  form.contact-form fieldset.needs-field { padding:0; border:0; }
+  form.contact-form input:not([type="checkbox"]), form.contact-form .phone-country { height:40px; min-height:40px; }
+  form.contact-form .phone-field, form.contact-form .phone-wrap { min-height:40px; }
+  form.contact-form > .field:has(textarea) .help { display:none; }
+}
+@media (min-width:1000px) and (min-height:680px) {
+  .contact-layout { padding-top:78px; }
+  form.contact-form > div:empty { display:none; }
+  form.contact-form .help-top { display:none; }
+  form.contact-form textarea { height:clamp(64px, 9svh, 96px); }
+  form.contact-form > .ct-required-note { grid-row:span 1; align-self:end; }
+  form.contact-form > .button { grid-row:span 2; align-self:center; }
+  form.contact-form > .ct-reassure { grid-column:1; align-self:start; }
+}
+
+/* Quieter small print: the side notes and the reassurance line sit back so
+   the form and the headline lead. */
+.contact-next .next-note, .contact-next .ct-hours, .contact-next .ct-alt { margin-top:6px; color:var(--muted, #7a847f); font-size:.8rem; line-height:1.45; }
+.contact-next .next-note { margin-top:16px; }
+.contact-next .ct-alt .text-link { font-size:inherit; }
+.contact-next .next-step p { font-size:.92rem; }
+form.contact-form > .ct-reassure { color:var(--muted, #7a847f); font-size:.74rem; line-height:1.45; }
+@media (min-width:1000px) and (min-height:680px) {
+  form.contact-form > .ct-reassure { grid-column:1; grid-row:auto; align-self:center; margin:0; }
+  form.contact-form > .button { grid-column:2; grid-row:auto; }
+}
+@media (min-width:1000px) and (min-height:680px) { form.contact-form { grid-auto-flow:row dense; } }
+@media (min-width:1000px) and (min-height:680px) { .contact-layout { align-content:center; } }
+/* Footnote tier: one step smaller again so it reads as small print. */
+.contact-next .next-note, .contact-next .ct-hours, .contact-next .ct-alt { font-size:.76rem; }
+form.contact-form > .ct-reassure, .ct-reassure { font-size:.7rem; color:#7d8783; }

@@ -2,10 +2,10 @@ import type { ReactNode } from "react";
 import { SiteHeader } from "./SiteHeader";
 import { SiteFooter } from "./SiteFooter";
 
-export function PageShell({ children }: { children: ReactNode }) {
+export function PageShell({ children, dark = false, overlay = false }: { children: ReactNode; /** Dark hero at the top: overlay nav in light text. */ dark?: boolean; /** Light hero at the top: overlay nav in dark text. */ overlay?: boolean }) {
   return (
     <main className="subpage">
-      <SiteHeader variant="solid" />
+      {dark ? <SiteHeader variant="overlay" tone="dark" /> : <SiteHeader variant={overlay ? "overlay" : "solid"} />}
       {children}
       <SiteFooter />
     </main>

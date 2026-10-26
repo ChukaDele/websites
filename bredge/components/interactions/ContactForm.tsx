@@ -20,17 +20,9 @@ const NOT_SURE = "Not sure yet";
 const CAPABILITY = { label: "What does your data capability look like today?", options: ["No dedicated data team", "Existing team needs capacity", "Missing a specialist capability", "Not sure"] };
 const URGENT = { label: "Which area is most urgent?", options: ["Data engineering", "Analytics", "BI / reporting", "Data quality", "Automation", "Not sure"] };
 
-const timelines = ["As soon as possible", "Within 1–2 months", "This quarter", "Exploring"];
-const INTENT_TO_NEED: Record<string, string> = {
- project: "Data engineering", embedded: "Embedded Data Team",
- diagnostic: "Data Diagnostic", portfolio: "BI & reporting", research: "Analytics",
-};
-const INTENT_HELP: Record<string, {label:string;details:string}> = {
- portfolio:{label:"Interactive portfolio enquiry",details:"We can discuss a reporting or operating model for your team."},
- research:{label:"Research and market intelligence enquiry",details:"Tell us the business question you need evidence to answer."},
-};
+const INTENT_TO_NEED: Record<string, string> = { project: "Data engineering", embedded: "Embedded Data Team", diagnostic: "Data Diagnostic" };
 
-type State = { kind: "idle" | "sending" | "ok" | "error"; message?: string };
+type State = { kind: "idle" | "sending" | "ok" | "error"; message?: string; field?: string };
 
 function readUtm() {
   if (typeof window === "undefined") return {};
@@ -40,24 +32,46 @@ function readUtm() {
 
 export function ContactForm({ formType = "contact" }: { formType?: string }) {
   const [needs, setNeeds] = useState<string[]>([]);
-  const [intent, setIntent] = useState("");
   const [capability, setCapability] = useState("");
   const [urgentArea, setUrgentArea] = useState("");
-  const [timeline, setTimeline] = useState("");
   const [phone, setPhone] = useState<PhoneValue>({ display: "", e164: "", country: "", callingCode: "", valid: false });
-  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [, setPhoneTouched] = useState(false);
   const [state, setState] = useState<State>({ kind: "idle" });
+  // Until React hydrates, a click would do a native GET submit and put the
+  // visitor's name, email and message in the URL (history, logs, analytics).
+  const [ready, setReady] = useState(false);
   const lastLead = useRef<{ name: string; email: string; phone: string } | null>(null);
-  // One stable identifier per attempted enquiry; preserve it across retries to
-  // prevent duplicate Google Sheet rows if the network response is lost.
+  // One stable identifier per attempted enquiry; kept across retries so a lost
+  // response cannot create a duplicate Google Sheet row.
   const submissionIdRef = useRef<string | null>(null);
   const startedAt = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
 
+  // Arriving from a tool's "Send this result with a question": put the result
+  // in the message so the visitor only has to add their question.
+  const [prefill, setPrefill] = useState("");
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("bredge_contact_prefill");
+      if (!raw) return;
+      const d = JSON.parse(raw) as { tool?: unknown; text?: unknown } | null;
+      // Same-origin storage, but still untyped: only strings make it into the message.
+      const tool = typeof d?.tool === "string" ? d.tool.slice(0, 120) : "";
+      const text = typeof d?.text === "string" ? d.text : "";
+      if (text) queueMicrotask(() => setPrefill(`My question:\n\n\nMy result from ${tool || "your tool"}:\n${text}`.slice(0, 4800)));
+    } catch { /* storage blocked: nothing to prefill */ }
+  }, []);
+  useEffect(() => {
+    if (!prefill) return;
+    const box = document.getElementById("message") as HTMLTextAreaElement | null;
+    if (box) { box.focus(); box.setSelectionRange(13, 13); }
+  }, [prefill]);
+
   useEffect(() => {
     startedAt.current = performance.now();
+    queueMicrotask(() => setReady(true));
     const intent = new URLSearchParams(window.location.search).get("intent");
-    if (intent && INTENT_TO_NEED[intent]) queueMicrotask(() => { setNeeds([INTENT_TO_NEED[intent]]); setIntent(intent); });
+    if (intent && INTENT_TO_NEED[intent]) queueMicrotask(() => setNeeds([INTENT_TO_NEED[intent]]));
   }, []);
 
   function toggleNeed(n: string) {
@@ -82,24 +96,24 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
     const data = new FormData(e.currentTarget);
     const email = String(data.get("email") || "").trim().toLowerCase();
     const projectType = [capability, urgentArea].filter(Boolean).join(" · ");
-    // Modern browsers keep one UUID through retries. Older browsers without
-    // randomUUID still submit: the Worker generates a server-side identifier.
     if (!submissionIdRef.current) submissionIdRef.current = window.crypto?.randomUUID?.() ?? null;
     const payload = {
       ...(submissionIdRef.current ? { submissionId: submissionIdRef.current } : {}),
       formType,
       name: String(data.get("name") || "").trim(),
       email,
-      company: String(data.get("company") || "").trim(),
+      // Company is optional for visitors; the API still expects a value.
+      company: String(data.get("company") || "").trim() || "Not given",
       country: phone.country,
       phone: phone.display, phoneE164: phone.e164, phoneCountry: phone.country, callingCode: phone.callingCode,
-      needs,
+      // The needs group is optional; the API expects at least one allowlisted value.
+      needs: needs.length ? needs : [NOT_SURE],
       capability,
       urgentArea,
       trafficGroup: trafficGroup(),
       projectType,
       message: String(data.get("message") || "").trim(),
-      timeline,
+      timeline: "",
       page: window.location.pathname,
       intent: new URLSearchParams(window.location.search).get("intent") || "",
       utm: readUtm(),
@@ -107,31 +121,27 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
       elapsedMs: Math.round(performance.now() - startedAt.current),
     };
 
-    if (!payload.name) { setState({ kind: "error", message: "Please add your name." }); focusField("#name"); return; }
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payload.email)) { setState({ kind: "error", message: "That email doesn’t look right — please check it." }); focusField("#email"); return; }
-    if (!payload.company) { setState({ kind: "error", message: "Please add your company or organisation." }); focusField("#company"); return; }
-    if (!phone.valid) { setPhoneTouched(true); setState({ kind: "error", message: "Check that phone number." }); focusField("#phone-input"); return; }
-    if (needs.length === 0) { setState({ kind: "error", message: "Please select at least one area we can help with." }); focusField("#needs-group"); return; }
-    if (!payload.message) { setState({ kind: "error", message: "Tell us a little about what you’re trying to solve." }); focusField("#message"); return; }
+    if (!payload.name) { setState({ kind: "error", message: "Please add your name.", field: "name" }); focusField("#name"); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payload.email)) { setState({ kind: "error", message: "That email doesn’t look right. Please check it.", field: "email" }); focusField("#email"); return; }
+    // Phone is optional; if one is entered it must be valid.
+    const hasPhone = phone.display.replace(/\D/g, "").length > (phone.callingCode || "").length;
+    if (hasPhone && !phone.valid) { setPhoneTouched(true); setState({ kind: "error", message: "Check that phone number.", field: "phone" }); focusField("#phone-input"); return; }
+    if (!payload.message) { setState({ kind: "error", message: "Tell us a little about what you’re trying to solve.", field: "message" }); focusField("#message"); return; }
 
     setState({ kind: "sending" });
     trackEvent("contact_submit", { selected_needs_count: needs.length, intent: payload.intent, page_path: payload.page });
     try {
       const res = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       if (res.ok) {
-        // The next distinct enquiry must receive a new UUID. Preserve the same
-        // ID only across uncertain/failed attempts of this enquiry.
         submissionIdRef.current = null;
         lastLead.current = { name: payload.name, email: payload.email, phone: payload.phoneE164 };
         trackEvent("contact_success", { selected_needs_count: needs.length, intent: payload.intent });
+        try { sessionStorage.removeItem("bredge_contact_prefill"); } catch { /* ignore */ }
         setState({ kind: "ok" });
       } else {
-        const b: unknown = await res.json().catch(() => ({}));
-        const message = b !== null && typeof b === "object" && "error" in b && typeof b.error === "string"
-          ? b.error
-          : "That didn’t send. Please try again.";
+        const b = (await res.json().catch(() => ({}))) as { error?: string };
         trackEvent("contact_error", { page_path: payload.page });
-        setState({ kind: "error", message });
+        setState({ kind: "error", message: b.error || "That didn’t send. Please try again." });
       }
     } catch {
       trackEvent("contact_error", { page_path: payload.page });
@@ -148,9 +158,9 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
     return (
       <div className="contact-form form-success" role="status" data-clarity-mask="true">
         <span className="success-mark" aria-hidden="true">✓</span>
-        <h2>Thanks — we’ve got it.</h2>
-        <p>Your note has been sent to the Bredge team. We’ll review the context and reply by email.</p>
-        <button type="button" className="button cta-accent" onClick={goSchedule}>Schedule a 30-minute call <span className="arrow" aria-hidden="true">↗</span></button>
+        <h2>Row inserted. Zero duplicates.</h2>
+        <p>Your note has reached the Bredge team, a person and not a ticket queue. We’ll read it properly and reply by email. If it can’t wait, grab a slot below.</p>
+        <button type="button" className="button" onClick={goSchedule}>Schedule a 30-minute call <span className="arrow" aria-hidden="true">↗</span></button>
       </div>
     );
   }
@@ -163,28 +173,29 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
       ? "What feels unreliable, manual or difficult today?"
       : "Messy is fine. A few sentences is enough.";
 
+  const errField = state.kind === "error" ? state.field : undefined;
+  const errProps = (f: string) => (errField === f ? { "aria-invalid": true as const, "aria-describedby": "contact-form-error" } : {});
+
   return (
-    <form className="contact-form" ref={formRef} onSubmit={onSubmit} noValidate data-clarity-mask="true">
-      {INTENT_HELP[intent] && <p className="contact-intent-context"><strong>{INTENT_HELP[intent].label}</strong> {INTENT_HELP[intent].details}</p>}
+    <form className="contact-form" ref={formRef} onSubmit={onSubmit} method="post" noValidate data-clarity-mask="true">
       <div className="field">
         <label htmlFor="name">Name <i aria-hidden="true">*</i></label>
-        <input id="name" name="name" autoComplete="name" required />
+        <input id="name" name="name" autoComplete="name" required maxLength={120} {...errProps("name")} />
       </div>
       <div className="field">
         <label htmlFor="email">Email <i aria-hidden="true">*</i></label>
-        <input id="email" name="email" type="email" inputMode="email" autoComplete="email" required />
+        <input id="email" name="email" type="email" inputMode="email" autoComplete="email" required maxLength={200} {...errProps("email")} />
       </div>
       <div className="field">
-        <label htmlFor="company">Company / organisation <i aria-hidden="true">*</i></label>
-        <input id="company" name="company" autoComplete="organization" required />
+        <label htmlFor="company">Company / organisation <small className="optional">(optional)</small></label>
+        <input id="company" name="company" autoComplete="organization" maxLength={160} />
       </div>
 
       <PhoneField onChange={setPhone} />
-      {phoneTouched && !phone.valid && phone.display.length <= 3 && <span className="field-error" style={{ marginTop: -8 }}>Add a phone number.</span>}
 
       <fieldset className="field needs-field" id="needs-group">
-        <legend className="group-label">What can we help with? <i aria-hidden="true">*</i></legend>
-        <span className="help help-top">Select all that apply.</span>
+        <legend className="group-label">What can we help with? <span className="opt">optional</span></legend>
+        <span className="help help-top">Select any that apply, or skip if you’re not sure.</span>
         <div className="chip-select">
           {NEED_OPTIONS.map((n) => (
             <label key={n} className={`chip-opt chip-check${needs.includes(n) ? " on" : ""}`}>
@@ -223,17 +234,8 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
 
       <div className="field">
         <label htmlFor="message">What are you trying to solve? <i aria-hidden="true">*</i></label>
-        <textarea id="message" name="message" required />
-        <span className="help">{helper}</span>
-      </div>
-
-      <div className="field">
-        <span className="group-label">Target timeline <span className="opt">optional</span></span>
-        <div className="chip-select" role="group" aria-label="Timeline">
-          {timelines.map((t) => (
-            <button type="button" key={t} className="chip-opt" aria-pressed={timeline === t} onClick={() => setTimeline(timeline === t ? "" : t)}>{t}</button>
-          ))}
-        </div>
+        <textarea key={prefill ? "prefilled" : "empty"} defaultValue={prefill} id="message" name="message" required maxLength={5000} aria-describedby={errField === "message" ? "message-help contact-form-error" : "message-help"} aria-invalid={errField === "message" || undefined} />
+        <span className="help" id="message-help">{helper}</span>
       </div>
 
       <div className="hp" aria-hidden="true">
@@ -242,11 +244,17 @@ export function ContactForm({ formType = "contact" }: { formType?: string }) {
       </div>
 
 
-      <button className="button cta-accent" type="submit" disabled={state.kind === "sending"}>
-        {state.kind === "sending" ? "Sending…" : "Send it to a data lead"} <span className="arrow" aria-hidden="true">↗</span>
+
+      <button className="button" type="submit" disabled={!ready || state.kind === "sending"}>
+        {state.kind === "sending" ? "Sending…" : "Send"} <span className="arrow" aria-hidden="true">↗</span>
       </button>
 
-      {state.kind === "error" && state.message && <p className="form-status err" role="alert">{state.message}</p>}
+      {/* OWNER CONFIRM: "reply within one working day" and "Happy to sign your NDA" are commitments the team must honour. */}
+      <p className="ct-reassure">We read every message ourselves and reply within one working day. Happy to sign your NDA before you share any data.</p>
+
+      <div role="alert" aria-atomic="true">
+        {state.kind === "error" && state.message && <p className="form-status err" id="contact-form-error">{state.message}</p>}
+      </div>
     </form>
   );
 }

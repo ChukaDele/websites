@@ -1,94 +1,46 @@
 import type { Metadata } from "next";
 import { PageShell } from "../../components/site/PageShell";
-import { TraceDecision } from "../../components/interactions/TraceDecision";
+import { GlobeHero } from "../../components/work/GlobeHero";
+import { HowWeWork } from "../../components/work/HowWeWork";
+import { DeliverableRail, type Deliverable } from "../../components/services/DeliverableRail";
+import "../services.css";
 import { pageMetadata } from "../../lib/seo";
 
 export const metadata: Metadata = pageMetadata({
-  title: "How We Work | The Bredge",
+  title: "How We Work & About Us | The Bredge",
   description: "How The Bredge delivers data work: start with the decision, show the logic, resolve disagreement, validate before trust and build systems your team can operate.",
   path: "/how-we-work",
 });
 
-const principles: Array<[string, string, string]> = [
-  ["01", "Start with the decision.", "Technology comes after understanding what somebody needs to know, do or change."],
-  ["02", "Show the logic.", "Important metrics, transformations and assumptions should be explainable — not buried behind a dashboard."],
-  ["03", "Resolve disagreement.", "When two systems disagree, we investigate the difference instead of picking whichever number looks more plausible."],
-  ["04", "Test before trust.", "We validate relationships, ranges, totals and business logic before presenting outputs as reliable."],
-  ["05", "Build for operation.", "A successful project should still work three months after the project team leaves."],
-  ["06", "Document the edges.", "We state known limitations instead of pretending every dataset or model has equal confidence."],
+// What we believe, as the rail's panels (from Who we are).
+const beliefs: Deliverable[] = [
+  { mark: "burst", title: "The dashboard isn’t the work.", text: "It’s usually the visible end of a much larger system." },
+  { mark: "web", title: "Business context is technical context.", text: "Understanding revenue, customers and operations changes how the data should be modelled." },
+  { mark: "steps", title: "Complexity should earn its place.", text: "A more sophisticated architecture is not automatically a better one." },
+  { mark: "bars", title: "Reliability beats theatre.", text: "A simple answer your team can defend beats an impressive system nobody understands." },
+  { mark: "rings", title: "Good partners reduce dependency.", text: "We should leave your data clearer than we found it." },
 ];
-
-const rhythm: Array<[string, string, string]> = [
-  ["01", "Context", "Business questions, stakeholders, systems and constraints."],
-  ["02", "Evidence", "Profile the data before assuming what is possible."],
-  ["03", "Design", "Agree the model, definitions, outputs and operating approach."],
-  ["04", "Build", "Deliver in visible increments rather than disappearing into a long implementation phase."],
-  ["05", "Validate", "Test and reconcile before sign-off."],
-  ["06", "Operate or hand over", "Keep improving the system — or leave your team with what it needs to own it."],
-];
-
-const handover = ["Architecture", "Source definitions", "Metric dictionary", "Data model", "Quality checks", "Refresh ownership", "Runbook", "Known limitations"];
 
 export default function HowWeWorkPage() {
   return (
-    <PageShell>
-      <section className="section-wrap page-hero">
-        <p className="eyebrow">HOW WE WORK</p>
-        <h1>Close to the problem. Clear about the work.</h1>
-        <p className="lede">Good data work depends as much on understanding the business as understanding the stack. We work closely with the people who use the data, keep the technical logic visible, and avoid adding process unless it improves the result.</p>
-      </section>
+    <PageShell overlay>
+      <GlobeHero
+        chip={{ tag: "How we work", text: "Six principles that shape the work", href: "#hw-title" }}
+        title={["Close to the problem.", "Clear about the work."]}
+        lede="Good data work depends as much on understanding the business as understanding the stack. We work closely with the people who use the data, keep the technical logic visible, and avoid adding process unless it improves the result."
+        primary={{ label: "Schedule a call", href: "/schedule" }}
+        secondary={{ label: "See the five steps", href: "#hw-title" }}
+      />
 
-      <section className="section surface">
-        <div className="section-wrap">
-          <div className="section-lead">
-            <h2>Every number should trace back to a source.</h2>
-            <p>Follow a decision backwards — through the metric, its definition, the model, the transformation and the source it came from. Nothing hidden.</p>
-          </div>
-          <TraceDecision />
-        </div>
-      </section>
+      <HowWeWork />
 
-      <section className="section">
-        <div className="section-wrap">
-          <div className="section-lead"><h2>Six principles that shape the work.</h2></div>
-          <div className="ruled">
-            {principles.map(([n, h, p]) => (
-              <div className="ruled-row" key={n}><span>{n}</span><h3>{h}</h3><p>{p}</p></div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section surface">
-        <div className="section-wrap">
-          <div className="section-lead"><h2>A working rhythm, not a black box.</h2></div>
-          <div className="ruled">
-            {rhythm.map(([n, h, p]) => (
-              <div className="ruled-row" key={n}><span>{n}</span><h3>{h}</h3><p>{p}</p></div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="section-wrap callout-inner" style={{ background: "var(--surface)" }}>
-          <div>
-            <h2>No account-management telephone game.</h2>
-            <p>Where practical, clients work directly with the people solving the problem. We keep communication concise, surface blockers early and make decisions visible.</p>
-          </div>
-          <div>
-            <p className="k" style={{ margin: "0 0 14px", color: "#5a6964", font: "10px ui-monospace,monospace", letterSpacing: ".1em" }}>DOCUMENTATION MAY INCLUDE</p>
-            <div className="cap-tags">{handover.map((h) => <span key={h}>{h}</span>)}</div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section-wrap callout">
-        <div className="callout-inner">
-          <div><h2>See how we could approach your data problem.</h2><p>Tell us where it hurts. We’ll show you how we’d think about it.</p></div>
-          <div><a className="button cta-accent" href="/schedule">Schedule a call <span className="arrow" aria-hidden="true">↗</span></a></div>
-        </div>
-      </section>
+      <DeliverableRail
+        id="about"
+        label="Who we are"
+        title="Technical enough to build it. Close enough to the business to know why it matters."
+        intro="The Bredge brings data engineering, analytics and business intelligence together around one idea: data is only valuable when somebody can use it to make a better decision. No account-manager layer and no hand-offs: whoever you talk to designs the models, reconciles the numbers and keeps the systems running."
+        items={beliefs}
+      />
     </PageShell>
   );
 }

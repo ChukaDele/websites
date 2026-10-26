@@ -1,0 +1,106 @@
+/* "What we actually do" (`tq-`): WhatWeDo.tsx. Split out of home.css so the
+   service pages can reuse the section; imported by app/page.tsx and the
+   Embedded Data Team page. */
+.tq { --tq-pad:clamp(20px, 5vw, 72px); --tq-line:rgba(20,35,33,.14); padding:clamp(56px, 8vw, 110px) 0 0; background:var(--paper); color:var(--ink); }
+.tq-frame { position:relative; margin:0 var(--tq-pad); border-left:1px solid var(--tq-line); border-right:1px solid var(--tq-line); }
+.tq-frame::before, .tq-frame::after { content:""; position:absolute; left:calc(var(--tq-pad) * -1); right:calc(var(--tq-pad) * -1); height:1px; background:var(--tq-line); }
+.tq-frame::before { top:0; }
+.tq-frame::after { bottom:0; }
+.tq-main { position:relative; }
+.tq-band { display:grid; grid-template-columns:minmax(0, .92fr) minmax(0, 1.08fr); gap:clamp(28px, 4vw, 64px); padding:clamp(40px, 6vw, 88px) clamp(20px, 3vw, 44px); }
+.tq-top { border-bottom:1px solid var(--tq-line); align-items:start; }
+.tq-h2 { max-width:14ch; margin:0; font-size:clamp(2.1rem, 3.4vw, 3.6rem); font-weight:500; line-height:1.04; letter-spacing:-.04em; }
+.tq-h2 span { display:block; color:#8e9793; }
+.tq-main { align-items:stretch; }
+.tq-side { display:flex; flex-direction:column; justify-content:space-between; gap:48px; }
+.tq-lead h3 { max-width:16ch; margin:0; font-size:clamp(1.6rem, 2.3vw, 2.25rem); font-weight:500; line-height:1.12; letter-spacing:-.03em; }
+.tq-lead p { max-width:44ch; margin:16px 0 26px; color:var(--muted); font-size:1rem; line-height:1.55; }
+.tq-button { display:inline-flex; align-items:center; min-height:44px; padding:0 20px; border-radius:999px; background:var(--ink); color:var(--paper); font-size:.92rem; font-weight:500; white-space:nowrap; text-decoration:none; transition:background-color var(--motion-fast) ease, transform var(--motion-instant) var(--ease-out); }
+@media (hover:hover) and (pointer:fine) { .tq-button:hover { background:#24403a; } }
+.tq-button:active { transform:scale(.97); }
+.tq-button:focus-visible, .tq-item button:focus-visible { outline:2px solid var(--brand); outline-offset:3px; }
+.tq-acc { border-top:1px solid var(--tq-line); }
+.tq-item { border-bottom:1px solid var(--tq-line); }
+.tq-item button { position:relative; display:flex; align-items:center; justify-content:space-between; width:100%; padding:20px 0; border:0; background:none; color:#8e9793; font:500 1.02rem var(--font-sans); letter-spacing:-.01em; text-align:left; cursor:pointer; transition:color var(--motion-fast) ease; }
+.tq-item button::after { content:""; width:9px; height:9px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:translateY(-3px) rotate(45deg); transition:transform var(--motion-base) var(--ease-out); }
+@media (hover:hover) and (pointer:fine) { .tq-item button:hover { color:var(--ink); } }
+.tq-timer { position:absolute; left:0; top:-1px; height:1px; width:100%; background:var(--ink); transform-origin:0 50%; animation:tq-timer 5.2s linear forwards; }
+.tq.is-paused .tq-timer { animation-play-state:paused; }
+.tq-panel { display:grid; grid-template-rows:0fr; transition:grid-template-rows 280ms var(--ease-out); }
+.tq-panel > div { overflow:hidden; }
+.tq-panel p { max-width:42ch; margin:-6px 0 20px; color:var(--muted); font-size:.92rem; line-height:1.5; }
+.tq-visual { position:relative; display:grid; place-items:center; min-height:clamp(460px, 46vw, 600px); overflow:hidden; border-radius:6px; background:radial-gradient(120% 90% at 20% 100%, #dbe9cf 0%, #e9ede2 45%, #eeeee6 100%); }
+.tq-canvas { position:absolute; inset:0; width:100%; height:100%; }
+.tq-card { position:relative; width:min(88%, 440px); border:1px solid rgba(20,35,33,.12); border-radius:12px; background:rgba(250,249,244,.84); box-shadow:inset 0 1px 0 rgba(255,255,255,.75), 0 28px 64px -28px rgba(20,35,33,.4); -webkit-backdrop-filter:blur(14px) saturate(1.1); backdrop-filter:blur(14px) saturate(1.1); }
+@media (prefers-reduced-transparency:reduce) { .tq-card { background:#f8f7f2; -webkit-backdrop-filter:none; backdrop-filter:none; } }
+.tq-card-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 18px; border-bottom:1px solid rgba(20,35,33,.1); font-size:.9rem; font-weight:600; letter-spacing:-.01em; }
+.tq-stage { padding:4px 9px; border-radius:6px; background:var(--ink); color:var(--paper); font:500 .68rem var(--font-mono); letter-spacing:.02em; }
+.tq-card-body { display:grid; align-content:start; min-height:262px; margin:0; padding:4px 18px 8px; }
+.tq-row { padding:14px 0; }
+.tq-row + .tq-row { border-top:1px solid rgba(20,35,33,.08); }
+.tq-row dt { margin-bottom:7px; color:var(--muted); font-size:.74rem; }
+.tq-row dd { margin:0; color:var(--ink); font-size:.92rem; line-height:1.45; }
+.tq-tags { display:flex; flex-wrap:wrap; gap:5px; }
+.tq-tags span { padding:4px 8px; border-radius:6px; background:rgba(144,210,111,.24); color:#2c4a22; font:500 .7rem var(--font-mono); }
+.tq-row, .tq-swap { animation:tq-row 300ms var(--ease-out) both; animation-delay:calc(var(--i, 0) * 50ms); }
+@media (prefers-reduced-motion:no-preference) and (scripting:enabled) {
+  .tq-h2, .tq-lead, .tq-acc, .tq-visual { opacity:0; transform:translateY(16px); transition:opacity 700ms var(--ease-out), transform 700ms var(--ease-out); }
+  .tq-lead { transition-delay:200ms; } .tq-acc { transition-delay:280ms; } .tq-visual { transition-delay:240ms; }
+  .tq.is-in .tq-h2, .tq.is-in .tq-lead, .tq.is-in .tq-acc, .tq.is-in .tq-visual { opacity:1; transform:none; } }
+@media (max-width:900px) {
+  .tq-band { grid-template-columns:1fr; }
+  .tq-visual { min-height:500px; }
+  .tq-card { width:calc(100% - 20px); } }
+@media (max-width:640px) {
+  .tq { --tq-pad:10px; }
+  .tq-band { padding:40px 16px; }
+  .tq-visual { margin:0 -6px; } }
+@media (prefers-reduced-motion:reduce) {
+  .tq-timer { display:none; }
+  .tq-panel { transition:none; }
+  .tq-row, .tq-swap { animation:tq-fade 200ms ease both; } }
+.tq { --tq-line:rgba(244,241,233,.12); background:#050807; color:var(--paper); }
+.tq-h2 span { color:#6c7672; }
+.tq-lead p, .tq-panel p { color:#9aa39f; }
+.tq-button { background:var(--paper); color:var(--ink); }
+@media (hover:hover) and (pointer:fine) { .tq-button:hover { background:#dcd9cf; } .tq-item button:hover { color:var(--paper); } }
+.tq-item button { color:#6c7672; }
+.tq-timer { background:var(--paper); }
+.tq-visual { background:radial-gradient(120% 90% at 20% 100%, #11301e 0%, #0a1510 45%, #070b09 100%); }
+.tq-card { border-color:rgba(244,241,233,.12); background:rgba(12,20,17,.72); box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 30px 70px -30px rgba(0,0,0,.7); }
+@media (prefers-reduced-transparency:reduce) { .tq-card { background:#0f1714; } }
+.tq-card-head { border-bottom-color:rgba(244,241,233,.1); }
+.tq-stage { background:var(--brand); color:var(--ink); }
+.tq-row + .tq-row { border-top-color:rgba(244,241,233,.08); }
+.tq-row dt { color:#8b9590; }
+.tq-row dd { color:var(--paper); }
+.tq-tags span { background:rgba(144,210,111,.14); color:var(--lime); }
+
+/* "What we actually do": its text starts on the homepage edge too. The frame
+   (side rules) moves so the band's padding lands the content exactly on the
+   line; cqw measures the section itself, so the scrollbar can't skew it. */
+@media (min-width:901px) {
+  .tq { container-type:inline-size; --tq-edge:max(24px, calc((100cqw - 1440px) / 2)); --tq-inset:clamp(20px, 3vw, 44px); }
+  .tq .tq-frame { --tq-pad:max(0px, calc(var(--tq-edge) - var(--tq-inset) - 1px)); }
+  .tq .tq-band { padding-left:calc(var(--tq-edge) - var(--tq-pad) - 1px); }
+}
+
+/* Principles in one line, beside "What we actually do" (same treatment as the
+   Five systems microcopy, on the dark band). */
+.tq-top { align-items:end; }
+.tq-mc { justify-self:end; max-width:46ch; margin:0; color:rgba(244,241,233,.62); font-size:clamp(.88rem, .98vw, .98rem); line-height:1.55; letter-spacing:-.005em; text-wrap:pretty; }
+@media (max-width:900px) { .tq-mc { justify-self:start; } }
+
+/* Plain card (no row labels): the open item's text, larger. */
+.tq-card-body.is-plain { min-height:0; padding:18px 18px 22px; }
+.tq-card-body.is-plain .tq-row { margin:0; padding:0; color:var(--paper); font-size:clamp(1.05rem, 1.3vw, 1.25rem); line-height:1.45; letter-spacing:-.01em; }
+/* Headline with no text beside it: full width, so it keeps to two lines. */
+.tq-top.is-solo { grid-template-columns:minmax(0, 1fr); }
+.tq-top.is-solo .tq-h2 { max-width:24ch; }
+
+/* Black and white variant (Data Projects): true black, greyscale accents. */
+.tq.is-mono { background:#0b0b0b; }
+.tq.is-mono .tq-visual { background:radial-gradient(120% 90% at 20% 100%, #2a2a29 0%, #141414 45%, #0b0b0b 100%); }
+.tq.is-mono .tq-card { background:rgba(18,18,18,.78); }
+.tq.is-mono .tq-stage { background:#f1f1ef; color:#0b0b0b; }
+.tq.is-mono .tq-tags span { background:rgba(241,241,239,.1); color:#f1f1ef; }

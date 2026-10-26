@@ -1,0 +1,51 @@
+/* "Three ways teams hire us" (components/landing/HireUs.tsx): shared by the
+   homepage and /services. Keyframes hu-swap/hu-fade live in pages.css. */
+.hu { --hu-lime:#dcf77a; --hu-line:#e6e6e3; --hu-mute:#7d7d7a; padding:clamp(80px, 10vw, 140px) 0; background:#fff; color:#111; }
+.hu-wrap { display:grid; grid-template-columns:minmax(0, 44fr) minmax(0, 56fr); gap:clamp(32px, 4vw, 64px); width:min(1240px, calc(100% - 2 * clamp(16px, 4vw, 56px))); margin:0 auto; }
+.hu-left { display:flex; flex-direction:column; padding-top:12px; }
+.hu-label { margin:0 0 28px; color:#111; font:500 .68rem var(--font-sans); letter-spacing:.01em; text-transform:uppercase; }
+.hu-left h2 { margin:0; font-size:clamp(2.4rem, 4vw, 3.4rem); font-weight:400; line-height:1.12; letter-spacing:-.035em; }
+.hu-aside { max-width:310px; margin-top:auto; padding-top:56px; }
+.hu-aside > p { margin:0 0 28px; color:#111; font-size:.95rem; line-height:1.4; letter-spacing:-.005em; }
+.hu-proof { display:flex; align-items:center; gap:10px; }
+.hu-stack { display:flex; }
+.hu-stack i { display:grid; place-items:center; width:30px; height:38px; margin-left:-6px; border:2px solid #fff; border-radius:6px; background:#eef3e6; color:#2f6b3a; }
+.hu-stack i:first-child { margin-left:0; }
+.hu-stack i:nth-child(2) { background:#e6eef3; color:#2d5f7a; }
+.hu-stack i:nth-child(3) { background:#f3ece4; color:#8a5a2b; }
+.hu-stack i:nth-child(4) { background:#f3f1df; color:#7a6a12; }
+.hu-proof-text { display:grid; gap:2px; color:var(--hu-mute); font-size:.74rem; }
+.hu-proof-text b { color:#8cc63f; font-size:.7rem; font-weight:600; letter-spacing:.01em; }
+.hu-tabs { display:flex; gap:8px; margin-bottom:20px; }
+.hu-tabs button { display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 14px; border:1px solid var(--hu-line); border-radius:3px; background:#fff; color:#111; font:400 .92rem var(--font-sans); letter-spacing:-.01em; white-space:nowrap; cursor:pointer; transition:background-color 150ms ease, border-color 150ms ease, transform 120ms var(--ease-out); }
+.hu-tabs button:active { transform:scale(.97); }
+.hu-tabs button:focus-visible { outline:2px solid #111; outline-offset:2px; }
+.hu-card { padding:clamp(24px, 3vw, 36px) clamp(20px, 2.4vw, 32px) clamp(24px, 3vw, 36px); border:1px solid var(--hu-line); background:#fff; }
+.hu-swap { animation:hu-swap 260ms var(--ease-out) both; }
+.hu-card h3 { margin:0 0 16px; font-size:clamp(1.5rem, 2.1vw, 1.9rem); font-weight:400; letter-spacing:-.03em; }
+.hu-desc { max-width:42ch; margin:0 0 40px; color:var(--hu-mute); font-size:.84rem; line-height:1.55; }
+.hu-price { margin:0 0 16px; font-size:clamp(2.4rem, 3.6vw, 3.2rem); font-weight:400; line-height:1; letter-spacing:-.04em; }
+.hu-price span { font-size:.62em; letter-spacing:-.02em; }
+.hu-action { display:flex; align-items:center; flex-wrap:wrap; gap:12px 14px; padding-bottom:36px; border-bottom:1px solid var(--hu-line); }
+.hu-note { color:var(--hu-mute); font-size:.92rem; letter-spacing:-.01em; }
+.hu-note b { color:#111; font-weight:400; }
+.hu-included { padding-top:36px; }
+.hu-included > span { display:block; margin-bottom:24px; color:var(--hu-mute); font-size:.92rem; }
+.hu-included ul { display:grid; grid-template-columns:1fr 1fr; gap:18px 40px; margin:0; padding:0; list-style:none; }
+.hu-included li { display:flex; align-items:flex-start; gap:12px; color:#111; font-size:.92rem; line-height:1.45; letter-spacing:-.01em; }
+.hu-included li svg { flex:none; margin-top:5px; }
+@media (max-width:900px) {
+  .hu-wrap { grid-template-columns:minmax(0, 1fr); }
+  .hu-aside { margin-top:32px; padding-top:0; } }
+@media (max-width:560px) { .hu-included ul { grid-template-columns:1fr; } .hu-tabs { flex-wrap:wrap; } }
+@media (prefers-reduced-motion:reduce) { .hu-swap { animation:hu-fade 200ms ease both; } }
+/* How the price is set, as text under "What's included" (/services). */
+.hu-pricing { margin-top:36px; padding-top:32px; border-top:1px solid var(--hu-line); }
+.hu-pricing > span { display:block; margin-bottom:18px; color:var(--hu-mute); font-size:.92rem; }
+.hu-pricing ol { display:grid; gap:14px; margin:0; padding:0; list-style:none; }
+.hu-pricing li { display:grid; grid-template-columns:22px minmax(0, 1fr); gap:12px; align-items:baseline; }
+.hu-pricing li i { display:inline-grid; place-items:center; width:22px; height:22px; border:1px solid var(--hu-line); border-radius:50%; color:#111; font:500 .7rem var(--font-mono); font-style:normal; }
+.hu-pricing li p { margin:0; color:var(--hu-mute); font-size:.92rem; line-height:1.5; letter-spacing:-.01em; }
+.hu-pricing li b { color:#111; font-weight:400; }
+.hu-pricing-note { margin:22px 0 0; color:var(--hu-mute); font-size:.86rem; }
+.hu-pricing-note a { display:inline-flex; align-items:center; gap:4px; margin-left:6px; color:#111; text-decoration:underline; text-underline-offset:3px; }

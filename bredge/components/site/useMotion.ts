@@ -51,33 +51,12 @@ export function useMotion(
       });
     };
 
-    // Avoid downloading GSAP and ScrollTrigger for scenes below the fold.
-    // IntersectionObserver is an enhancement; old browsers can load directly.
-    const observer = typeof IntersectionObserver !== "undefined"
-      ? new IntersectionObserver(([entry]) => {
-          if (entry.isIntersecting && mq.matches) {
-            void load();
-            observer?.disconnect();
-          }
-        }, { rootMargin: "420px 0px", threshold: 0 })
-      : null;
-    if (observer) observer.observe(root);
-    else if (mq.matches) void load();
-
-    const onChange = (event: MediaQueryListEvent) => {
-      if (event.matches && !observer) void load();
-      // If the desktop viewport re-enters while near the section, load once.
-      else if (event.matches && root.getBoundingClientRect().top < innerHeight + 420
-        && root.getBoundingClientRect().bottom > -420) {
-        void load();
-        observer?.disconnect();
-      }
-    };
+    if (mq.matches) void load();
+    const onChange = (event: MediaQueryListEvent) => { if (event.matches) void load(); };
     mq.addEventListener("change", onChange);
 
     return () => {
       disposed = true;
-      observer?.disconnect();
       mq.removeEventListener("change", onChange);
       matchMedia?.revert();
     };

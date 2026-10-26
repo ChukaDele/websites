@@ -1,0 +1,227 @@
+import type { Article } from "../types";
+
+export const article: Article = {
+  slug: "inflation-july-2026",
+  series: "Inflation",
+  issue: "Data Brief No. 014",
+  published: "2026-08-18",
+  period: "July 2026",
+  title: "Nigeria's inflation eased to 15.43% in July. The food bill did not",
+  dek: "Headline inflation fell for a second month, but food prices rose 5.56% in July alone while core prices barely moved. For anyone setting prices, wages or budgets, the split matters more than the headline.",
+  readingMinutes: 8,
+  hero: { value: "15.43%", label: "Headline inflation, July 2026, year on year" },
+  takeaways: [
+    "Headline inflation slowed to 15.43% in July 2026, down 0.48pp from 15.91% in June and 9.51pp below July 2025's 24.94%. It is the second consecutive decline.",
+    "Food is moving the other way: food prices rose 5.56% in the month, 1.82pp faster than June's monthly pace. Annual food inflation of 20.31% is falling only because last year's comparison is high.",
+    "Core inflation, which strips out the most volatile items, is 14.97%, now below the headline, and rose just 0.15% in the month.",
+    "Food and non-alcoholic beverages contribute 6.18pp of the 15.43% headline on a 40.0% basket weight. Food, restaurants, transport and housing together contribute 11.11pp.",
+    "Geography is wide open: Adamawa's food inflation is 51.36% while Borno's is -0.31%, the only negative reading in the country.",
+  ],
+  sections: [
+    {
+      id: "slower-climb",
+      heading: "A slower climb is not a fall in prices",
+      body: [
+        "Start with the index, not the rate. Nigeria's consumer price index stood at 145.3 in July 2026, on a base where the 2024 average equals 100. Put plainly, a basket of everyday goods and services that cost ₦100,000 in 2024 now costs about ₦145,300.",
+        "That basket is still getting dearer. Prices rose 1.57% between June and July. What has changed is the speed. Headline inflation, the year-on-year rise in the whole basket, slowed to 15.43% in July from 15.91% in June. A year earlier it was 24.94%, so the annual rate is 9.51pp lower than in July 2025.",
+        "This is the second monthly decline in a row, and it sounds like the end of the squeeze. It is not quite that. The rate touched 15.06% in February 2026, its lowest point in the thirteen months the brief tracks, then drifted back up before easing again. July sits only slightly above that low.",
+        "One caution on comparisons. The National Bureau of Statistics (NBS) rebased the CPI in 2025, moving to a 2024 price base, 2023 spending weights and an updated classification of goods and services. The brief notes that its figures are not comparable with pre-2025 releases. Every month in its thirteen-month view sits on the new basket, but anyone lining today's numbers up against older published figures, or against internal models built on them, is comparing two different yardsticks.",
+      ],
+      exhibit: {
+        title: "Headline inflation has come down a long way from July 2025, but has hovered near 15% since February",
+        kind: "bars",
+        unit: "%",
+        points: [
+          ["Jul 2025", 24.94],
+          ["Feb 2026", 15.06],
+          ["Jun 2026", 15.91],
+          ["Jul 2026", 15.43],
+        ],
+        highlight: "Jul 2026",
+        note: "Headline CPI, year on year. Only the months the brief labels are shown. Source: NBS CPI July 2026; Bredge Data Brief No. 014.",
+      },
+      pull: "A basket that cost ₦100,000 in 2024 now costs about ₦145,300.",
+    },
+    {
+      id: "food-versus-core",
+      heading: "Underneath, the basket is splitting in two",
+      body: [
+        "The headline is an average, and in July it averaged two very different stories. Which one matters to you depends on what you buy and who you pay.",
+        "Food prices rose 5.56% in a single month. On a household food budget of ₦10,000 in June, that is roughly ₦556 more for the same shopping in July. The monthly pace was also 1.82pp faster than June's, so food is not just rising, it is accelerating.",
+        "Why, then, does annual food inflation look better? It fell to 20.31% from 26.20% a year ago. The brief's read is blunt: the annual figure is falling only because last year's comparison is high. When prices jumped sharply twelve months ago, this year's increases look smaller against them, even if they are still large.",
+        "Core inflation tells the opposite story. It excludes the most volatile items such as farm produce and energy, so it is a better guide to underlying price pressure. Core rose just 0.15% in July, close to flat, and its annual rate of 14.97% is now below the headline. A year ago it was 23.95%. The brief reads this as a sign that underlying pressure has largely gone.",
+        "Put the two together and the gap is wide: annual food inflation is 5.34pp above core (20.31 minus 14.97). For a business, that is the difference between costs that are settling and costs that are still moving fast.",
+      ],
+      exhibit: {
+        title: "Food prices rose 5.56% in July alone; core prices barely moved",
+        kind: "bars",
+        unit: "%",
+        points: [
+          ["Food", 5.56],
+          ["Urban", 1.9],
+          ["Headline", 1.57],
+          ["Rural", 0.78],
+          ["Core", 0.15],
+        ],
+        highlight: "Food",
+        note: "Month-on-month change, July 2026. Source: NBS CPI July 2026; Bredge Data Brief No. 014.",
+      },
+      pull: "Food is not just rising, it is accelerating.",
+    },
+    {
+      id: "where-the-rate-came-from",
+      heading: "Where the 15.43% actually comes from",
+      body: [
+        "A category's pull on the headline depends on two things: how fast its prices moved and how much households spend on it. The NBS publishes each category's contribution, in percentage points, and the brief sets them beside their weights in the basket.",
+        "Food and non-alcoholic beverages contribute 6.18pp of the 15.43% headline. That is a contribution, not a gap: it means about two-fifths of the headline rate comes from food, which also takes 40.0% of the basket. Restaurants and accommodation add 1.99pp, transport 1.64pp, and housing, water, electricity and gas 1.30pp.",
+        "Those four divisions contribute 11.11pp between them (6.18 + 1.99 + 1.64 + 1.30), roughly 72% of the headline, on 72.0% of the basket. Education and health follow at 0.96pp and 0.94pp. At the bottom, recreation, sport and culture contributes just 0.05pp.",
+        "The practical point is that most of Nigeria's inflation sits in things households cannot easily skip: eating, getting around and keeping the lights on. Those are also the lines that feed straight into wage demands and the cost of running a site.",
+      ],
+      exhibit: {
+        title: "Food alone contributes 6.18pp of the 15.43% headline",
+        kind: "hbars",
+        unit: "pp",
+        points: [
+          ["Food & non-alcoholic beverages", 6.18],
+          ["Restaurants & accommodation", 1.99],
+          ["Transport", 1.64],
+          ["Housing, water, electricity & gas", 1.3],
+          ["Education services", 0.96],
+          ["Health", 0.94],
+          ["Clothing & footwear", 0.78],
+          ["Information & communication", 0.51],
+          ["Personal care & social protection", 0.51],
+          ["Furnishings & household equipment", 0.46],
+          ["Insurance & financial services", 0.07],
+          ["Alcoholic beverages & tobacco", 0.06],
+          ["Recreation, sport & culture", 0.05],
+        ],
+        highlight: "Food & non-alcoholic beverages",
+        note: "Contribution to the July 2026 headline rate, percentage points, as published by NBS. The 13 divisions sum to 15.45pp because of rounding. Source: Bredge Data Brief No. 014.",
+      },
+    },
+    {
+      id: "urban-and-rural",
+      heading: "Towns and villages drift apart, for now",
+      body: [
+        "Inflation in urban Nigeria is 16.12%; in rural areas it is 13.77%. The urban rate has fallen from 25.26% a year ago. Prices in towns rose 1.90% in July, against 0.78% in rural areas.",
+        "The spread between the two is +2.36pp, the widest in the twelve months the brief tracks. The average over that period is just +0.18pp, and the range runs from -2.59pp to +2.36pp.",
+        "That range is the important part. The gap has crossed zero repeatedly over the year, with rural inflation sometimes running ahead of urban. So the brief declines to read one month as a turn, and so should planners. Urban costs are the sharper pressure today, but this is a reading to watch over the next few releases, not a trend to build a budget on.",
+      ],
+      exhibit: {
+        title: "The urban-rural gap is at its widest in twelve months, but it has swung both ways",
+        kind: "bars",
+        unit: "pp",
+        points: [
+          ["12-month low", -2.59],
+          ["12-month average", 0.18],
+          ["July 2026", 2.36],
+        ],
+        highlight: "July 2026",
+        note: "Urban minus rural headline inflation, percentage points, over the twelve months to July 2026. Source: NBS CPI July 2026; Bredge Data Brief No. 014.",
+      },
+    },
+    {
+      id: "state-by-state",
+      heading: "Thirty-seven different inflation rates",
+      body: [
+        "The national figure hides very different experiences. Over the year to July, all-items inflation ran at 33.03% in Adamawa, 25.21% in Yobe and 23.99% in Anambra. At the other end were Borno and Kebbi, both at 9.12%, and Nasarawa at 7.86%.",
+        "Food shows the extremes most clearly. Adamawa leads again at 51.36%, followed by Katsina at 30.84% and Zamfara at 30.65%. Kebbi sits at 12.50% and Nasarawa at 6.88%. Borno recorded food deflation of -0.31%, the only negative reading in the country.",
+        "Two cautions apply. First, the brief notes that state indices measure each state's own basket over time and are not comparable with one another, so these rankings describe how fast prices changed locally, not where goods are cheapest. Second, the brief does not explain why any state sits where it does, and neither should we.",
+        "Still, the spread is the message. A company operating in several states is not facing one inflation rate. It is facing many, and a single national price list or pay award will be too generous in some places and too tight in others.",
+      ],
+      exhibit: {
+        title: "Food inflation ranges from 51.36% in Adamawa to -0.31% in Borno",
+        kind: "hbars",
+        unit: "%",
+        points: [
+          ["Adamawa", 51.36],
+          ["Katsina", 30.84],
+          ["Zamfara", 30.65],
+          ["Nigeria, all states", 20.31],
+          ["Kebbi", 12.5],
+          ["Nasarawa", 6.88],
+          ["Borno", -0.31],
+        ],
+        highlight: "Nigeria, all states",
+        note: "Food inflation, year to July 2026: top 3 and bottom 3 of 37 states, with the national rate. State indices are not comparable with one another. Source: NBS CPI July 2026; Bredge Data Brief No. 014.",
+      },
+      pull: "A company operating in several states is not facing one inflation rate. It is facing many.",
+    },
+    {
+      id: "what-to-watch",
+      heading: "What to watch in the next release",
+      body: [
+        "The brief makes no forecast, and this article does not either. But July's numbers do tell executives which readings will matter most when the next CPI release lands.",
+        "First, the monthly food rate. At 5.56%, it is the single number most likely to decide whether the headline keeps falling. The annual food figure has been helped by a high comparison from last year. If monthly food increases stay this fast, that help will not last for ever, and the headline could stall even while core stays calm.",
+        "Second, core. A monthly rise of 0.15% is close to flat. If it holds near there, the case that underlying pressure has largely gone, as the brief puts it, gets stronger. If it picks up, July will look like a pause rather than a turning point.",
+        "Third, the urban-rural spread. At +2.36pp it is the widest in twelve months, but it has crossed zero repeatedly. Another wide reading would make urban costs a real planning issue; a swing back would confirm the brief's view that one month is not a turn.",
+        "For most companies, the useful habit is simple: read the monthly food and core rates, not just the headline, and read them every month.",
+      ],
+      pull: "Read the monthly food and core rates, not just the headline, and read them every month.",
+    },
+  ],
+  readers: {
+    operator: {
+      title: "Running a business in Nigeria",
+      points: [
+        "Budget food-linked inputs off the monthly pace, not the annual rate. Food rose 5.56% in July alone, so a 20.31% annual figure understates what your canteen, catering or raw-material lines may cost next quarter.",
+        "Expect wage pressure to track food, not core. Food contributes 6.18pp of the 15.43% headline, and that is the part of the basket staff feel at the market. A pay review benchmarked on 14.97% core will feel thin to employees.",
+        "Price and pay by location where you can. All-items inflation ran from 33.03% in Adamawa to 7.86% in Nasarawa, so a single national adjustment will misfire somewhere.",
+      ],
+    },
+    investor: {
+      title: "Investing from abroad",
+      points: [
+        "Treat the 9.51pp fall in headline inflation since July 2025 as real disinflation, but note it has hovered near 15% since February's 15.06% low. The easy part of the decline may be done.",
+        "Watch core, not just the headline. Core at 14.97% and rising only 0.15% in July points to easing underlying pressure, the signal most relevant to rates and real returns.",
+        "Do not mix old and new series. The CPI was rebased in 2025 and the brief says its figures are not comparable with pre-2025 releases, so check that any model or deck uses the rebased basket throughout.",
+      ],
+    },
+    seller: {
+      title: "Selling to Nigerian businesses",
+      points: [
+        "Expect customers in food, hospitality and logistics to be squeezed. Food, restaurants and transport together contribute 9.81pp of the 15.43% headline (6.18 + 1.99 + 1.64), so their costs are moving fastest.",
+        "Use the slowing headline carefully in price talks. Buyers will cite 15.43%; your own costs may track food's 5.56% monthly rise or the 1.57% overall monthly pace, so know which applies before you negotiate.",
+        "Segment accounts by geography. With urban inflation at 16.12% against 13.77% rural, and food inflation ranging from 51.36% to -0.31% across states, customers' budgets are under very different pressure.",
+      ],
+    },
+  },
+  scenario: "inflation",
+  method: [
+    "This article is based on The Bredge's Data Brief No. 014, published 18 August 2026, which covers the National Bureau of Statistics consumer price index release for July 2026.",
+    "Figures are read directly from the NBS release. Every rate is independently recomputed from index levels and cross-checked before publication; 18 checks ran and the result was PASS.",
+    "Basis: index base 2024 = 100; weights reference 2023; COICOP 2018 classification. Percentage-point changes are computed from published rates. The series was rebased by NBS and is not comparable with pre-2025 releases.",
+    "Category contributions are as published by NBS and sum to 15.45pp against a 15.43% headline because of rounding. State indices measure each state's own basket over time and are not comparable with one another.",
+    "Any additional arithmetic in this article, such as sums of contributions or naira illustrations of percentage changes, is shown in the text and uses only figures from the brief.",
+  ],
+  faq: [
+    [
+      "What is Nigeria's inflation rate in July 2026?",
+      "Headline inflation was 15.43% year on year in July 2026, according to the National Bureau of Statistics. That is down from 15.91% in June and 24.94% in July 2025, the second consecutive monthly decline.",
+    ],
+    [
+      "What is Nigeria's food inflation rate in July 2026?",
+      "Food inflation was 20.31% year on year in July 2026, down from 26.20% a year earlier. But food prices rose 5.56% in the month itself, faster than in June, so the annual fall reflects a high comparison from last year.",
+    ],
+    [
+      "What is core inflation in Nigeria now?",
+      "Core inflation, which excludes volatile items such as farm produce and energy, was 14.97% in July 2026, below the 15.43% headline. It rose only 0.15% in the month.",
+    ],
+    [
+      "Which Nigerian state has the highest inflation?",
+      "In July 2026 Adamawa had the highest rate on both measures: 33.03% for all items and 51.36% for food. Nasarawa had the lowest all-items rate at 7.86%, and Borno recorded food deflation of -0.31%. State indices are not comparable with one another.",
+    ],
+  ],
+  sources: [
+    {
+      label: "National Bureau of Statistics, CPI July 2026, released 18 August 2026. NADA catalog 154, download 1432.",
+    },
+    {
+      label: "The Bredge, Data Brief No. 014: Inflation eases a second month, but food is pulling the other way (18 August 2026).",
+      href: "https://drive.google.com/file/d/15nrO9_YHVHCMQsBr_2UDJw-zocAnJh9w/view",
+    },
+  ],
+  pdf: "https://drive.google.com/file/d/15nrO9_YHVHCMQsBr_2UDJw-zocAnJh9w/view",
+  seoDescription: "Nigeria's inflation eased to 15.43% in July 2026, but food prices rose 5.56% in the month. What the NBS data means for businesses and investors.",
+};

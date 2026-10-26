@@ -1,121 +1,65 @@
 import type { Metadata } from "next";
 import { PageShell } from "../../components/site/PageShell";
-import { MicroIllustration } from "../../components/site/MicroIllustration";
-import { DecisionTree } from "../../components/interactions/DecisionTree";
+import { ServicesHero } from "../../components/services/ServicesHero";
+import { CapabilityRow, type Capability } from "../../components/services/CapabilityRow";
+import { HireUs } from "../../components/landing/HireUs";
+import "../hire-us.css";
 import { pageMetadata, serviceJsonLd } from "../../lib/seo";
+import { AREA_SERVED, Faq, SvHead, type FaqItem } from "./_components/ServiceSections";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Data Engineering, Analytics & BI Services | The Bredge",
-  description: "Connect fragmented data, build reliable foundations and automate reporting — data engineering, analytics and BI for growing and mid-market companies.",
+  title: "Outsourced Data Team & Analytics Consultancy, UK & US | The Bredge",
+  description: "Data engineering, analytics and BI consulting for growing and mid-market companies. A fractional data team for a fixed monthly fee, fixed-price data projects, or a Data Diagnostic to find where to start.",
   path: "/services",
 });
 
-const capabilities: Array<{ n: string; kind: "engineering" | "analytics" | "bi" | "quality" | "automation"; h: string; body: string; tags: string[]; out: string }> = [
-  { n: "01", kind: "engineering", h: "Build the foundation first.", body: "Connect the systems your business already depends on and turn fragmented data into something reliable enough to build on.", tags: ["Data ingestion", "API integrations", "Pipelines", "SQL & Python", "Warehousing", "Transformation", "Data modelling", "Source reconciliation"], out: "Less manual manipulation, fewer conflicting numbers and a foundation that can support reporting as the company grows." },
-  { n: "02", kind: "analytics", h: "Understand what is happening — and where to look next.", body: "Move beyond static reporting into analysis designed around the decisions your teams actually make.", tags: ["KPI design", "Funnel analysis", "Cohorts", "Segmentation", "Retention & churn", "Revenue analysis", "Operational analysis", "Forecasting where the data supports it"], out: "Teams spend less time assembling information and more time acting on it." },
-  { n: "03", kind: "bi", h: "Reporting people will actually use.", body: "We build reporting around the questions a team needs answered — not around how many charts fit on a page.", tags: ["Power BI", "Executive dashboards", "Management reporting", "Operational reporting", "Financial reporting", "Self-service analytics", "Semantic models"], out: "A clearer operating rhythm and fewer recurring requests for someone to “pull the numbers.”" },
-  { n: "04", kind: "quality", h: "Make important numbers defensible.", body: "A dashboard isn’t useful if finance, sales and operations define the same metric differently. We make critical data defined, traceable and testable.", tags: ["Metric definitions", "Source reconciliation", "Quality testing", "Referential integrity", "Data lineage", "Documentation", "Known-limitations registers"], out: "Your team knows what a number means, where it came from and whether it can be relied on." },
-  { n: "05", kind: "automation", h: "Stop rebuilding the same answer every week.", body: "Recurring reporting should not depend on somebody copying rows between spreadsheets every Monday morning.", tags: ["Scheduled reporting", "Automated transformations", "Refresh workflows", "Exception monitoring", "Workflow automation", "Operational alerts"], out: "Less repetitive work and more predictable access to information." },
+const capabilities: Capability[] = [
+  { kind: "engineering", h: "Data engineering", line: "Connect the systems you depend on into one reliable foundation.", tags: ["Pipelines", "API integrations", "Warehousing", "Data modelling"] },
+  { kind: "analytics", h: "Analytics", line: "Analysis built around the decisions your teams make.", tags: ["KPI design", "Cohorts", "Retention & churn", "Forecasting"] },
+  { kind: "bi", h: "BI and reporting", line: "Reporting built around questions, not around how many charts fit.", tags: ["Power BI", "Tableau", "Looker", "Semantic models"] },
+  { kind: "quality", h: "Data quality", line: "Important numbers defined, traceable and testable.", tags: ["Metric definitions", "Reconciliation", "Lineage", "Documentation"] },
+  { kind: "automation", h: "Automation", line: "Stop rebuilding the same answer every Monday morning.", tags: ["Scheduled reporting", "Refresh workflows", "Alerts"] },
+];
+
+/* OWNER CONFIRM: Diagnostic "Two weeks"; Embedded "Month to month" */
+
+const faq: FaqItem[] = [
+  ["How does pricing work?",
+    "We don’t publish a rate card. The Diagnostic and Data Projects have a fixed price for an agreed scope. The Embedded Data Team has a fixed monthly fee based on how many days and which skills you need. Either way, you get a written proposal with a fixed price after the first call, before any work starts."],
+  ["Which service should we start with?",
+    "If you know the problem, a Data Project. If you need help every month, an Embedded Data Team. If you’re not sure, start with a Data Diagnostic, or book a call and we’ll tell you honestly."],
+  ["How fast can you start?",
+    "Usually within two weeks of agreeing the proposal."], /* OWNER CONFIRM: start within two weeks of proposal sign-off */
+  ["Who does the work?",
+    "Named people from The Bredge, not a rotating pool. You can meet them before you sign."], /* OWNER CONFIRM: named team, meet before signing */
+  ["How do you handle our data and confidentiality?",
+    "We sign your NDA before we see any data, and we work with read-only access wherever possible."], /* OWNER CONFIRM: sign client NDA before seeing data; read-only access */
+  ["Do you work with UK and US companies?",
+    "Yes. We work UK and US hours and agree check-in times that suit your team."], /* OWNER CONFIRM: cover UK and US working hours */
+  ["Do we have to switch tools?",
+    "No. We work in the stack you already have, including Power BI, Tableau, Looker, Excel, Python, SQL, PostgreSQL, Snowflake, BigQuery, dbt and Xero."],
 ];
 
 export default function ServicesPage() {
   return (
-    <PageShell>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd("Data engineering, analytics & BI consulting", "Data engineering, analytics and business intelligence consulting — reliable data foundations, reporting automation, data quality and reconciliation.", "/services")) }} />
-      <section className="section-wrap page-hero">
-        <p className="eyebrow">SERVICES</p>
-        <h1>From messy source systems to decisions your team can trust.</h1>
-        <p className="lede">We provide data engineering, analytics and business intelligence consulting for growing and mid-market companies. A reporting problem may actually be a modelling problem. A dashboard nobody trusts may be a reconciliation problem. A forecasting problem may start with unreliable source data.</p>
-        <p className="lede">The Bredge works across the data stack — from engineering and modelling to analytics, reporting and ongoing data operations — so the solution follows the problem rather than the other way around.</p>
-        <div className="hero-cta-row"><a className="button cta-accent" data-cta="services_schedule" href="/schedule">Schedule a call <span className="arrow" aria-hidden="true">↗</span></a></div>
-      </section>
+    <PageShell dark>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ ...serviceJsonLd("Data engineering, analytics & BI consulting", "Data engineering, analytics and business intelligence consulting for UK and US companies: embedded data teams, fixed-scope data projects and data diagnostics.", "/services"), areaServed: AREA_SERVED }) }} />
+      {/* OWNER CONFIRM: "two-week diagnostic" in the lede */}
+      <ServicesHero />
 
-      <section className="section surface">
+      {/* Same section as the homepage: the three ways to hire, by buyer. */}
+      <HireUs pricing />
+
+      <section className="section sv-sec" aria-labelledby="sv-cap-title">
         <div className="section-wrap">
-          <div className="section-lead">
-            <h2>Start with the business question.</h2>
-            <p>We don’t begin with a tool. We begin with what your team cannot currently see, trust, automate or decide — then work backwards through the data needed to answer it reliably.</p>
-          </div>
-          <DecisionTree />
+          <SvHead label="What we cover" title="One partner, across the whole stack." id="sv-cap-title" intro="The solution follows the problem. A reporting problem may really be a modelling problem." />
+          <CapabilityRow items={capabilities} />
         </div>
       </section>
 
-      <section className="section">
-        <div className="section-wrap">
-          <div className="section-lead"><h2>One partner, across the disciplines the problem touches.</h2></div>
-          {capabilities.map((c) => (
-            <div className="cap-row" key={c.n}>
-              <span>{c.n}</span>
-              <div className="cap-head">
-                <h3>{c.h}</h3>
-                <p>{c.body}</p>
-              </div>
-              <div className="cap-body">
-                <MicroIllustration kind={c.kind} className="cap-illus" />
-                <div className="cap-tags">{c.tags.map((t) => <span key={t}>{t}</span>)}</div>
-                <p className="cap-out"><b>Outcome.</b> {c.out}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
-      <section className="section surface">
-        <div className="section-wrap">
-          <div className="section-lead"><h2>Different problems need different relationships.</h2></div>
-          <div className="bridge">
-            <article className="bridge-card">
-              <p className="k">ONGOING CAPABILITY</p>
-              <h3>Embedded Data Team</h3>
-              <p>Ongoing data capability for organisations that need a team without building every role internally.</p>
-              <a className="text-link" href="/services/embedded-data-team">Explore Embedded Data Teams <span className="arrow" aria-hidden="true">↗</span></a>
-            </article>
-            <article className="bridge-card">
-              <p className="k">DEFINED SCOPE</p>
-              <h3>Data Projects</h3>
-              <p>Focused delivery when there is a specific problem, system or outcome to solve.</p>
-              <a className="text-link" href="/services/data-projects">Explore Data Projects <span className="arrow" aria-hidden="true">↗</span></a>
-            </article>
-          </div>
-        </div>
-      </section>
+      <Faq items={faq} name="services" />
 
-      <section className="section-wrap service-answers" aria-labelledby="service-answers-heading">
-        <p className="eyebrow">CHOOSING THE RIGHT HELP</p>
-        <h2 id="service-answers-heading">A clearer way to choose the work.</h2>
-        <div className="service-answers-grid">
-          <article>
-            <h3>What does The Bredge actually deliver?</h3>
-            <p>Data pipelines, reusable models, metric definitions, quality checks and reporting that answer specific business questions. The scope follows the unreliable numbers or slow workflows we find, rather than a predetermined technology stack.</p>
-            <a href="/services/data-projects">Explore defined-scope projects <span aria-hidden="true">↗</span></a>
-          </article>
-          <article>
-            <h3>When is an embedded team a better fit?</h3>
-            <p>When the organisation has a continuing data backlog across engineering, analytics and reporting. The embedded model provides recurring delivery; a project fits a specific issue with a clear handover.</p>
-            <a href="/services/embedded-data-team">Explore the embedded team <span aria-hidden="true">↗</span></a>
-          </article>
-          <article>
-            <h3>What if we are unsure what is broken?</h3>
-            <p>Start with a Data Diagnostic. We map source systems, reporting, data movement and metric definitions, then provide a prioritised list of reliability risks and improvements. You can take that work to your own team.</p>
-            <a href="/data-diagnostic">See the diagnostic scope <span aria-hidden="true">↗</span></a>
-          </article>
-          <article>
-            <h3>Do we need to replace our existing tools?</h3>
-            <p>Not automatically. The first step is to understand where source data, definitions and processes fail. Better modelling or reconciliation may solve the problem without a new warehouse or reporting platform.</p>
-            <a href="/insights/before-you-build-a-data-warehouse">Read the warehouse decision guide <span aria-hidden="true">↗</span></a>
-          </article>
-        </div>
-      </section>
-
-      <section className="section ink">
-        <div className="section-wrap callout-inner">
-          <div>
-            <h2>Not sure which one you need?</h2>
-            <p>That’s usually a sign the problem needs diagnosing before it needs scoping.</p>
-          </div>
-          <div><a className="button cta-accent footer-button" href="/data-diagnostic">Start with a Data Diagnostic <span aria-hidden="true">→</span></a></div>
-        </div>
-      </section>
     </PageShell>
   );
 }

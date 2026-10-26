@@ -1,26 +1,23 @@
-import type { Metadata } from "next";
 import { PageShell } from "../../../components/site/PageShell";
-import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram } from "../../../components/insights/Article";
-import { pageMetadata } from "../../../lib/seo";
+import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram, Example, Pull, PlainEnglish, ForTheBusiness, ForYourDataPerson } from "../../../components/insights/Article";
+import { insightMetadata } from "../../../lib/insights";
 
 const SLUG = "power-bi-slow";
 const TOC = [
-  { id: "short-answer", label: "The short answer" },
+  { id: "why-slow", label: "Why the model, not the visuals" },
   { id: "usual", label: "What this usually looks like" },
-  { id: "try-first", label: "Before you touch a single visual" },
-  { id: "what-it-tells-you", label: "What the result tells you" },
-  { id: "underneath", label: "What is actually slowing it down" },
-  { id: "good", label: "What good looks like" },
+  { id: "try-first", label: "Measure where the time goes" },
+  { id: "what-it-tells-you", label: "Reading the results" },
+  { id: "underneath", label: "Star schema, cardinality, DAX, storage" },
+  { id: "expert", label: "Eight checks Power BI experts run" },
+  { id: "example", label: "Worked example: SAP B1 sales model" },
+  { id: "good", label: "What a fast model looks like" },
   { id: "wrong", label: "Common ways this goes wrong" },
   { id: "boundary", label: "When it is the model, not the report" },
   { id: "decision", label: "A performance decision guide" },
 ];
 
-export const metadata: Metadata = pageMetadata({
-  title: "Why Is Power BI So Slow? A Data-Model Performance Guide | The Bredge",
-  description: "Power BI is slow usually because of the data model, not the report: star schema, high-cardinality columns, DAX, and import vs DirectQuery. A performance checklist.",
-  path: "/insights/power-bi-slow",
-});
+export const metadata = insightMetadata(SLUG);
 
 export default function Page() {
   return (
@@ -87,22 +84,31 @@ export default function Page() {
           </Diagram>
         }
       >
-        <section id="short-answer">
-          <h2>The short answer</h2>
-          <p>You open the report. You click a slicer. Then you wait. The spinner turns for five, ten, fifteen seconds before a single chart redraws. People have quietly stopped opening it, and someone has started asking whether Power BI was the wrong choice.</p>
-          <p>Here is the short answer. Power BI is rarely slow because of the visuals. It is slow because of the data model underneath them. A visual is only a request. It asks the engine a question, and the engine has to answer that question every time you click. If the model is shaped badly, every one of those questions is expensive, and no amount of tidying the report page will make them cheap.</p>
+        <section id="why-slow">
+          <h2>Why is Power BI slow when the visuals look simple?</h2>
+          <p>You open the report. You click a slicer. Then you wait. People quietly stop opening it, and someone starts asking whether Power BI was the wrong choice. It rarely was. Power BI is rarely slow because of the visuals. It is slow because of the data model underneath them. A visual is only a request. It asks the engine a question, and the engine has to answer that question every time you click. If the model is shaped badly, every one of those questions is expensive, and no amount of tidying the report page will make them cheap.</p>
+          <PlainEnglish>
+            <p>A slow Power BI report is usually caused by how the data underneath is organised, not by the charts on the page. Fixing that structure makes reports fast and keeps them fast as data grows, without buying more capacity.</p>
+            <ul>
+              <li><strong>Ask your team</strong>: which visual is slowest in Performance Analyzer, and which columns take the most memory?</li>
+              <li><strong>Expect back</strong>: a rebuilt data model with fewer, narrower tables, not a redesigned report.</li>
+            </ul>
+          </PlainEnglish>
           <p>The engine that answers those questions is called VertiPaq. It is a columnar store, which means it keeps each column of data together rather than each row. That design is very fast when the model is shaped for it, and surprisingly slow when it is not. So the real question is not why Power BI is slow. It is what your model is asking the engine to do.</p>
+          <Pull>A visual is only a request. If the model is shaped badly, every click asks an expensive question.</Pull>
+          <p>The checks below are the ones a Power BI consultant would run first, and you can run them yourself. If the fix turns out to be the model, the refresh or the source, that is a well-scoped <a href="/services/data-projects">BI performance project</a>; you can see the kind of models we build on <a href="/work">our work page</a>.</p>
         </section>
 
         <section id="usual">
-          <h2>What this usually looks like</h2>
+          <h2>Signs your Power BI data model is the problem</h2>
           <p>It usually shows up once the report has been live for a while. It felt quick in the demo. Now there is a year of data in it, three new pages, and a wall of slicers, and it drags.</p>
           <p>The pattern is familiar. One giant table holds everything: every order, with the customer name, the product description, the sales rep, the region and the full address repeated on every row. Slicers sit on high-detail fields such as email address or transaction reference. A single page carries fifteen or twenty visuals, several of them cross-filtering each other. The refresh takes a little longer each week, and one morning it fails.</p>
           <p>People reach for the visible things first. They swap chart types, cut the number of colours, or move visuals around the page. It helps a little, briefly. Then the report is slow again, because the cause was never on the page. It was in the table feeding it.</p>
         </section>
 
         <section id="try-first">
-          <h2>Before you touch a single visual</h2>
+          <h2>How to find what is slowing your Power BI report</h2>
+          <ForTheBusiness>Measuring first stops you paying for a redesign or a bigger licence that does not fix the cause.</ForTheBusiness>
           <p>You can find most of the cost yourself in an afternoon, without rebuilding anything. The goal is not to guess. It is to measure where the time actually goes, and to size the model honestly. Two free tools do almost all of the work. Performance Analyzer is built into Power BI Desktop and times every visual on a page. DAX Studio is a free companion tool that shows query timings and how much memory each column uses.</p>
           <TryThisFirst title="Before you touch a single visual">
             <ol>
@@ -119,7 +125,7 @@ export default function Page() {
         </section>
 
         <section id="what-it-tells-you">
-          <h2>What the result tells you</h2>
+          <h2>What Performance Analyzer and DAX Studio tell you</h2>
           <p>Each reading points at a different cause, and each cause has a different fix. Read yours like this.</p>
           <ul>
             <li><strong>DAX-heavy visuals.</strong> The time is spent answering the question, not drawing it. Likely cause: a costly measure, a calculated column doing work at query time, or a model that forces the engine to scan too much.</li>
@@ -127,34 +133,83 @@ export default function Page() {
             <li><strong>One very large column.</strong> A single column dominates the model size. Likely cause: high cardinality, meaning the column holds a very large number of distinct values, which the columnar engine cannot compress well.</li>
             <li><strong>One flat table.</strong> There are no dimensions, only a wide table with everything repeated. Likely cause: the source was loaded as it came, without modelling.</li>
             <li><strong>Slicers on unique fields.</strong> A slicer is built on a near-unique column. Likely cause: the field has thousands or millions of distinct values, so the slicer is expensive to build and to filter.</li>
-            <li><strong>A slow or failing refresh.</strong> The refresh reloads all history every time. Likely cause: no incremental refresh, so years of unchanged data are reloaded on every run.</li>
+            <li><strong>A slow or failing refresh.</strong> This is a separate problem from slow visuals, with its own causes: memory limits, query folding and gateways. See <a href="/insights/power-bi-refresh-failed">how to fix a failed Power BI refresh</a>.</li>
           </ul>
           <p>The most common finding by far is the flat table with one or two enormous columns. Fix that, and most of the other symptoms ease at the same time.</p>
         </section>
 
         <section id="underneath">
-          <h2>What is actually slowing it down</h2>
+          <h2>Star schema, cardinality, DAX and storage mode explained</h2>
+          <ForTheBusiness>These model choices decide how fast every report on the model will be, today and as data grows.</ForTheBusiness>
           <p>Underneath the report, a handful of technical ideas explain almost all of it.</p>
           <p><strong>Compression</strong> is where the speed comes from. Power BI stores imported data in VertiPaq, the columnar engine named earlier. Because it keeps each column together, it can compress a column hard when that column repeats itself. A country column with a dozen distinct values compresses to almost nothing: the engine stores each distinct value once and points to it. This is why the shape of your columns matters more than the number of rows.</p>
           <p><strong>Cardinality</strong> is the number of distinct values in a column. A column with few distinct values is low cardinality, and it compresses well. A column with almost as many distinct values as rows, such as an order ID, an email address, or a timestamp recorded to the second, is high cardinality, and it barely compresses at all. High-cardinality columns are usually the single largest thing in a slow model. The fix is often to remove what you do not need, or to reduce precision. Split a datetime into a date and a separate time if you do not need per-second detail. Drop the free-text field nobody filters on.</p>
           <p><strong>A star schema</strong> is the shape the engine wants. Instead of one wide table with everything repeated, you split the data into facts and dimensions. A fact table holds the events you measure, such as one row per order line, with keys and numbers only. Dimension tables hold the descriptive detail, such as one row per customer or per product, joined back to the facts by a key. The name comes from the shape: a central fact table with dimensions around it like the points of a star. This removes the repetition, shrinks the model, and gives the engine simple joins to follow.</p>
           <p><strong>Relationships</strong> connect those tables, and each relationship has a cardinality that describes how many rows on one side match rows on the other. The healthy default is one-to-many: one customer row to many order rows. Many-to-many relationships are slower and easier to get wrong, and a relationship built on a high-cardinality key costs more to resolve. Keep the keys you join on small and clean.</p>
           <p><strong>DAX</strong> is the formula language you write calculations in, and there are two places to put them. A calculated column is worked out row by row when the data refreshes, and then stored, taking space in the model, often at high cardinality. A measure is worked out at query time, only for the cells currently on screen, and stores nothing. As a rule, a value you aggregate, such as a total or a ratio, should be a measure rather than a calculated column.</p>
-          <pre>{`-- Costly: a calculated column, stored on every row, then averaged in a visual
-Margin % =                                  -- calculated column
-DIVIDE ( Sales[Profit], Sales[Sales] )      -- one value per row, high cardinality
-
--- Better: a measure, computed only for the cells on screen
-Margin % :=                                 -- measure
-DIVIDE ( SUM ( Sales[Profit] ), SUM ( Sales[Sales] ) )`}</pre>
+          <p>The costly version is a calculated column, added to the Sales table with New column. It is stored on every row:</p>
+          <pre>{`Margin % = DIVIDE ( Sales[Profit], Sales[Sales] )`}</pre>
+          <p>The better version is a measure, added with New measure. It is computed only for the cells on screen:</p>
+          <pre>{`Margin % = DIVIDE ( SUM ( Sales[Profit] ), SUM ( Sales[Sales] ) )`}</pre>
           <p>The first version creates a stored value on every row, adds a high-cardinality column to the model, and gives the wrong answer once a visual averages it (the average of many ratios is not the ratio of the totals). The second computes nothing until you look at it, stores nothing, and returns the correct figure at whatever level the visual asks for. The same result on paper, at a very different cost.</p>
           <p><strong>Storage mode</strong> decides where the data lives when a visual asks a question. Import mode loads a copy of the data into VertiPaq, in memory, and is the fastest option for most reports. DirectQuery leaves the data in the source and sends a query to it on every interaction, so the report is only ever as fast as the source and the connection. It is the right choice when the data is too large to import or must be live to the second, and the wrong choice when it is picked out of habit. A composite model mixes the two, importing small dimensions while querying a large fact table live. If your report is slow and set to DirectQuery, ask first whether it truly needs to be.</p>
-          <p><strong>Incremental refresh</strong> controls how much data reloads each time. Without it, every refresh reloads all history, including years of rows that have not changed. With it, Power BI reloads only the recent window, such as the last few days, and leaves settled history in place. On a large fact table this is the difference between a refresh that takes minutes and one that takes hours or fails.</p>
+          <div className="in-table-wrap"><table>
+            <thead><tr><th>Storage mode</th><th>Where data lives</th><th>Speed</th><th>Use when</th></tr></thead>
+            <tbody>
+              <tr><td>Import</td><td>Compressed copy in memory</td><td>Fastest for most reports</td><td>The default; data fits and hourly or daily freshness is enough</td></tr>
+              <tr><td>DirectQuery</td><td>Stays in the source</td><td>As fast as the source, on every click</td><td>Data too large to import, or must be live</td></tr>
+              <tr><td>Composite</td><td>Small tables imported, large ones live</td><td>In between</td><td>A huge fact table with small dimensions</td></tr>
+            </tbody>
+          </table></div>
+          <p><strong>Incremental refresh</strong> reloads only recent data and leaves settled history in place. It is a refresh fix, not a visual-speed fix, and it only works when the source query folds; <a href="/insights/power-bi-refresh-failed">the refresh troubleshooting guide</a> covers both.</p>
           <p>Finally, some slowness is not inside Power BI at all. If the model reads from a database view that is itself slow, the report inherits that cost on every refresh, and under DirectQuery on every click. It is worth pushing heavy shaping upstream into the source or a warehouse, so Power BI receives data that is already modelled. Deciding whether that upstream layer should be <a href="/insights/power-bi-warehouse-or-both">Power BI, a warehouse, or both</a> is a separate question, and worth answering deliberately.</p>
         </section>
 
+        <section id="expert">
+          <h2>Eight Power BI model checks experts run first</h2>
+          <ForTheBusiness>These checks find the model settings that slow every report built on it, and most cost nothing to fix.</ForTheBusiness>
+          <p>Practitioners run the same short list on any slow model before they redesign anything:</p>
+          <ul>
+            <li><strong>Auto date/time</strong>: when this option is on, Power BI creates a hidden date table for every date column, and Microsoft notes each one <a href="https://learn.microsoft.com/en-us/power-bi/guidance/auto-date-time" target="_blank" rel="noopener noreferrer">increases the model size</a>. Turn it off and use one marked date table.</li>
+            <li><strong>Bidirectional relationships</strong>: Microsoft&rsquo;s guidance is to <a href="https://learn.microsoft.com/en-us/power-bi/guidance/relationships-bidirectional-filtering" target="_blank" rel="noopener noreferrer">minimise them</a> because they can slow queries. Keep relationships single-direction and use <code>CROSSFILTER</code> inside the one measure that needs both directions.</li>
+            <li><strong>Many-to-many relationships</strong>: replace them with a bridge table where you can. They cost more to resolve and are easy to get wrong.</li>
+            <li><strong>Iterators over whole tables</strong>: <code>FILTER ( Sales, &hellip; )</code> inside <code>CALCULATE</code> scans every row and column of the table. Filter the column instead (example below).</li>
+            <li><strong>Column sizes</strong>: run <a href="https://www.sqlbi.com/tools/vertipaq-analyzer/" target="_blank" rel="noopener noreferrer">VertiPaq Analyzer</a> (built into DAX Studio) to list tables and columns by memory. One or two columns usually dominate.</li>
+            <li><strong>Model rules</strong>: run the <a href="https://docs.tabulareditor.com/en/features/Best-Practice-Analyzer.html" target="_blank" rel="noopener noreferrer">Best Practice Analyzer</a> in Tabular Editor. It flags bidirectional relationships, floating-point types, unused columns and more in one pass.</li>
+            <li><strong>Aggregations</strong>: for very large DirectQuery fact tables, <a href="https://learn.microsoft.com/en-us/power-bi/transform-model/aggregations-advanced" target="_blank" rel="noopener noreferrer">user-defined aggregations</a> keep a summarised table in memory, so most visuals never query the detail.</li>
+            <li><strong>Direct Lake on Fabric</strong>: if your data already sits in a Fabric lakehouse or warehouse, <a href="https://learn.microsoft.com/en-us/fabric/fundamentals/direct-lake-overview" target="_blank" rel="noopener noreferrer">Direct Lake</a> loads Delta tables into memory without an import refresh. Check its fallback rules: Direct Lake on SQL can fall back to DirectQuery, which is slower.</li>
+          </ul>
+          <ForYourDataPerson title="Filtering a column instead of a table in DAX">
+            <p>Both measures return sales over 1,000. The first iterates the whole Sales table; the second filters one column, which the engine resolves far more cheaply:</p>
+            <pre>{`Total Sales = SUM ( Sales[Amount] )`}</pre>
+            <pre>{`High Value Sales (slow) =
+CALCULATE ( [Total Sales], FILTER ( Sales, Sales[Amount] > 1000 ) )`}</pre>
+            <pre>{`High Value Sales =
+CALCULATE ( [Total Sales], KEEPFILTERS ( Sales[Amount] > 1000 ) )`}</pre>
+            <p><code>KEEPFILTERS</code> keeps any filter a slicer already places on <code>Sales[Amount]</code>, which matches the behaviour of the first version. Without it, the column filter replaces the slicer&rsquo;s filter on that column.</p>
+          </ForYourDataPerson>
+        </section>
+
+        <section id="example">
+          <h2>Worked example: a slow sales report on SAP Business One</h2>
+          <Example setting="UK wholesaler · SAP Business One, Power BI" title="One flat sales table, slow slicers">
+            <p>A finance team imported invoice lines from SAP Business One into Power BI as one wide table: every line carries the customer name and address, item description, sales employee, branch and a document timestamp to the second. Clicking a branch slicer takes several seconds, and the nightly refresh reloads three years of history.</p>
+            <p>DAX Studio lists the largest columns. In a model like this the top of the list usually looks something like:</p>
+            <div className="in-table-wrap"><table>
+              <thead><tr><th>Column</th><th>Distinct values</th><th>Why it is expensive</th><th>Fix</th></tr></thead>
+              <tbody>
+                <tr><td>DocTime (to the second)</td><td>Close to one per row</td><td>Barely compresses</td><td>Split into date and hour, or drop</td></tr>
+                <tr><td>Customer address</td><td>Thousands</td><td>Free text repeated on every line</td><td>Move to a customer dimension</td></tr>
+                <tr><td>Line comments</td><td>Mostly unique</td><td>Nobody filters on it</td><td>Remove</td></tr>
+                <tr><td>Margin % (calculated column)</td><td>Many</td><td>Stored per row, wrong when averaged</td><td>Replace with a measure</td></tr>
+              </tbody>
+            </table></div>
+            <p>The rebuild: a fact table of invoice lines with keys and amounts only; customer, item, branch and date dimensions; margin as a measure; incremental refresh on the last 60 days. The same approach applies to Sage or QuickBooks data, or to a SaaS team&rsquo;s Stripe and HubSpot model.</p>
+          </Example>
+        </section>
+
         <section id="good">
-          <h2>What good looks like</h2>
+          <h2>What a fast Power BI model looks like</h2>
           <p>Good does not mean the report has fewer features. It means the model is shaped so the engine barely has to work.</p>
           <ul>
             <li>A star schema, not a flat table. Facts hold the numbers, dimensions hold the descriptions, and nothing important is repeated on every row.</li>
@@ -167,7 +222,7 @@ DIVIDE ( SUM ( Sales[Profit] ), SUM ( Sales[Sales] ) )`}</pre>
         </section>
 
         <section id="wrong">
-          <h2>Common ways this goes wrong</h2>
+          <h2>Common Power BI performance mistakes</h2>
           <ul>
             <li>Optimising the visuals first. Changing chart types and colours treats a symptom. The cost is almost always in the model, not on the page.</li>
             <li>Loading the source table as it comes. Importing one wide table with everything repeated is the most common cause of a slow model, and the easiest to avoid.</li>
@@ -194,7 +249,7 @@ DIVIDE ( SUM ( Sales[Profit] ), SUM ( Sales[Sales] ) )`}</pre>
         </section>
 
         <section id="decision">
-          <h2>A performance decision guide</h2>
+          <h2>How to fix a slow Power BI report: a decision guide</h2>
           <p>Once you know where the time goes, the first move is usually clear. Use this as a quick lookup.</p>
           <table className="article-table">
             <thead>
@@ -243,6 +298,8 @@ DIVIDE ( SUM ( Sales[Profit] ), SUM ( Sales[Sales] ) )`}</pre>
             </tbody>
           </table>
           <p>If most of your gap is the model rather than the page, that is good news. A model problem has a known set of fixes, and it stays fixed once the shape is right.</p>
+          <p>If refresh, not rendering, is the bottleneck, the <a href="/resources/data-freshness-sla-calculator">data freshness SLA calculator</a> shows how refresh schedules chain together, and <a href="/insights/incremental-models-at-scale">how to reduce warehouse costs on large tables</a> covers the upstream incremental models. If the model rebuild needs outside help, that is a scoped <a href="/services/data-projects">BI performance project</a>.</p>
+          <p>If the issue is licences or capacity rather than the model, see <a href="/insights/power-bi-licensing-small-business">Power BI licensing</a> and <a href="/insights/fabric-capacity-throttling">Fabric capacity throttling</a>.</p>
         </section>
       </ArticleLayout>
     </PageShell>

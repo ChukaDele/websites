@@ -9,7 +9,7 @@ export type AnalyticsEvent =
   | "five_systems_started" | "five_systems_completed"
   | "reference_work_reached" | "reference_case_view"
   | "technical_proof_started" | "technical_proof_completed"
-  | "footer_reached"
+  | "footer_reached" | "code_copy"
   | "insight_view" | "insight_25" | "insight_50" | "insight_75" | "insight_complete"
   | "insight_toc_click" | "insight_service_click" | "insight_related_click"
   | "404_view" | "404_recovery_click";

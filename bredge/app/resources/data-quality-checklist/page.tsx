@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
-import { ResourcePage } from "../../../components/insights/ResourcePage";
-import { pageMetadata } from "../../../lib/seo";
-import { getResource } from "../../../lib/resources";
+import { redirect } from "next/navigation";
+import { redirectedResources } from "../../../lib/resources";
 
-const R = getResource("data-quality-checklist")!;
-export const metadata: Metadata = pageMetadata({ title: R.seoTitle, description: R.seoDescription, path: "/resources/data-quality-checklist" });
-
+// Retired in the US and UK refocus: its checks live in the parent insight and
+// in the data audit checklist. This URL stays alive for old links and bookmarks.
 export default function Page() {
-  return <ResourcePage slug="data-quality-checklist" />;
+  redirect(redirectedResources["data-quality-checklist"]);
 }

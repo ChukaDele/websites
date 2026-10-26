@@ -9,7 +9,7 @@
    so it cannot create a second pin-spacer that overlaps Reference Work or leaves
    a blank dark runway after zoom/resize. 360svh preserves the old ~2.6 viewport
    storytelling distance: 360svh section - 100svh viewport = 260svh progress. */
-@media (min-width:1001px) and (min-height:720px) and (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+@media (min-width:1001px) and (min-height:720px) and (prefers-reduced-motion:no-preference) {
   .iq { min-height:360svh; }
   .iq-scene {
     position:sticky;
@@ -22,7 +22,7 @@
 }
 
 @supports not (height:100svh) {
-  @media (min-width:1001px) and (min-height:720px) and (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+  @media (min-width:1001px) and (min-height:720px) and (prefers-reduced-motion:no-preference) {
     .iq { min-height:360vh; }
     .iq-scene { height:100vh; min-height:100vh; }
   }
@@ -41,7 +41,7 @@
    40% + 60% + a 64px grid gap exceeded the container width. Fractions subtract
    the gap before allocating tracks, which keeps the intended 40/60 relationship
    without creating page-level horizontal scroll. */
-.contact-layout { grid-template-columns:minmax(0, 2fr) minmax(0, 3fr); }
+@media (min-width:901px) { .contact-layout { grid-template-columns:minmax(0, 2fr) minmax(0, 3fr); } }
 .contact-intro, .contact-form, .contact-next { min-width:0; }
 
 /* --------------------------------------------------------------------------

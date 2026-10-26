@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
 import { PageShell, Breadcrumbs } from "../../../components/site/PageShell";
-import { ElasticTeam } from "../../../components/interactions/ElasticTeam";
 import { pageMetadata, serviceJsonLd } from "../../../lib/seo";
+import { GridHero } from "../../../components/services/GridHero";
+import { WhatWeDo, type WwdItem } from "../../../components/landing/WhatWeDo";
+import { EmCards, EmHead } from "../../../components/services/EmbeddedSections";
+import { AREA_SERVED } from "../_components/ServiceSections";
+import "../../what-we-do.css";
+
+/* Content: the Embedded Data Team page as written (original site), word for
+   word. Design: the homepage and Services overview grammar. */
 
 export const metadata: Metadata = pageMetadata({
-  title: "Embedded & Fractional Data Teams | The Bredge",
-  description: "Plug an experienced data team into your business without hiring every role internally. Data engineering, analytics, BI and ongoing data operations from The Bredge.",
+  title: "Fractional Data Team for UK & US Businesses | The Bredge",
+  description: "An outsourced, fractional data team for a fixed monthly fee. Data engineering, analytics and BI in the tools you already use, without the cost of a full-time hire.",
   path: "/services/embedded-data-team",
 });
 
@@ -23,95 +30,59 @@ const coverage: Array<[string, string]> = [
   ["Data operations", "Quality monitoring, refreshes, documentation, recurring reporting and improvement."],
 ];
 
-const steps: Array<[string, string, string]> = [
-  ["01", "Understand", "We learn your business, systems, recurring decisions and current data problems."],
-  ["02", "Prioritise", "Together we build a living backlog based on business impact, dependencies and effort."],
-  ["03", "Deliver", "The right mix of engineering, analytics and BI works through the highest-value priorities."],
-  ["04", "Operate", "We monitor, document, improve and support what has already been built."],
-  ["05", "Transfer", "Systems are documented so knowledge stays with the organisation — not one consultant’s head."],
+// The five steps, in the homepage "What we actually do" layout (the wave
+// only shapes the dot terrain).
+const steps: WwdItem[] = [
+  { name: "Understand", text: "We learn your business, systems, recurring decisions and current data problems.", wave: [1.6, 0.9, 0.7, 0.5] },
+  { name: "Prioritise", text: "Together we build a living backlog based on business impact, dependencies and effort.", wave: [2.4, 0.6, 1.1, 0.8] },
+  { name: "Deliver", text: "The right mix of engineering, analytics and BI works through the highest-value priorities.", wave: [1.1, 1.2, 0.5, 0.35] },
+  { name: "Operate", text: "We monitor, document, improve and support what has already been built.", wave: [3.0, 0.45, 1.4, 0.6] },
+  { name: "Transfer", text: "Systems are documented so knowledge stays with the organisation — not one consultant’s head.", wave: [1.9, 0.75, 0.9, 0.9] },
 ];
 
 export default function EmbeddedPage() {
   return (
-    <PageShell>
-      <section className="section-wrap page-hero">
-        <Breadcrumbs trail={[["Services", "/services"], ["Embedded Data Team", "/services/embedded-data-team"]]} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd("Embedded Data Team", "An embedded, fractional senior data team giving companies ongoing engineering, analytics and BI capacity without hiring every specialist role internally.", "/services/embedded-data-team")) }} />
-        <p className="eyebrow">EMBEDDED DATA TEAM</p>
-        <h1>Your data team, without building one from scratch.</h1>
-        <p className="lede">Get ongoing engineering, analytics and BI capability working inside the rhythm of your business. We take ownership of an agreed data backlog, work closely with your teams and keep improving the systems behind your decisions.</p>
-        <div className="hero-cta-row">
-          <a className="button cta-accent" href="/schedule">Discuss an embedded team <span className="arrow" aria-hidden="true">↗</span></a>
+    <PageShell dark>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ ...serviceJsonLd("Embedded Data Team", "An embedded, fractional data team for UK and US businesses: ongoing data engineering, analytics and BI capacity for a fixed monthly fee, without hiring every specialist role internally.", "/services/embedded-data-team"), areaServed: AREA_SERVED }) }} />
+      <Breadcrumbs trail={[["Services", "/services"], ["Embedded Data Team", "/services/embedded-data-team"]]} />
+
+      <GridHero
+        eyebrow="Embedded Data Team"
+        title="Your data team,"
+        accent="without building one from scratch."
+        cta={{ label: "Discuss an embedded team", href: "/schedule" }}
+        columns={[
+          "One relationship. Capability that flexes.",
+          "The backlog changes. Some months lean on engineering, some on reporting, some on steady operation.",
+          "It’s the same team and the same agreed priorities — not four freelancers to manage.",
+        ]}
+      />
+
+      <section className="em-sec" aria-labelledby="em-who-title">
+        <div className="em-wrap">
+          <EmHead id="em-who-title" lines={["You probably don’t need another pair of hands.", "You need somebody to own the work."]} />
+          <EmCards items={forWho} />
         </div>
-        <p className="microcopy" style={{ marginTop: 28 }}>A practical alternative to hiring an entire data function or managing multiple freelancers.</p>
       </section>
 
-      <section className="section surface">
-        <div className="section-wrap">
-          <div className="section-lead">
-            <h2>One relationship. Capability that flexes.</h2>
-            <p>The backlog changes. Some months lean on engineering, some on reporting, some on steady operation. It’s the same team and the same agreed priorities — not four freelancers to manage.</p>
-          </div>
-          <ElasticTeam />
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="section-wrap">
-          <div className="section-lead"><h2>You probably don’t need another pair of hands. You need somebody to own the work.</h2></div>
-          <div className="ruled">
-            {forWho.map(([h, p], i) => (
-              <div className="ruled-row" key={h}><span>{String(i + 1).padStart(2, "0")}</span><h3>{h}</h3><p>{p}</p></div>
-            ))}
+      <section className="em-sec" aria-labelledby="em-stack-title">
+        <div className="em-wrap">
+          <div className="em-frame">
+            <EmHead id="em-stack-title" rule={false} lines={["More than people", "on a timesheet."]} text="Staff augmentation gives you extra capacity to manage. Our embedded model is built around shared ownership of outcomes — we agree what matters most, what to build next, what “reliable” means, who owns each decision and how progress is measured, then deliver against that rhythm. One team covers the whole stack:" />
+            <EmCards items={coverage} variant="ruled" />
           </div>
         </div>
       </section>
 
-      <section className="section surface">
-        <div className="section-wrap">
-          <div className="section-lead">
-            <h2>More than people on a timesheet.</h2>
-            <p>Staff augmentation gives you extra capacity to manage. Our embedded model is built around shared ownership of outcomes — we agree what matters most, what to build next, what “reliable” means, who owns each decision and how progress is measured, then deliver against that rhythm. One team covers the whole stack:</p>
-          </div>
-          <div className="ruled">
-            {coverage.map(([h, p]) => (
-              <div className="ruled-row" key={h}><span>—</span><h3>{h}</h3><p>{p}</p></div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <WhatWeDo
+        sectionId="em-steps"
+        items={steps}
+        heading={["One backlog.", "The right capability at the right time."]}
+        mc=""
+        lead={null}
+        rows={null}
+      />
 
-      <section className="section">
-        <div className="section-wrap">
-          <div className="section-lead"><h2>One backlog. The right capability at the right time.</h2></div>
-          <div className="steps">
-            {steps.map(([n, h, p]) => <div className="step" key={n}><span>{n}</span><h3>{h}</h3><p>{p}</p></div>)}
-          </div>
-        </div>
-      </section>
-
-      <section className="section ink">
-        <div className="section-wrap callout-inner">
-          <div>
-            <h2>Stay because we’re useful. Not because you’re trapped.</h2>
-            <p>We deliberately build systems other capable people can understand. Documentation, metric definitions, source logic and operating runbooks are part of the work. If you eventually build an internal team, they should inherit a better data environment — not a dependency on us.</p>
-          </div>
-          <div>
-            <p className="pull" style={{ color: "var(--paper)" }}>Good partners reduce dependency.</p>
-            <a className="text-link" style={{ marginTop: 24, color: "var(--paper)", borderColor: "var(--paper)" }} href="/how-we-work">See how we work <span className="arrow" aria-hidden="true">↗</span></a>
-          </div>
-        </div>
-      </section>
-
-      <section className="section-wrap callout">
-        <div className="callout-inner">
-          <div>
-            <h2>Need a data function before you’re ready to hire one?</h2>
-            <p>Tell us where the backlog is winning. We’ll work out the right shape of team from there.</p>
-          </div>
-          <div><a className="button cta-accent" href="/schedule">Discuss an embedded team <span className="arrow" aria-hidden="true">↗</span></a></div>
-        </div>
-      </section>
     </PageShell>
   );
 }

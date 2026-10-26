@@ -1,26 +1,23 @@
-import type { Metadata } from "next";
 import { PageShell } from "../../../components/site/PageShell";
-import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram } from "../../../components/insights/Article";
-import { pageMetadata } from "../../../lib/seo";
+import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram, Example, Pull, ForYourDataPerson } from "../../../components/insights/Article";
+import { insightMetadata } from "../../../lib/insights";
 
 const SLUG = "excel-cleaning-automation";
 const TOC = [
-  { id: "short-answer", label: "The short answer" },
+  { id: "what-first", label: "What to automate first" },
   { id: "usual", label: "What this usually looks like" },
   { id: "try-first", label: "Map the clean-up first" },
   { id: "what-it-tells-you", label: "What the map tells you" },
-  { id: "underneath", label: "What is actually happening" },
+  { id: "steps", label: "The Power Query steps" },
+  { id: "example", label: "Worked example: six branch files" },
+  { id: "underneath", label: "Power Query, SQL or fix at source" },
   { id: "good", label: "What good looks like" },
   { id: "wrong", label: "Common ways this goes wrong" },
   { id: "boundary", label: "Source problem or spreadsheet problem" },
-  { id: "decision", label: "A decision guide" },
+  { id: "decision", label: "Where each clean-up belongs" },
 ];
 
-export const metadata: Metadata = pageMetadata({
-  title: "Stop Cleaning Excel Files Every Month — What to Automate First | The Bredge",
-  description: "Automate repeated Excel clean-up safely: what belongs in Power Query or SQL, what to fix at source, quality tests and human review — and what Excel should still do.",
-  path: "/insights/excel-cleaning-automation",
-});
+export const metadata = insightMetadata(SLUG);
 
 export default function Page() {
   return (
@@ -100,22 +97,24 @@ export default function Page() {
           </Diagram>
         }
       >
-        <section id="short-answer">
-          <h2>The short answer</h2>
+        <section id="what-first">
+          <h2>What should you automate first in a monthly Excel clean-up?</h2>
           <p>If you clean the same Excel files the same way every month, that clean-up is a <strong>repeated transformation</strong> you have not written down yet. A transformation is any repeatable change from raw data to tidy data: renaming columns, trimming stray spaces, correcting data types, removing duplicates, reshaping a table. When the change is the same every month, a person should not have to redo it by hand.</p>
           <p>So automate the parts that are mechanical and identical each month. Fix the worst of the mess at its source, so it stops arriving at all. Keep human judgement and final presentation in Excel, where they belong. Do all three in that order.</p>
-          <p>Do not try to automate everything at once. Start with the one step you repeat most and trust least. That is where recording the clean-up once saves the most time and removes the most risk.</p>
+          <p>Do not try to automate everything at once. Start with the one step you repeat most and trust least.</p>
+          <Pull>If you do the same clean-up twice, write it down once.</Pull>
+          <p>This is the hands-on guide to the files themselves. For the wider question of automating the whole management report (what moves upstream, what stays in Excel, and how to keep it auditable), read the pillar guide on <a href="/insights/automate-monthly-reporting">automating monthly management reporting</a>. If the clean-up has outgrown a spreadsheet, it is a defined <a href="/services/data-projects">reporting automation project</a>.</p>
         </section>
 
         <section id="usual">
-          <h2>What this usually looks like</h2>
+          <h2>Signs your Excel clean-up should be automated</h2>
           <p>It usually runs like a monthly ritual. Someone exports three or four files: a sales extract, a ledger, a CRM report. Each file is slightly different from the one before. A column header has moved. A new column has appeared. Dates have arrived as text rather than real dates. Amounts carry a stray currency symbol.</p>
           <p>The same fixes then get applied by hand. Delete the top two rows. Rename &ldquo;Cust Name&rdquo; to Customer. Split one column into two. Look up a product code and paste in its label. It takes the best part of a day, sometimes two. Nobody has written the steps down, so only one person can do them, and the report is late whenever that person is away.</p>
           <p>Underneath this is <strong>schema variation</strong>. The schema is the shape of a dataset: which columns it has, what they are called, and what type each one holds. Schema variation is that shape changing from file to file. It is the single most common reason a monthly export needs cleaning by hand, and the reason naive automation breaks the first time a column moves.</p>
         </section>
 
         <section id="try-first">
-          <h2>Map the clean-up first</h2>
+          <h2>How to map an Excel clean-up before you automate it</h2>
           <p>Before you automate anything, map what you already do. The goal is not a flowchart for its own sake. It is to separate the steps a machine should record from the steps a person must keep, and to find where the mess actually starts. You can do this in an afternoon with the same workbook you clean every month open in front of you.</p>
           <TryThisFirst title="Map the clean-up before you automate it">
             <ol>
@@ -123,7 +122,7 @@ export default function Page() {
               <li>For each file, write every cleaning step you perform, in order. For each step, note what it does and why you do it.</li>
               <li>Mark each step as <strong>mechanical</strong> (identical every month, no decision needed) or <strong>judgement</strong> (you look at the data and decide something).</li>
               <li>Note where the mess starts for each step. Is it the export setting, the source system, or a person typing values in by hand?</li>
-              <li>Mark which fixes really belong at source, in the system that produced the file, rather than in your spreadsheet.</li>
+              <li>Mark which fixes belong at source, in the system that produced the file, rather than in your spreadsheet.</li>
             </ol>
           </TryThisFirst>
           <p>When the map is done, one thing is usually clear. Most of the day is a small handful of mechanical steps, repeated across several files. Those steps are the first things to record, and the map tells you exactly which ones they are.</p>
@@ -140,8 +139,51 @@ export default function Page() {
           <p>The order of value follows from this. Fixing at source removes work entirely. Recording a mechanical step removes the repetition. Keeping judgement in Excel protects the part that actually needs a human. Automate in that order and you never automate something you should have fixed or should have kept.</p>
         </section>
 
+        <section id="steps">
+          <h2>The Power Query steps that replace a day of clean-up</h2>
+          <p>Most monthly clean-ups use the same handful of Power Query steps. In Excel, start from Data, Get Data; in Power BI, from Get data. Each step you click is recorded in the Applied Steps list, in order, and replayed on every refresh.</p>
+          <ol>
+            <li><strong>Get the data from a folder, not a file.</strong> Get Data, From File, From Folder, then Combine and Transform. Every file dropped into the folder next month is picked up automatically.</li>
+            <li><strong>Remove the junk rows and promote headers.</strong> Remove Top Rows for title lines, then Use First Row as Headers.</li>
+            <li><strong>Rename columns to stable names.</strong> Rename by header, so a moved column is still found.</li>
+            <li><strong>Trim and clean text.</strong> Transform, Format, Trim and Clean removes stray spaces and hidden characters that break lookups.</li>
+            <li><strong>Set data types last.</strong> Dates as dates, amounts as decimal or currency. Use Using Locale if dates arrive as day/month/year text.</li>
+            <li><strong>Replace codes with labels.</strong> Merge Queries against a small mapping table (branch codes, product codes, account codes) instead of VLOOKUPs pasted every month.</li>
+            <li><strong>Remove duplicates on a key.</strong> Select the key columns, then Remove Rows, Remove Duplicates.</li>
+            <li><strong>Unpivot month columns.</strong> If each month is a column, Unpivot Other Columns turns them into rows that pivot tables and Power BI can use.</li>
+            <li><strong>Add a check.</strong> A row count and a control total, compared with the source, so a bad file fails loudly (the code below shows one way).</li>
+          </ol>
+          <div className="in-table-wrap"><table>
+            <thead><tr><th>Task</th><th>Before (by hand, every month)</th><th>After (recorded once)</th></tr></thead>
+            <tbody>
+              <tr><td>Combine files</td><td>Open each file, copy, paste into a master sheet</td><td>From Folder, Combine; new files picked up on refresh</td></tr>
+              <tr><td>Headers</td><td>Delete title rows, retype headers</td><td>Remove Top Rows, Promote Headers, Rename</td></tr>
+              <tr><td>Dates and amounts</td><td>Text to Columns, fix formats, strip symbols</td><td>Replace Values, Change Type with locale</td></tr>
+              <tr><td>Codes to names</td><td>VLOOKUP pasted down each sheet</td><td>Merge Queries with one mapping table</td></tr>
+              <tr><td>Duplicates</td><td>Sort and eyeball</td><td>Remove Duplicates on the key</td></tr>
+              <tr><td>Checking</td><td>A quick look at the total</td><td>Row count and control total that stop the refresh</td></tr>
+            </tbody>
+          </table></div>
+        </section>
+
+        <section id="example">
+          <h2>Worked example: combining six branch sales files with Power Query</h2>
+          <Example setting="UK retailer · branch Excel exports, QuickBooks" title="Six branch files, one clean sales table">
+            <p>Each of six branches emails a monthly sales workbook. Two put a title row above the headers. One calls the amount column &ldquo;Amt (£)&rdquo; and another &ldquo;Amount GBP&rdquo;. The newest branch runs a till system set up with US settings, so its dates arrive as month first: 10/03/2026 means 3 October, while the other five mean 10 March. The finance officer spends two days a month combining them before comparing with QuickBooks.</p>
+            <ol>
+              <li>Save all six files into one SharePoint or OneDrive folder and connect with From Folder.</li>
+              <li>In the sample-file query, remove the title row where present, promote headers, and rename both amount headers to <code>amount_gbp</code>.</li>
+              <li>Strip &ldquo;£&rdquo; and thousands separators with Replace Values, then set <code>amount_gbp</code> to decimal.</li>
+              <li>Convert dates with a locale per source: Change Type, Using Locale, English (United Kingdom) for five branches and English (United States) for the sixth. Do it before the files are appended, keyed on the file name, because after the append the two formats are indistinguishable for any day up to the 12th.</li>
+              <li>Keep the Source.Name column the combine step adds; it becomes the branch.</li>
+              <li>Add the check: the combined total must equal the sum of the six branch control totals, and no date may fall outside the reporting month. Otherwise the refresh fails.</li>
+            </ol>
+            <p>The date check catches the trap that totals miss: a misread date moves a sale into the wrong month without changing the year&rsquo;s total. Next month the officer saves the new files into the folder and presses Refresh. The comparison with QuickBooks is now a reconciliation, not a rebuild.</p>
+          </Example>
+        </section>
+
         <section id="underneath">
-          <h2>What is actually happening</h2>
+          <h2>Power Query, SQL, or fix it at source?</h2>
           <p>Under the surface, a few plain ideas explain how a day of clean-up becomes a refresh you press once.</p>
           <p><strong>Power Query</strong> is the first tool most teams already own. It is a repeatable transformation recorded once and re-run on refresh. In Excel and in Power BI, you perform each clean-up step once in a visual editor. Power Query records the step as code in a language called M. Next month you point the same query at the new file and press refresh. Every step runs again, in the same order, in seconds. The manual afternoon becomes a button.</p>
           <p><strong>Moving logic to SQL or a model</strong> is the next step when one query is no longer enough. A model is a defined, reusable dataset that lives in a database or warehouse and is built with SQL. You move the clean-up there when more than one report needs the same cleaned data, or when the files are too large to handle comfortably in Excel. Then every report reads one governed copy of the truth, instead of each analyst cleaning a private copy in a slightly different way. This is the same discipline as <a href="/insights/automate-monthly-reporting">automating the monthly report safely</a>: move shared logic upstream, and leave the spreadsheet to do only what a spreadsheet should.</p>
@@ -150,17 +192,20 @@ export default function Page() {
           <p><strong>Schema variation</strong> breaks brittle automation. If your steps assume a column sits in a fixed position, a moved column silently shifts every value beneath it and the totals still look plausible. The guard is simple: match columns by name, not by position, and make the refresh fail loudly when an expected column is missing rather than carry on with the wrong data.</p>
           <p><strong>Manual overrides</strong> are the other trap. A manual override is a value you type over the data by hand: a hard-coded number, a cell you quietly &ldquo;correct&rdquo; because it looked wrong. It fixes today and hides tomorrow. The underlying fault returns next month, the override may now be wrong, and nothing warns you, because a typed value carries no rule and raises no alarm. Prefer a rule you can see over a value you typed.</p>
           <p>The safeguard against both is a <strong>data-quality test</strong>, also called an assertion. An assertion is a rule that must be true, checked automatically on every refresh: an amount is never negative, every row has a customer, the total matches the ledger. If the rule fails, the refresh stops or raises an alert. An assertion turns a silent bad file into a visible, named failure that someone can act on. Assertions are the heart of <a href="/insights/is-our-data-reliable">testing that the data is reliable</a>, and they are what separates automation you can trust from automation that fails quietly.</p>
+          <ForYourDataPerson title="The Power Query (M) steps, with a built-in check">
           <p>Here is one recorded transformation in Power Query (M) that replaces a morning of manual steps, with an assertion built in.</p>
-          <pre>{`// Power Query (M): the monthly clean-up, recorded once and re-run on refresh
+            <pre>{`// Power Query (M): the monthly clean-up, recorded once and re-run on refresh
 let
-    // read the sheet from this month's workbook
+    // the workbook to clean: change this path to your own file
+    SourcePath = "C:\\Finance\\Sales\\branch_sales.xlsx",
     Source   = Excel.Workbook(File.Contents(SourcePath)){[Item="Sales", Kind="Sheet"]}[Data],
     Headers  = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
 
     // match columns by NAME, so a moved column does not shift the data
     Renamed  = Table.RenameColumns(Headers, {
         {"Cust Name", "customer_name"},
-        {"Amt (GBP)", "amount_gbp"}
+        {"Amt (GBP)", "amount_gbp"},
+        {"Inv Date",  "invoice_date"}
     }),
     Trimmed  = Table.TransformColumns(Renamed, {{"customer_name", Text.Trim, type text}}),
     Typed    = Table.TransformColumnTypes(Trimmed, {
@@ -175,11 +220,12 @@ let
                else error "amount_gbp: " & Text.From(Table.RowCount(BadRows)) & " invalid rows"
 in
     Checked`}</pre>
-          <p>Read it top to bottom. The first steps do what you used to do by hand: read the sheet, promote the header row, rename the inconsistent headers to stable names, trim stray spaces, and set proper types. Because the rename step matches on the old name, a column that moves position is still picked up correctly. The last two steps are the assertion. They collect any row where the amount is missing or negative, and if any exist the query raises an error instead of returning data. A malformed file now stops at the door with a clear message, rather than flowing into the board pack unnoticed.</p>
+            <p>Read it top to bottom. The first steps do what you used to do by hand: read the sheet, promote the header row, rename the inconsistent headers to stable names, trim stray spaces, and set proper types. Because the rename step matches on the old name, a column that moves position is still picked up correctly. The last two steps are the assertion. They collect any row where the amount is missing or negative, and if any exist the query raises an error instead of returning data. A malformed file now stops at the door with a clear message, rather than flowing into the board pack unnoticed.</p>
+          </ForYourDataPerson>
         </section>
 
         <section id="good">
-          <h2>What good looks like</h2>
+          <h2>What good Excel automation looks like</h2>
           <p>Good is not a spreadsheet with no manual work in it. It is a clear line between the mechanical work a machine does and the judgement a person keeps. In practice it looks like this.</p>
           <ul>
             <li>The clean-up is recorded once as a transformation, in Power Query or in SQL, not repeated by hand each month.</li>
@@ -193,14 +239,14 @@ in
         </section>
 
         <section id="wrong">
-          <h2>Common ways this goes wrong</h2>
+          <h2>Common Power Query automation mistakes</h2>
           <ul>
             <li>Automating everything at once, including the judgement steps, so the output is a black box that nobody quite trusts.</li>
             <li>Matching columns by position instead of name, so one moved column silently shifts every value and the totals still look believable.</li>
             <li>Burying hard-coded overrides inside the transformation, which hides a recurring error rather than fixing it.</li>
             <li>Recording no assertions, so a malformed file flows straight through to the board pack with nothing to catch it.</li>
-            <li>Saving the whole thing as one private macro on one laptop, which simply moves the single point of failure rather than removing it.</li>
-            <li>Cleaning in the spreadsheet when the fault is really in the export, so the same fix is rebuilt from scratch every month.</li>
+            <li>Saving the whole thing as one private macro on one laptop, which moves the single point of failure rather than removing it.</li>
+            <li>Cleaning in the spreadsheet when the fault is in the export, so the same fix is rebuilt from scratch every month.</li>
           </ul>
         </section>
 
@@ -208,7 +254,7 @@ in
           <h2>Source problem or spreadsheet problem</h2>
           <p>Recording the clean-up in Power Query is often the right stopping point, and for a single monthly report it may be all you ever need. It stops being enough when the same fault keeps arriving at source, when several reports need the same cleaned data, or when no spreadsheet fix can stop the problem recurring. At that point you are no longer cleaning a file. You are running a small data pipeline, and it needs to be owned and built like one.</p>
           <SystemBoundary
-            intro="The clean-up has moved beyond the spreadsheet when it is really a source or pipeline problem in disguise."
+            intro="The clean-up has moved beyond the spreadsheet when it is a source or pipeline problem in disguise."
             conditions={[
               "The same fault appears in every monthly export, and no spreadsheet step can stop it coming back.",
               "More than one report needs the same cleaned data, and each one is cleaning its own copy in a slightly different way.",
@@ -220,7 +266,7 @@ in
         </section>
 
         <section id="decision">
-          <h2>A decision guide</h2>
+          <h2>Where each kind of clean-up belongs</h2>
           <p>Once the map is done, most steps sort themselves into one of five homes. Use this as a quick lookup for where each kind of clean-up belongs.</p>
           <table className="article-table">
             <thead>
@@ -259,6 +305,7 @@ in
             </tbody>
           </table>
           <p>The pattern behind the table is simple. Push each fix as far upstream as it will sensibly go. Fix it at source if you can, record it once if you cannot, and keep only judgement and presentation in the spreadsheet. Automate in that order and the monthly clean-up stops being a day you dread and becomes a refresh you trust.</p>
+          <p>Before you automate, list each manual step and its hours in the <a href="/resources/reporting-automation-map">reporting automation map</a>. When several systems need combining, not only files, <a href="/insights/first-reporting-stack">how to automate reporting without a data team</a> describes the next stage. If you would rather have it built, see <a href="/services/data-projects">our reporting automation projects</a>.</p>
         </section>
       </ArticleLayout>
     </PageShell>

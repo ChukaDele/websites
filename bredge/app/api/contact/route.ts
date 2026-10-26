@@ -58,6 +58,21 @@ export async function POST(request: Request) {
   const integrityError = validateLeadSubmissionGuard(body);
   if (integrityError) return bad(integrityError.error, integrityError.status);
 
+  // Newsletter sign-ups (footer, resources): an email address is all we ask for.
+  if ((body.formType || "").trim() === "newsletter") {
+    const nlEmail = (body.email || "").trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(nlEmail) || nlEmail.length > 200) return bad("That email doesn’t look right.");
+    return forward(env, {
+      submissionId: crypto.randomUUID(), formType: "newsletter", email: nlEmail,
+      name: "", company: "", country: "", phone: "", phoneE164: "", phoneCountry: "", needs: "",
+      capability: "", urgentArea: "", trafficGroup: "", projectType: "", timeline: "",
+      message: "Newsletter sign-up", page: (body.page || "").slice(0, 300), intent: "newsletter",
+      referrer: (request.headers.get("referer") || "").slice(0, 300),
+      utm: { source: "", medium: "", campaign: "", content: "" },
+      receivedAt: new Date().toISOString(),
+    });
+  }
+
   const name = (body.name || "").trim();
   const email = (body.email || "").trim();
   const company = (body.company || "").trim();
@@ -111,6 +126,11 @@ export async function POST(request: Request) {
     receivedAt: new Date().toISOString(),
   };
 
+  return forward(env, submission);
+}
+
+/** Hand a checked submission to the Apps Script; success only if it confirms the saved lead. */
+async function forward(env: Env, submission: { submissionId: string } & Record<string, unknown>) {
   if (!env.GOOGLE_LEADS_WEBHOOK_URL || !env.GOOGLE_LEADS_WEBHOOK_SECRET) {
     // Not configured — do not pretend it was received.
     return bad("Our form delivery isn’t configured yet. Please email hello@thebredge.com and we’ll reply personally.", 503);

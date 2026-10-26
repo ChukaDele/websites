@@ -1,37 +1,42 @@
-import type { Metadata, Viewport } from "next";
-import { headers } from "next/headers";
+import type { Metadata } from "next";
 import "@fontsource-variable/instrument-sans";
 import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
 import "./globals.css";
 import "./pages.css";
+// Area stylesheets (pipeline, research, insights, resources, services, contact,
+// legal, portfolio/*) are imported by the routes or components that use them,
+// so each page only downloads its own CSS. Their selectors are area-scoped
+// (.pl-, .ra-, .in-, .rs-, .sv-, .ct-/.contact-, .lg-, .pc-), so loading them
+// after qa-fixes.css does not change the cascade.
 import "./qa-fixes.css";
-import "./mobile-native.css";
-import "./conversion.css";
-import "./research.css";
-import "./typography-rag.css";
-import "./sitewide-editorial.css";
-import "./sitewide-fixes.css";
+// The body face (Latin subset) is needed for the first paint of every page, so it
+// is preloaded; the same hashed file the @font-face rule above points at.
+import instrumentSansLatin from "@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2?url";
 import { Preloader } from "../components/site/Preloader";
 import { Analytics } from "../components/site/Analytics";
-
-export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#142321" };
+import { Spotlight } from "../components/site/Spotlight";
 
 // Runs before first paint: mark first-entry (this session, motion allowed) so the
-// preloader overlay is present on the very first frame — no flash for returning
+// preloader overlay is present on the very first frame. It only plays when the
+// visit starts on the homepage; search landings on articles and tools skip it — no flash for returning
 // visitors, and it decides synchronously so there's no layout jump.
-const preloadInit = `(function(){try{if(!sessionStorage.getItem('bredge_preloaded')&&!matchMedia('(max-width:1000px), (prefers-reduced-motion: reduce)').matches&&!navigator.connection?.saveData){document.documentElement.classList.add('preload-active');}}catch(e){}})();`;
+const preloadInit = `(function(){try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('preload-active');}}catch(e){}})();`;
 
 // Search and social descriptions deliberately summarise the visible homepage
 // proposition. They do not introduce claims that a visitor cannot verify.
 const siteDescription = "Data engineering, analytics and business intelligence for growing and mid-market companies. We connect your systems, reconcile your numbers, and build reporting your team can trust.";
 
-// Host-aware: the workers.dev preview host is noindexed so it can't compete with
-// the canonical thebredge.com. Keywords meta intentionally removed (no ranking value).
+// Every page is the same for every visitor, so pages are rendered once and
+// served from the ISR cache, refreshed in the background at most hourly (a
+// deploy starts a fresh cache). See vite.config.ts for the optional KV store.
+export const revalidate = 3600;
+
+// Metadata no longer reads the request host (that made every page dynamic and
+// uncacheable). Preview hosts such as *.workers.dev are kept out of search by an
+// `X-Robots-Tag: noindex, nofollow` header from worker/index.ts instead.
+// Keywords meta intentionally removed (no ranking value).
 export async function generateMetadata(): Promise<Metadata> {
-  let host = "";
-  try { host = (await headers()).get("host") || ""; } catch { host = ""; }
-  const isPreview = host.endsWith(".workers.dev");
   const verification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
   return {
     metadataBase: new URL("https://thebredge.com"),
@@ -41,13 +46,11 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: { canonical: "/" },
     openGraph: { siteName: "The Bredge", title: "The Bredge | Data Engineering, Analytics & BI Partner", description: siteDescription, type: "website", url: "/", images: [{ url: "/og.png", width: 1200, height: 630, alt: "The Bredge data systems for decisions people can trust" }] },
     twitter: { card: "summary_large_image", title: "The Bredge | Data Engineering, Analytics & BI Partner", description: siteDescription, images: ["/og.png"] },
-    robots: isPreview
-      ? { index: false, follow: false }
-      : {
-        index: true,
-        follow: true,
-        googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
-      },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+    },
     verification: verification ? { google: verification } : undefined,
     manifest: "/site.webmanifest",
     icons: {
@@ -70,6 +73,7 @@ const structuredData = {
       "@type": "Organization",
       "@id": "https://thebredge.com/#organization",
       name: "The Bredge",
+      legalName: "The Bredge, LLC",
       alternateName: ["Bredge"],
       url: "https://thebredge.com",
       logo: "https://thebredge.com/brand/bredge-logo.svg",
@@ -108,6 +112,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="theme-color" content="#142321" />
+        <link rel="preload" href={instrumentSansLatin} as="font" type="font/woff2" crossOrigin="anonymous" />
         <script dangerouslySetInnerHTML={{ __html: preloadInit }} />
         <script dangerouslySetInnerHTML={{ __html: `window.__BREDGE_CFG=${JSON.stringify(analyticsCfg)};` }} />
       </head>
@@ -116,6 +121,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <Preloader />
         {children}
         <Analytics />
+        <Spotlight />
       </body>
     </html>
   );

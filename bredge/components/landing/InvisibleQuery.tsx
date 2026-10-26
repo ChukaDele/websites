@@ -7,12 +7,17 @@ import { useEffect, useRef } from "react";
    the same customer-identity → billing/product rollup → canonical model the
    rest of the page describes. Reference environment, synthetic data. */
 
-const SQL = `WITH ranked_identity AS (
+const SQL = `-- customer_health_monthly
+-- grain: one row per canonical customer per calendar month
+-- build: incremental on (canonical_customer_id, month); the last
+--        3 months are rebuilt each run to pick up late invoices
+-- scope: confirmed identity matches only; review rows wait
+
+WITH ranked_identity AS (
     SELECT
         source_system,
         source_customer_id,
         canonical_customer_id,
-        match_confidence,
         ROW_NUMBER() OVER (
             PARTITION BY source_system, source_customer_id
             ORDER BY match_confidence DESC, matched_at DESC
@@ -31,7 +36,7 @@ billing_monthly AS (
     SELECT
         i.canonical_customer_id,
         DATE_TRUNC('month', inv.paid_at)::date AS month,
-        SUM(inv.amount_paid) AS cash_collected
+        SUM(inv.amount_paid_usd) AS cash_collected_usd
     FROM billing.invoices inv
     JOIN identity i
       ON i.source_system = 'billing'
@@ -40,37 +45,45 @@ billing_monthly AS (
     GROUP BY 1, 2
 ),
 
-product_health AS (
+product_monthly AS (
     SELECT
         i.canonical_customer_id,
-        COUNT(DISTINCT e.user_id) FILTER (
-            WHERE e.occurred_at >= CURRENT_DATE - INTERVAL '28 days'
-        ) AS active_users_28d,
+        DATE_TRUNC('month', e.occurred_at)::date AS month,
+        COUNT(DISTINCT e.user_id) AS active_users,
         MAX(e.occurred_at) AS last_active_at
     FROM product.events e
     JOIN identity i
       ON i.source_system = 'product'
      AND i.source_customer_id = e.account_id
-    GROUP BY 1
+    GROUP BY 1, 2
+),
+
+customer_months AS (
+    -- spine: every customer gets every month, so a quiet month is 0, not missing
+    SELECT c.canonical_customer_id, c.account_name, m.month
+    FROM core.customers c
+    JOIN core.calendar_months m
+      ON m.month >= DATE_TRUNC('month', c.first_seen_at)::date
+     AND m.month <= DATE_TRUNC('month', CURRENT_DATE)::date
 )
 
 SELECT
-    c.canonical_customer_id,
-    c.account_name,
-    b.month,
-    b.cash_collected,
-    p.active_users_28d,
+    cm.canonical_customer_id,
+    cm.account_name,
+    cm.month,
+    COALESCE(b.cash_collected_usd, 0) AS cash_collected_usd,
+    COALESCE(p.active_users, 0) AS active_users,
     p.last_active_at
-FROM core.customers c
+FROM customer_months cm
 LEFT JOIN billing_monthly b
-    USING (canonical_customer_id)
-LEFT JOIN product_health p
-    USING (canonical_customer_id);`;
+    USING (canonical_customer_id, month)
+LEFT JOIN product_monthly p
+    USING (canonical_customer_id, month);`;
 
 const STAGES = ["Profile", "Resolve", "Reconcile", "Define", "Test", "Operate"];
 
 const KEYWORDS = new Set(["WITH", "AS", "SELECT", "FROM", "WHERE", "JOIN", "LEFT", "ON", "AND", "OR", "GROUP", "BY", "ORDER", "PARTITION", "OVER", "DESC", "ASC", "USING", "INTERVAL", "FILTER", "DISTINCT", "NOT", "NULL", "IS", "IN"]);
-const FUNCS = new Set(["ROW_NUMBER", "DATE_TRUNC", "SUM", "COUNT", "MAX", "MIN", "AVG", "CURRENT_DATE"]);
+const FUNCS = new Set(["ROW_NUMBER", "DATE_TRUNC", "SUM", "COUNT", "MAX", "MIN", "AVG", "CURRENT_DATE", "COALESCE"]);
 
 type Tok = { text: string; cls: string };
 
@@ -94,7 +107,19 @@ function tokenize(sql: string): Tok[] {
   return out;
 }
 
-const CHECKS = ["identity uniqueness", "referential integrity", "source reconciliation", "valid date ordering", "bounded rates", "controlled vocabulary"];
+// Each maps to a standard test on the model: unique, not_null, relationships, a reconciliation, accepted_values, freshness.
+const CHECKS = ["unique: customer + month", "not null: keys and month", "relationships: core.customers", "cash ties to billing ±0.5%", "accepted values: match_status", "freshness: sources < 24h"];
+// Same run as the Customer 360 pipeline: 1,842 matched, 70 held for review, 1,772 confirmed.
+const RESULT: Array<[string, string]> = [
+  ["table", "customer_health_monthly"],
+  ["one row per", "customer, per month"],
+  ["build", "incremental, last 3 months rebuilt"],
+  ["customers in", "1,842 matched"],
+  ["customers out", "1,772 confirmed"],
+  ["held for review", "70, excluded until resolved"],
+];
+// Where each authoring stage starts in the SQL.
+const anchors = () => ({ resolveEnd: SQL.indexOf("billing_monthly AS"), defineStart: SQL.indexOf("customer_months AS") });
 
 export function InvisibleQuery() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -102,41 +127,18 @@ export function InvisibleQuery() {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    // Testable React hydration boundary. The finished mobile/reduced-motion
-    // state must appear promptly AFTER this effect starts, not merely
-    // eventually after an arbitrary page-load delay.
-    root.dataset.iqHydrated = "true";
     const tokens = tokenize(SQL);
     const total = SQL.length;
-    const resolveEnd = SQL.indexOf("billing_monthly AS");
-    const defineStart = SQL.indexOf("SELECT\n    c.canonical_customer_id");
+    const { resolveEnd, defineStart } = anchors();
 
     let disposed = false;
     let mm: { revert: () => void } | undefined;
-    let started = false;
-    const desktopQuery = window.matchMedia(
-      "(min-width: 1001px) and (min-height: 720px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)",
-    );
-    const finishWithoutLibrary = () => {
-      const code = root.querySelector<HTMLElement>(".iq-code");
-      if (code) code.textContent = SQL;
-      root.classList.remove("iq-testing");
-      root.classList.add("iq-done");
-      root.querySelectorAll<HTMLElement>(".iq-stage").forEach((el, i) => el.classList.toggle("active", i === 5));
-      const cursor = root.querySelector<HTMLElement>(".iq-cursor");
-      if (cursor) cursor.style.opacity = "0";
-    };
-    // Mobile/reduced/short render the complete static state immediately,
-    // without downloading the GSAP and ScrollTrigger packages at all.
-    if (!desktopQuery.matches) finishWithoutLibrary();
 
-    const load = async () => {
-      if (started) return;
-      started = true;
+    (async () => {
       let gsap, ST;
       try {
         [{ default: gsap }, { ScrollTrigger: ST }] = await Promise.all([import("gsap"), import("gsap/ScrollTrigger")]);
-      } catch { started = false; finishWithoutLibrary(); return; }
+      } catch { return; }
       if (disposed) return;
       gsap.registerPlugin(ST);
       const m = gsap.matchMedia();
@@ -192,7 +194,7 @@ export function InvisibleQuery() {
       // use GSAP pinning here: a descendant pin created a second pin spacer next
       // to the Reference Work sticky scene, which could overlap the previous
       // section and leave a large blank runway after zoom/resize refreshes.
-      m.add("(min-width: 1001px) and (min-height: 720px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)", () => {
+      m.add("(min-width: 1001px) and (min-height: 720px) and (prefers-reduced-motion: no-preference)", () => {
         root.classList.remove("iq-testing", "iq-done");
         setVisibleChars(0);
         setStage(0);
@@ -242,30 +244,10 @@ export function InvisibleQuery() {
         return () => {};
       });
 
-      m.add("(max-width: 1000px)", () => {
-        renderFinished();
-      });
-      // Tablets with a mouse-sized viewport can still be touch-first. Their
-      // SQL scene stays static rather than using desktop scroll typing.
-      m.add("(hover: none), (pointer: coarse), (pointer: none)", () => {
-        renderFinished();
-      });
       ST.refresh();
-    };
+    })();
 
-    if (desktopQuery.matches) void load();
-    const onDesktopChange = (event: MediaQueryListEvent) => {
-      if (event.matches) void load();
-      else if (!started) finishWithoutLibrary();
-    };
-    desktopQuery.addEventListener("change", onDesktopChange);
-
-    return () => {
-      disposed = true;
-      desktopQuery.removeEventListener("change", onDesktopChange);
-      mm?.revert();
-      delete root.dataset.iqHydrated;
-    };
+    return () => { disposed = true; mm?.revert(); };
   }, []);
 
   return (
@@ -290,11 +272,7 @@ export function InvisibleQuery() {
             </div>
             <div className="iq-result" aria-hidden="true">
               <dl>
-                <div><dt>model</dt><dd>customer_health_monthly</dd></div>
-                <div><dt>grain</dt><dd>canonical customer · month</dd></div>
-                <div><dt>source rows</dt><dd>1,842</dd></div>
-                <div><dt>canonical entities</dt><dd>1,772</dd></div>
-                <div><dt>exceptions isolated</dt><dd>70</dd></div>
+                {RESULT.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
               </dl>
               <ul className="iq-checks">
                 {CHECKS.map((c) => <li key={c}>✓ {c}</li>)}
@@ -309,6 +287,8 @@ export function InvisibleQuery() {
       {/* Mobile: three legible excerpts, no desktop sticky scene. */}
       <div className="iq-mobile section-wrap">
         <h2>The dashboard is the last 10%.</h2>
+        <MobileExcerpt label="GRAIN" code={`-- one row per customer per month
+-- incremental; last 3 months rebuilt`} />
         <MobileExcerpt label="IDENTITY" code={`identity AS (
   SELECT canonical_customer_id
   FROM ranked_identity
@@ -318,8 +298,8 @@ export function InvisibleQuery() {
   ON i.source_system = 'billing'
  AND i.source_customer_id = inv.account_id
 WHERE inv.status = 'paid'`} />
-        <MobileExcerpt label="TEST" code={`✓ identity uniqueness
-✓ source reconciliation
+        <MobileExcerpt label="TEST" code={`✓ unique: customer + month
+✓ cash ties to billing ±0.5%
 6 / 6 checks passed`} />
         <small className="iq-m-env">Reference environment · synthetic data</small>
       </div>
@@ -332,6 +312,116 @@ function MobileExcerpt({ label, code }: { label: string; code: string }) {
     <div className="iq-excerpt">
       <span className="iq-ex-label">{label}</span>
       <pre>{code}</pre>
+    </div>
+  );
+}
+
+/**
+ * The same model, sized to sit inside the reference-builds window. When it
+ * comes into view it writes itself out (time-based, not scroll), lighting the
+ * six steps as it goes, then the test result lands. Reduced motion: shown
+ * finished.
+ */
+export function ModelPreview() {
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Set once the editor is ready: jumps the SQL to a step (clicking a step chip).
+  const jumpRef = useRef<(i: number) => void>(() => {});
+
+  useEffect(() => {
+    const root = rootRef.current;
+    const codeEl = root?.querySelector<HTMLElement>(".iq-code");
+    const cursor = root?.querySelector<HTMLElement>(".iq-cursor");
+    if (!root || !codeEl) return;
+
+    const spans: HTMLElement[] = [];
+    codeEl.textContent = "";
+    for (const t of tokenize(SQL)) {
+      const s = document.createElement("span");
+      s.className = `t-${t.cls}`;
+      s.dataset.full = t.text;
+      spans.push(s);
+      codeEl.appendChild(s);
+    }
+    if (cursor) codeEl.appendChild(cursor);
+    const total = SQL.length;
+    const { resolveEnd, defineStart } = anchors();
+
+    const show = (n: number) => {
+      let acc = 0;
+      for (const s of spans) {
+        const full = s.dataset.full || "";
+        const end = acc + full.length;
+        s.textContent = end <= n ? full : acc >= n ? "" : full.slice(0, n - acc);
+        acc = end;
+      }
+      if (cursor) codeEl.scrollTop = Math.max(0, cursor.offsetTop - codeEl.clientHeight * 0.6);
+    };
+    const stage = (i: number) => root.querySelectorAll(".iq-stage").forEach((el, k) => el.classList.toggle("active", k === i));
+    const finish = () => { show(total); stage(5); root.classList.add("iq-done"); if (cursor) cursor.style.opacity = "0"; };
+    // Step starts in the SQL; Test and Operate show the result card.
+    const starts = [0, Math.round(resolveEnd * 0.3), resolveEnd, defineStart, total, total];
+    let raf = 0;
+    jumpRef.current = (i: number) => {
+      cancelAnimationFrame(raf);
+      show(total);
+      stage(i);
+      if (cursor) cursor.style.opacity = "0";
+      root.classList.toggle("iq-done", i >= 4);
+      if (i < 4) {
+        let acc = 0, target: HTMLElement | undefined;
+        for (const sp of spans) { if (acc >= starts[i]) { target = sp; break; } acc += (sp.dataset.full || "").length; }
+        if (target) codeEl.scrollTo({ top: Math.max(0, target.offsetTop - 12), behavior: "smooth" });
+      }
+    };
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { finish(); return; }
+
+    let started = false;
+    const DURATION = 2600;
+    const run = () => {
+      const t0 = performance.now();
+      const tick = (now: number) => {
+        const p = Math.min(1, (now - t0) / DURATION);
+        const chars = Math.round(p * total);
+        show(chars);
+        stage(chars < resolveEnd * 0.3 ? 0 : chars < resolveEnd ? 1 : chars < defineStart ? 2 : chars < total ? 3 : 4);
+        if (p < 1) raf = requestAnimationFrame(tick);
+        else window.setTimeout(finish, 180);
+      };
+      raf = requestAnimationFrame(tick);
+    };
+    show(0); stage(0);
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !started) { started = true; run(); io.disconnect(); }
+    }, { threshold: 0.35 });
+    io.observe(root);
+    return () => { cancelAnimationFrame(raf); io.disconnect(); };
+  }, []);
+
+  return (
+    <div ref={rootRef} className="iq-embed" aria-label="customer_health.sql, written step by step, then tested">
+      <ol className="iq-embed-stages" aria-label="Steps. Pick one to jump to it.">
+        {STAGES.map((s, i) => (
+          <li key={s}><button type="button" className="iq-stage" onClick={() => jumpRef.current(i)}><span>{String(i + 1).padStart(2, "0")}</span>{s}</button></li>
+        ))}
+      </ol>
+      <div className="iq-editor">
+        <div className="iq-bar"><i /><i /><i /><span className="iq-file">customer_health.sql</span><span className="iq-env">reference · synthetic</span></div>
+        <div className="iq-codewrap">
+          <pre className="iq-code" aria-hidden="true"></pre>
+          <span className="iq-cursor" aria-hidden="true" />
+        </div>
+        <div className="iq-result">
+          <dl>
+            {RESULT.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
+          </dl>
+          <ul className="iq-checks">
+            {CHECKS.map((c) => <li key={c}>✓ {c}</li>)}
+          </ul>
+          <strong>6 / 6 checks passed</strong>
+          <small>REFERENCE ENVIRONMENT · SYNTHETIC DATA</small>
+        </div>
+      </div>
     </div>
   );
 }

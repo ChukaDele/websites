@@ -35,30 +35,7 @@ export function PageMotion() {
         const nudge = () => { window.clearTimeout(rt); rt = window.setTimeout(() => ScrollTrigger.refresh(), 200); };
         window.visualViewport?.addEventListener("resize", nudge);
 
-        // Infinite tweens must pause when offscreen or the tab is hidden.
-        // The reference pipeline is the only owner of this motion.
-        const pipeline = document.querySelector<HTMLElement>(".pipeline-core");
-        const drift = pipeline ? gsap.to(pipeline, {
-          y: -8, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: -1, paused: true,
-        }) : null;
-        const visible = () => !document.hidden && document.visibilityState === "visible";
-        const onPipelineVisibility = () => {
-          if (!drift) return;
-          const rect = pipeline!.getBoundingClientRect();
-          const inViewport = rect.bottom > 0 && rect.top < innerHeight;
-          if (inViewport && visible()) drift.play(); else drift.pause();
-        };
-        const driftTrigger = pipeline ? ScrollTrigger.create({
-          trigger: ".pipeline-demo",
-          start: "top bottom",
-          end: "bottom top",
-          onEnter: onPipelineVisibility,
-          onEnterBack: onPipelineVisibility,
-          onLeave: onPipelineVisibility,
-          onLeaveBack: onPipelineVisibility,
-        }) : null;
-        document.addEventListener("visibilitychange", onPipelineVisibility);
-
+        gsap.to(".pipeline-core", { y: -8, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: -1 });
 
         const counters = gsap.utils.toArray<HTMLElement>("[data-count]");
         const runCounters = () => counters.forEach((counter) => {
@@ -77,7 +54,6 @@ export function PageMotion() {
         // reaches "start with the decision". Reference Work uses its sticky
         // card-stack as the interaction; Diagnostic reveal removed — no generic
         // fade-up simply because a section entered the viewport.
-        gsap.from(".outcome-card", { autoAlpha: 0, stagger: 0.06, duration: 0.4, ease: "power2.out", scrollTrigger: { trigger: ".outcome-grid", start: "top 80%", once: true } });
 
         // This bundle loads async: refresh so triggers measured mid-scroll
         // pick up the real layout offsets.
@@ -85,9 +61,6 @@ export function PageMotion() {
 
         return () => {
           window.visualViewport?.removeEventListener("resize", nudge);
-          document.removeEventListener("visibilitychange", onPipelineVisibility);
-          driftTrigger?.kill();
-          drift?.kill();
           window.clearTimeout(rt);
           // GSAP reverts inline styles but not textContent overwritten mid count-up.
           counters.forEach((counter) => {

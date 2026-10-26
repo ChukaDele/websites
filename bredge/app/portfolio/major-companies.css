@@ -1,0 +1,163 @@
+/* ── Major Companies Financial Performance (portfolio board) ──
+   The original is dark with teal. Here it sits on the light Bredge canvas in
+   the .db language; teal is the one secondary accent, used only for results
+   (net income, the waterfall totals at the end, the selected company dot). */
+
+.pc-mc { --pc-teal:#1c9a88; }
+.pc-mc .db-card > header { margin-bottom:10px; }
+
+/* Dropdown slicers use the shared .dd-pill (app/globals.css). */
+
+.pc-mc .db-kpi strong.is-neg { color:var(--db-red); }
+.pc-mc .db-kpi > .db-note { display:block; }
+.pc-mc-foot { margin:8px 0 0; color:var(--db-mute); font-size:.64rem; line-height:1.35; }
+
+/* Yearly area chart */
+.pc-mc-chart { position:relative; width:100%; }
+.pc-mc-chart svg { display:block; overflow:visible; }
+.pc-mc-grid line { stroke:var(--db-line); }
+.pc-mc-grid text { fill:var(--db-mute); font:500 10px var(--font-sans); }
+.pc-mc-area { fill:var(--db-lime-2); fill-opacity:.3; opacity:0; transition:opacity 420ms ease 160ms; }
+.pc-mc-line { fill:none; stroke:var(--db-deep); stroke-width:2; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:1; transition:stroke-dashoffset 900ms var(--ease-out); }
+.db.is-on .pc-mc-area { opacity:1; }
+.db.is-on .pc-mc-line { stroke-dashoffset:0; }
+.pc-mc-partial { opacity:.9; }
+.pc-mc-guide { stroke:var(--db-ink); stroke-dasharray:3 3; opacity:.4; }
+.pc-mc-hit { position:absolute; top:0; display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0, 1fr); }
+.pc-mc-hit button { height:100%; border-radius:6px; transition:background 150ms ease; }
+.pc-mc-hit button.is-sel { background:rgba(198,240,168,.28) !important; }
+@media (hover:hover) and (pointer:fine) { .pc-mc-hit button:hover { background:rgba(198,240,168,.18) !important; } }
+.pc-mc-tip { position:absolute; z-index:2; display:grid; padding:6px 10px; border-radius:10px; background:var(--db-deep); color:#fff; font:600 .72rem var(--font-sans); white-space:nowrap; transform:translate(-50%, -100%); pointer-events:none; }
+.pc-mc-tip.is-end { transform:translate(-100%, -100%); }
+.pc-mc-tip.is-start { transform:translate(0, -100%); }
+.pc-mc-tip small { color:var(--db-lime); font-size:.6rem; font-weight:500; }
+
+/* Net income on the revenue scale */
+.pc-mc-ni { display:grid; gap:5px; margin-top:10px; padding-top:10px; border-top:1px solid var(--db-line); }
+.pc-mc-ni-top { display:flex; justify-content:space-between; gap:8px; color:#3f4b47; font-size:.72rem; }
+.pc-mc-ni-top b { color:var(--db-ink); font-weight:600; text-align:right; }
+.pc-mc-ni-bar { height:8px; border-radius:999px; background:#f1f3ee; overflow:hidden; }
+.pc-mc-ni-bar i { display:block; height:100%; width:calc(var(--v) * 100%); border-radius:inherit; background:var(--pc-teal); transform-origin:0 50%; transform:scaleX(.02); transition:transform 600ms var(--ease-out) 200ms; }
+.db.is-on .pc-mc-ni-bar i { transform:none; }
+.pc-mc-ni small { display:flex; align-items:flex-start; gap:5px; color:var(--db-mute); font-size:.62rem; line-height:1.35; }
+.pc-mc-ni small svg { flex:none; margin-top:1px; }
+
+/* Horizontal bars: market cap */
+.pc-mc-hbars { display:grid; gap:2px; }
+.pc-mc-hbars button { display:grid; grid-template-columns:74px minmax(0, 1fr) 40px; align-items:center; gap:8px; padding:2px 4px !important; border-radius:6px; font-size:.7rem; transition:opacity 150ms ease, background 150ms ease; }
+.pc-mc-hbars button > span:first-child { overflow:hidden; color:#3f4b47; white-space:nowrap; text-overflow:ellipsis; }
+.pc-mc-hbars b { font-weight:600; text-align:right; }
+.pc-mc-hbar { height:8px; border-radius:999px; background:#f1f3ee; overflow:hidden; }
+.pc-mc-hbar i { display:block; height:100%; width:calc(var(--v) * 100%); border-radius:inherit; background:var(--db-lime-2); transform-origin:0 50%; transform:scaleX(.02); transition:transform 520ms var(--ease-out); transition-delay:calc(var(--i) * 30ms); }
+.db.is-on .pc-mc-hbar i { transform:none; }
+.pc-mc-hbars button[aria-pressed="true"] { background:#f3f7ee !important; }
+.pc-mc-hbars button[aria-pressed="true"] .pc-mc-hbar i { background:var(--db-deep); }
+.pc-mc-hbars button.is-dim { opacity:.45; }
+
+/* Waterfall */
+.pc-mc-fall { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0, 1fr); gap:8px; height:150px; }
+.pc-mc-step { display:grid; grid-template-rows:minmax(0, 1fr) auto; gap:6px; min-width:0; }
+.pc-mc-step-col { position:relative; padding-top:16px; }
+.pc-mc-step-col i { position:absolute; left:0; right:0; bottom:calc(var(--b) * (100% - 16px)); height:calc(var(--h) * (100% - 16px)); min-height:2px; border-radius:5px; background:#e98a64; transform-origin:50% 100%; transform:scaleY(.04); transition:transform 520ms var(--ease-out), bottom 420ms var(--ease-out), height 420ms var(--ease-out); transition-delay:calc(var(--i) * 60ms); }
+.pc-mc-step.is-pos i { background:var(--db-lime-2); }
+.pc-mc-step.is-total i { background:var(--db-deep); }
+.pc-mc-step.is-total:last-child i { background:var(--pc-teal); }
+.db.is-on .pc-mc-step-col i { transform:none; }
+.pc-mc-step em { position:absolute; left:50%; bottom:calc(100% + 2px); color:var(--db-ink); font:600 .62rem var(--font-sans); font-style:normal; white-space:nowrap; transform:translateX(-50%); }
+.pc-mc-step.is-neg em { color:var(--db-red); }
+.pc-mc-step small { overflow:hidden; color:var(--db-mute); font:500 .62rem var(--font-sans); line-height:1.2; text-align:center; text-overflow:ellipsis; }
+.pc-mc .db-hint.is-warn { background:#fbf2d4; color:#6b5410; }
+.pc-mc .db-hint.is-warn svg { color:#b08a12; }
+
+/* Small multiples: net margin per company on a shared -50% to 50% scale */
+.pc-mc-row-income { grid-template-columns:minmax(0, 1fr) minmax(0, 1.25fr); }
+.pc-mc-multi { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:6px; }
+.pc-mc-multi button { display:grid; gap:4px; padding:7px 8px !important; border-radius:10px; background:#f7f8f5 !important; box-shadow:inset 0 0 0 1.5px transparent; transition:opacity 150ms ease, box-shadow 150ms ease; }
+.pc-mc-multi button[aria-pressed="true"] { box-shadow:inset 0 0 0 1.5px var(--db-deep); background:#f3f7ee !important; }
+.pc-mc-multi button.is-dim { opacity:.45; }
+.pc-mc-multi-top { display:flex; justify-content:space-between; gap:4px; font-size:.66rem; }
+.pc-mc-multi-top b { overflow:hidden; font-weight:600; white-space:nowrap; text-overflow:ellipsis; }
+.pc-mc-multi-top em { color:var(--pc-teal); font-style:normal; font-weight:600; }
+.pc-mc-multi button.is-neg .pc-mc-multi-top em { color:var(--db-red); }
+/* Bar grows from the zero line in the middle. */
+.pc-mc-multi-bar { position:relative; height:8px; border-radius:999px; background:#eceee8; }
+.pc-mc-multi-bar::after { content:""; position:absolute; left:50%; top:-2px; bottom:-2px; width:1px; background:#b9c0b6; }
+.pc-mc-multi-bar i { position:absolute; top:0; bottom:0; left:50%; width:calc(var(--v) * 50%); border-radius:999px; background:var(--pc-teal); transform-origin:0 50%; transform:scaleX(.02); transition:transform 520ms var(--ease-out); }
+.pc-mc-multi button.is-neg .pc-mc-multi-bar i { left:auto; right:50%; width:calc(var(--v) * -50%); background:var(--db-red); transform-origin:100% 50%; }
+.db.is-on .pc-mc-multi-bar i { transform:none; }
+.pc-mc-multi small { overflow:hidden; color:var(--db-mute); font-size:.58rem; white-space:nowrap; text-overflow:ellipsis; }
+
+/* Tables */
+.pc-mc-tr { display:grid; grid-template-columns:minmax(0, 1.2fr) repeat(5, minmax(0, 1fr)); align-items:center; gap:8px; padding:6px 4px; border-top:1px solid var(--db-line); font-size:.74rem; animation:db-page 240ms var(--ease-out) both; }
+.pc-mc-tr > span:not(.db-who) { text-align:right; font-weight:500; }
+.pc-mc-tr.is-head { padding:0 4px 6px; border-top:0; color:var(--db-mute); font-size:.66rem; animation:none; }
+.pc-mc-tr.is-head > span:first-child { text-align:left; }
+.pc-mc-tr.is-head button { padding:2px 6px !important; border-radius:999px; white-space:nowrap; transition:background 150ms ease, color 150ms ease; }
+.pc-mc-tr.is-head button.is-on { background:#f1f3ee !important; color:var(--db-ink); font-weight:600; }
+.pc-mc-tr.is-sel { border-radius:8px; background:#f3f7ee; }
+.pc-mc-tr .db-who button { text-align:left; }
+.pc-mc-tr .is-pos { color:var(--pc-teal); }
+.pc-mc-tr .is-neg { color:var(--db-red); }
+.pc-mc-tr .is-gap { color:var(--db-mute); }
+.pc-mc-pager { display:inline-flex; align-items:center; gap:4px; flex:none; padding:3px; border-radius:999px; background:#f1f3ee; color:var(--db-mute); font-size:.68rem; }
+.pc-mc-pager button { display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:#fff !important; color:var(--db-ink); font-size:.9rem !important; line-height:1; }
+.pc-mc-pager button:disabled { opacity:.35; cursor:default; }
+.pc-mc-pager span { min-width:34px; text-align:center; }
+
+/* Cash flow KPIs: five across */
+.pc-mc-kpis5 { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:10px; }
+.pc-mc-kpis5 .db-kpi { padding:14px; }
+.pc-mc-kpis5 .db-kpi > header { margin-bottom:10px; }
+.pc-mc-kpis5 .db-kpi strong { margin-bottom:6px; font-size:1.35rem; }
+.db.is-on .pc-mc-kpis5 .db-card { transition-delay:calc(var(--i) * 40ms); }
+
+/* Ratios: tiles and the ROA / ROE scatter */
+.pc-mc-row-ratios { grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); }
+.pc-mc-tiles { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; }
+.pc-mc-tiles button { display:grid; gap:2px; align-content:start; padding:8px 10px !important; border-radius:10px; background:#f7f8f5 !important; box-shadow:inset 0 0 0 1.5px transparent; transition:box-shadow 150ms ease, background 150ms ease; }
+.pc-mc-tiles button[aria-pressed="true"] { box-shadow:inset 0 0 0 1.5px var(--db-lime-2); background:#f3f7ee !important; }
+.pc-mc-tiles span { color:var(--db-mute); font-size:.66rem; }
+.pc-mc-tiles b { font-size:1.05rem; font-weight:600; letter-spacing:-.02em; }
+.pc-mc-tiles small { color:var(--db-mute); font-size:.6rem; }
+.pc-mc-tiles .db-delta-row { flex-wrap:wrap; row-gap:2px; }
+.pc-mc-tiles .db-note { font-size:.6rem; }
+.pc-mc-scatter { position:relative; height:176px; margin:4px 4px 18px 30px; border-left:1px solid var(--db-line); border-bottom:1px solid var(--db-line); }
+.pc-mc-avg-x, .pc-mc-avg-y, .pc-mc-zero-y { position:absolute; pointer-events:none; }
+.pc-mc-avg-x { top:0; bottom:0; border-left:1px dashed #c9cfc6; }
+.pc-mc-avg-y { left:0; right:0; border-top:1px dashed #c9cfc6; }
+.pc-mc-zero-y { left:0; right:0; border-top:1px solid var(--db-line); }
+.pc-mc-quad { position:absolute; top:4px; right:6px; color:#2f6b3a; font:600 .6rem var(--font-sans); font-style:normal; letter-spacing:.04em; text-transform:uppercase; }
+.pc-mc-ax { position:absolute; display:flex; justify-content:space-between; color:var(--db-mute); font:500 .58rem var(--font-sans); pointer-events:none; }
+.pc-mc-ax i { font-style:normal; }
+.pc-mc-ax.is-y { top:0; bottom:0; right:calc(100% + 4px); flex-direction:column; align-items:flex-end; }
+.pc-mc-ax.is-x { left:0; right:0; top:calc(100% + 3px); }
+.pc-mc-dot { position:absolute; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50% !important; background:var(--db-lime-2) !important; box-shadow:0 0 0 2px #fff; opacity:0; transform:scale(.4); transition:opacity 240ms ease, transform 300ms var(--ease-out), background 150ms ease; transition-delay:calc(var(--i) * 30ms); }
+.db.is-on .pc-mc-dot { opacity:1; transform:none; }
+.pc-mc-dot.is-sel { z-index:1; background:var(--pc-teal) !important; box-shadow:0 0 0 2px #fff, 0 0 0 4px rgba(28,154,136,.3); }
+.db.is-on .pc-mc-dot.is-dim { opacity:.35; }
+@media (hover:hover) and (pointer:fine) { .pc-mc-dot:hover { background:var(--db-deep) !important; } }
+.pc-mc-dot-tip { position:absolute; left:50%; bottom:calc(100% + 6px); padding:3px 8px; border-radius:8px; background:var(--db-deep); color:#fff; font:600 .64rem var(--font-sans); white-space:nowrap; transform:translateX(-50%); pointer-events:none; }
+.pc-mc-dot-tip.is-end { left:auto; right:0; transform:none; }
+
+@container (max-width:860px) {
+  .pc-mc .db-kpis .db-kpi .db-chip, .pc-mc-kpis5 .db-kpi .db-chip { display:none; }
+  .pc-mc-kpis5 { gap:8px; }
+  .pc-mc-kpis5 .db-kpi { padding:12px; }
+  .pc-mc-kpis5 .db-kpi strong { font-size:1.15rem; }
+  .pc-mc-multi { gap:4px; }
+  .pc-mc-multi small { display:none; }
+  .pc-mc-fall { height:128px; }
+}
+@container (max-width:720px) {
+  .pc-mc-row-income, .pc-mc-row-ratios, .pc-mc .db-row-2 { grid-template-columns:1fr; }
+  .pc-mc-kpis5 { grid-template-columns:repeat(3, minmax(0, 1fr)); }
+}
+@container (max-width:620px) {
+  .pc-mc-kpis5 { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+  .pc-mc-multi { grid-template-columns:repeat(3, minmax(0, 1fr)); }
+  .pc-mc-tr { grid-template-columns:minmax(0, 1.3fr) repeat(3, minmax(0, 1fr)); }
+  .pc-mc-c-gp, .pc-mc-c-ebitda, .pc-mc-c-cr, .pc-mc-c-de { display:none; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .pc-mc-area, .pc-mc-line, .pc-mc-ni-bar i, .pc-mc-hbar i, .pc-mc-step-col i, .pc-mc-multi-bar i, .pc-mc-dot, .pc-mc-tr { transition:none; animation:none; }
+}

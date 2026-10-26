@@ -64,9 +64,9 @@ h3 { line-height:1; }
    immediately; a 1px overlap owned by the next section hides any subpixel seam. */
 .hero-video { width:100%; height:100%; object-fit:cover; object-position:center; }
 .hero + .hero-morph, .hero-morph { margin-top:-1px; }
-.hero-morph { position:relative; min-height:92vh; overflow:hidden; background:#172824; color:var(--paper); }.hero-morph::before { position:absolute; inset:0; content:""; background:radial-gradient(circle at 51% 50%,rgba(144,210,111,.15),transparent 30%),linear-gradient(rgba(193,222,210,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(193,222,210,.07) 1px,transparent 1px); background-size:auto,56px 56px,56px 56px; }
+.hero-morph { position:relative; min-height:92vh; overflow:hidden; background:#172824; color:var(--paper); }.hero-morph::before { position:absolute; inset:0; content:""; background:radial-gradient(circle at 51% 50%,rgba(144,210,111,.15),transparent 30%),linear-gradient(rgba(193,222,210,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(193,222,210,.07) 1px,transparent 1px); background-size:auto,56px 56px,56px 56px; }.morph-links { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }.morph-links line { stroke:#b6ef9d; stroke-width:1; stroke-dasharray:3 8; opacity:.4; }
 .hero-morph-content { position:relative; min-height:100vh; padding-top:13vh; }.hero-morph-tease { position:relative; z-index:2; max-width:590px; }.hero-morph-tease h2 { margin:0 0 24px; }.hero-morph-tease > p:not(.eyebrow) { max-width:500px; color:#c4d1cb; line-height:1.5; }.morph-cards { position:absolute; top:50%; right:4%; width:min(760px,60vw); height:340px; transform:translateY(-50%); }.morph-card { position:absolute; display:grid; gap:6px; width:196px; padding:18px 18px 16px; border:1px solid rgba(244,241,233,.4); background:rgba(30,50,45,.92); box-shadow:10px 12px 0 rgba(0,0,0,.18); transform-origin:center; }.morph-card span,.morph-result span,.morph-decision span { color:#a6d68c; font:9px var(--font-mono); letter-spacing:.1em; }.morph-card b { color:#dce7e1; font-size:13px; font-weight:500; letter-spacing:.02em; }.morph-card strong { font-size:38px; line-height:.95; letter-spacing:-.06em; }.morph-card small { color:#a9bcb3; font-size:10px; }.morph-card i { position:absolute; top:13px; right:13px; width:7px; height:7px; border-radius:50%; background:rgba(244,241,233,.35); }.morph-exceptions { position:absolute; z-index:3; top:50%; left:50%; pointer-events:none; }.morph-exception { position:absolute; margin:0; padding:7px 11px; border:1px solid rgba(240,191,108,.55); background:rgba(14,26,22,.93); color:#f0bf6c; font:10px var(--font-mono); letter-spacing:.08em; white-space:nowrap; opacity:0; transform:translateY(10px); }.morph-exception.exception-1 { top:-128px; left:-200px; }.morph-exception.exception-2 { top:-52px; left:96px; }.morph-exception.exception-3 { top:78px; left:-156px; }.morph-card.card-1 { top:0; left:0; transform:rotate(-5deg); }.morph-card.card-2 { top:14px; right:0; transform:rotate(4deg); }.morph-card.card-3 { bottom:0; left:5%; transform:rotate(4deg); }.morph-card.card-4 { bottom:12px; right:7%; transform:rotate(-4deg); }.morph-card.card-5 { top:44%; left:38%; transform:rotate(8deg); }.morph-result { position:absolute; top:50%; left:50%; display:grid; gap:11px; width:260px; padding:24px; border:1px solid var(--brand); background:#b6ef9d; color:var(--ink); box-shadow:12px 14px 0 rgba(0,0,0,.24); transform:translate(-50%,-42%); }.morph-result span { color:#416343; }.morph-result strong { font-size:38px; line-height:.9; letter-spacing:-.07em; }.morph-result small { color:#47634f; font-size:11px; line-height:1.4; }.morph-decision { position:absolute; right:0; bottom:12vh; width:min(370px,31vw); padding-left:20px; border-left:1px solid rgba(244,241,233,.4); }.morph-decision p { margin:0; font-size:17px; line-height:1.36; }
-
+@media (min-width:1001px) and (prefers-reduced-motion:no-preference) { .morph-result,.morph-decision { opacity:0; }.morph-result { transform:translate(-50%,-42%) translateY(24px); }.morph-decision { transform:translateY(16px); } }
 @media (min-width:1001px) and (max-width:1250px) { .hero-morph-tease { max-width:430px; }.hero-morph-tease h2 { font-size:clamp(2.4rem,4.6vw,3.4rem); }.morph-cards { top:56%; right:4%; width:min(560px,50vw); }.morph-card.card-5 { left:37%; } }
 .reassurance { display:grid; grid-template-columns:.68fr 1.32fr; gap:40px; padding:140px 0 160px; border-bottom:1px solid var(--line); }.reassurance h2 { margin:0 0 24px; font-size:clamp(3rem, 4.7vw, 5.1rem); }.reassurance p:not(.eyebrow) { max-width:470px; color:#55615c; line-height:1.5; }
 .problem-section { padding:150px 0; }.section-heading { max-width:920px; }.section-heading h2 { margin-bottom:36px; }.section-heading > p:not(.eyebrow) { max-width:550px; color:#57645f; line-height:1.5; }.problem-grid { display:grid; grid-template-columns:repeat(4,1fr); margin-top:72px; border-top:1px solid var(--line); border-left:1px solid var(--line); }.problem-card { position:relative; min-height:320px; padding:26px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); transition:background .35s ease, color .35s ease; }.problem-card:hover { background:var(--ink); color:var(--paper); }.problem-card > span { color:#728078; font:10px var(--font-mono); }.problem-card h3 { margin:76px 0 16px; font-size:25px; }.problem-card p { max-width:260px; color:#66736d; font-size:13px; line-height:1.5; transition:color .35s; }.problem-card:hover p { color:#c6d0cb; }
@@ -175,3 +175,96 @@ h3 { line-height:1; }
   .xp-track { display:grid; grid-template-columns:repeat(4, auto); justify-content:start; gap:14px 44px; width:auto; white-space:normal; }
   .xp-track span { min-height:0; font-size:1.05rem; color:#33413c; }
 }
+
+/* Inline newsletter (articles, tools): the footer field restyled for light pages. */
+.nl-inline { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 360px); align-items:center; gap:14px 28px; margin:28px 0; padding:20px 22px; border:1px solid rgba(20,35,33,.1); border-radius:18px; background:#eef0ea; }
+.nl-inline h2 { margin:0 0 4px; font-size:1.02rem; font-weight:500; letter-spacing:-.01em; }
+.nl-inline p { margin:0; color:#5c6762; font-size:.86rem; line-height:1.45; }
+.nl-inline .sf-field { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:8px; position:relative; }
+.nl-inline .sf-input { height:44px; padding:0 14px; border:1px solid rgba(20,35,33,.18); border-radius:10px; background:#fff; color:var(--ink); font:400 14px/1 var(--font-mono); outline:none; }
+.nl-inline .sf-input:focus-visible { border-color:#1f3a2c; }
+.nl-inline .sf-go { display:grid; place-items:center; width:44px; height:44px; border:0; border-radius:10px; background:#1f3a2c; color:#c6f0a8; cursor:pointer; }
+.nl-inline .sf-hp { position:absolute; left:-9999px; width:1px; height:1px; opacity:0; }
+.nl-inline .sf-error { grid-column:1 / -1; margin:0; color:#a9552f; font-size:.8rem; }
+.nl-inline .sf-done { display:flex; align-items:center; gap:8px; margin:0; color:#1f3a2c; font-size:.9rem; }
+@media (max-width:700px) { .nl-inline { grid-template-columns:1fr; } }
+
+/* ==========================================================================
+   Dropdowns — one style for every select, listbox, menu and disclosure.
+   Closed trigger: 42px (44px on touch), 10px radius, hairline ink border,
+   stroked chevron (same 1.5px line as the header chevron / Phosphor regular).
+   Open panel: paper surface, 12px radius, 6px inset, soft ink shadow; opens in
+   180ms ease-out from scale(.97) at the trigger edge. Option highlight has no
+   transition, so holding an arrow key never animates.
+   Native <select>s keep the OS popup; only the closed control is styled.
+   ========================================================================== */
+:root {
+  --dd-chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='%23142321' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --dd-chevron-light:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='%23c6f0a8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --dd-border:rgba(20,35,33,.18);
+  --dd-border-hover:rgba(20,35,33,.36);
+  --dd-field:#fbfaf6;
+  --dd-radius:10px;
+  --dd-panel-radius:12px;
+  --dd-shadow:0 1px 2px rgba(20,35,33,.06), 0 22px 44px -20px rgba(20,35,33,.38);
+  --dd-hover:#e9e6dd;
+  --dd-motion:180ms;
+}
+/* Closed native select. :where() keeps this at zero specificity so an area can
+   size it (dashboard pills, compact pairs) without fighting it; areas must set
+   background-color, never the background shorthand, or the chevron is lost. */
+:where(select:not([multiple])) {
+  -webkit-appearance:none; appearance:none;
+  min-height:42px; padding:0 36px 0 12px;
+  border:1px solid var(--dd-border); border-radius:var(--dd-radius);
+  background-color:var(--dd-field); background-image:var(--dd-chevron); background-repeat:no-repeat; background-position:right 12px center; background-size:12px 12px;
+  color:var(--ink); font:400 .94rem/1.2 var(--font-sans); text-overflow:ellipsis; cursor:pointer;
+  transition:border-color 150ms ease, background-color 150ms ease;
+}
+:where(select:not([multiple])):disabled { opacity:.5; cursor:not-allowed; }
+:where(select) option { color:var(--ink); background:var(--paper); }
+@media (hover:hover) and (pointer:fine) { :where(select:not([multiple]):not(:disabled)):hover { border-color:var(--dd-border-hover); } }
+@media (pointer:coarse) { :where(select:not([multiple])) { min-height:44px; } }
+
+/* Dark surfaces (deep green panels, footer): add .dd-dark to the select or any
+   ancestor. */
+.dd-dark select:not([multiple]), select.dd-dark { border-color:rgba(244,241,233,.2); background-color:rgba(244,241,233,.06); background-image:var(--dd-chevron-light); color:#f4f1e9; }
+.dd-dark select option, select.dd-dark option { color:var(--ink); }
+
+/* Pill trigger for dashboard slicers: label text + select in one rounded pill. */
+.dd-pill { position:relative; display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 0 0 12px; border-radius:999px; background:var(--db-card, #fff); color:var(--db-mute, var(--muted)); font-size:.7rem; white-space:nowrap; }
+.dd-pill select { min-height:0; max-width:170px; height:100%; padding:0 28px 0 2px; border:0; border-radius:999px; background-color:transparent; background-position:right 10px center; background-size:11px 11px; color:var(--db-ink, var(--ink)); font:500 .72rem/1 var(--font-sans); }
+.dd-pill select:focus-visible { outline:0; }
+.dd-pill:focus-within { box-shadow:0 0 0 2px var(--db-lime-2, var(--brand)); }
+@media (pointer:coarse) { .dd-pill { height:44px; } }
+
+/* Inline chevron for custom triggers; flips when the trigger is expanded. */
+.dd-chevron { flex:none; width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; transition:transform var(--dd-motion) var(--ease-out); }
+[aria-expanded="true"] > .dd-chevron { transform:rotate(180deg); }
+
+/* Open panel (custom listbox / menu / popover). */
+.dd-panel { position:absolute; z-index:20; padding:6px; overflow:auto; overscroll-behavior:contain; border:1px solid var(--line); border-radius:var(--dd-panel-radius); background:var(--paper); color:var(--ink); box-shadow:var(--dd-shadow); transform-origin:top left; animation:dd-in var(--dd-motion) var(--ease-out) both; }
+.dd-panel[data-side="top"] { transform-origin:bottom left; }
+.dd-option { display:flex; align-items:center; gap:10px; width:100%; min-height:40px; padding:8px 10px; border:0; border-radius:8px; background:transparent; color:inherit; font:inherit; font-size:.88rem; text-align:left; cursor:pointer; user-select:none; }
+.dd-option[data-active="true"] { background:var(--dd-hover); }
+.dd-option[aria-selected="true"] { font-weight:500; }
+.dd-option[aria-disabled="true"] { opacity:.45; cursor:default; }
+.dd-option .dd-check { flex:none; width:14px; height:14px; margin-left:auto; fill:none; stroke:#2f6b3a; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; visibility:hidden; }
+.dd-option[aria-selected="true"] .dd-check { visibility:visible; }
+.dd-empty { margin:0; padding:10px; color:var(--muted); font-size:.84rem; }
+@media (pointer:coarse) { .dd-option { min-height:44px; } }
+.dd-dark .dd-panel, .dd-panel.dd-dark { border-color:rgba(244,241,233,.12); background:#1e3726; color:#f4f1e9; box-shadow:0 22px 44px -18px rgba(0,0,0,.6); }
+.dd-dark .dd-option[data-active="true"], .dd-panel.dd-dark .dd-option[data-active="true"] { background:rgba(198,240,168,.1); }
+.dd-dark .dd-check, .dd-panel.dd-dark .dd-check { stroke:#c6f0a8; }
+@keyframes dd-in { from { opacity:0; transform:scale(.97); } }
+
+/* <details> used as a dropdown/disclosure: same chevron, rotates when open. */
+details.dd-disclosure > summary { display:flex; align-items:center; justify-content:space-between; gap:10px; list-style:none; cursor:pointer; }
+details.dd-disclosure > summary::-webkit-details-marker { display:none; }
+details.dd-disclosure > summary::after { flex:none; width:12px; height:12px; content:""; background:var(--dd-chevron) no-repeat center / 12px 12px; transition:transform var(--dd-motion) var(--ease-out); }
+details.dd-disclosure[open] > summary::after { transform:rotate(180deg); }
+@media (prefers-reduced-motion:reduce) {
+  .dd-panel { animation:dd-fade 120ms ease both; }
+  .dd-chevron, details.dd-disclosure > summary::after { transition:none; }
+}
+@keyframes dd-fade { from { opacity:0; } }

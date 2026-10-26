@@ -1,64 +1,88 @@
 /* eslint-disable @next/next/no-img-element */
 import { CookieSettings } from "./CookieSettings";
+import { NewsletterField } from "./NewsletterField";
+import { FooterMark } from "./FooterMark";
 
-const columns: Array<[string, Array<[string, string] | [string, string, "soon"]>]> = [
+/**
+ * Footer (Second Direction), after the Synthesis reference, on the brand's
+ * dark green: logo, one line about the work and a contact field on the left;
+ * four mono link columns on the right; a contact row; then the name set huge
+ * and cropped by the page edge, with a call sticker that appears when the pointer enters it.
+ *
+ * Kept truthful: the reference's newsletter becomes the real contact address,
+ * its office clocks are left out, and its certification badge becomes a call
+ * booking sticker.
+ */
+
+type Link = [label: string, href: string];
+
+const COLUMNS: Array<[string, Link[]]> = [
   ["Services", [
     ["Services overview", "/services"],
-    ["Embedded Data Team", "/services/embedded-data-team"],
-    ["Data Projects", "/services/data-projects"],
-    ["Data Diagnostic", "/data-diagnostic"],
+    ["Embedded data team", "/services/embedded-data-team"],
+    ["Data projects", "/services/data-projects"],
+    ["Data diagnostic", "/data-diagnostic"],
   ]],
   ["Company", [
-    ["About", "/about"],
+    ["Who we are", "/how-we-work#about"],
     ["How we work", "/how-we-work"],
+    ["Work", "/work"],
+  ]],
+  ["Learn", [
+    ["Research", "/research"],
     ["Insights", "/insights"],
-    ["Data briefs", "/research"],
     ["Resources", "/resources"],
   ]],
   ["Connect", [
     ["Schedule a call", "/schedule"],
     ["Contact us", "/contact"],
-    ["hello@thebredge.com", "mailto:hello@thebredge.com"],
+  ]],
+  ["Legal", [
+    ["Privacy", "/privacy"],
+    ["Cookies", "/cookies"],
+    ["Terms", "/terms"],
   ]],
 ];
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
   return (
-    <footer id="contact-footer" className="footer-experience">
-      <div className="footer-grid" aria-hidden="true">{Array.from({ length: 90 }, (_, index) => <i key={index} />)}</div>
-      <div className="section-wrap footer-content">
-        <h2>Got a data problem nobody wants to own?<br /><em>Start there.</em></h2>
-        <p>Conflicting numbers. Manual reporting. A dashboard nobody trusts. A pipeline that breaks at the worst possible time. Bring us the messy version.</p>
-        <div className="footer-actions">
-          <a className="button cta-accent footer-button" data-cta="footer_contact" href="/contact">Tell us what’s broken <span aria-hidden="true">→</span></a>
-          <a className="footer-alt" data-cta="footer_schedule" href="/schedule">or book 30 minutes <span aria-hidden="true">→</span></a>
-          <a className="footer-mail" href="mailto:hello@thebredge.com">hello@thebredge.com</a>
+    <footer id="contact-footer" className="sf">
+      <div className="sf-wrap">
+        <div className="sf-top">
+          <div className="sf-lead">
+            <img className="sf-logo" src="/brand/bredge-logo.svg" alt="The Bredge" width="80" height="31" />
+            <p className="sf-about">We connect the systems you already have, reconcile the numbers, and build reporting your team stops arguing with.</p>
+          </div>
+          <div className="sf-contact">
+            <p className="sf-ask">The monthly brief</p>
+            <p className="sf-note">New guides, free tools and our data brief, written for people who run the numbers. One email a month.</p>
+            <NewsletterField />
+          </div>
+
+          <nav className="sf-cols" aria-label="Footer">
+            {COLUMNS.map(([heading, links]) => (
+              <div key={heading} className="sf-col">
+                <p>{heading}</p>
+                <ul>
+                  {links.map(([label, href]) => <li key={label}><a href={href}>{label}</a></li>)}
+                  {heading === "Legal" && <li><CookieSettings /></li>}
+                </ul>
+              </div>
+            ))}
+          </nav>
         </div>
 
-        <div className="footer-directory">
-          {columns.map(([heading, links]) => (
-            <div key={heading} className="footer-col">
-              <p>{heading}</p>
-              <ul>
-                {links.map((link) => (
-                  <li key={link[0]}>
-                    {link[2] === "soon"
-                      ? <span className="footer-soon">{link[0]} <em>Coming soon</em></span>
-                      : <a href={link[1]}>{link[0]}</a>}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        <div className="footer-bottom">
-          <img src="/brand/bredge-logo.svg" alt="The Bredge" width="80" height="31" />
-          <p>Data systems for decisions people can trust.</p>
-          <small>© {year} The Bredge · <a href="/privacy">Privacy</a> · <a href="/cookies">Cookies</a> · <a href="/terms">Terms</a> · <CookieSettings /></small>
+        <div className="sf-bar">
+          <p>
+            <span>© {year} The Bredge</span>
+            <i aria-hidden="true">·</i>
+            <span>Work with us: <a href="mailto:hello@thebredge.com">hello@thebredge.com</a></span>
+          </p>
         </div>
       </div>
+
+      <FooterMark />
     </footer>
   );
 }
