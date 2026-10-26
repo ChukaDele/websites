@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
+import { whenMedia } from "../site/motion-gate";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { BookOpenText, ChartLineUp, FileSql, Coins, Compass, Database, FlowArrow, MagnifyingGlass, PaperPlaneTilt, Plus, type Icon } from "@phosphor-icons/react";
 import { lazyPreview, preloadPreviews } from "./lazyPreview";
@@ -170,7 +171,7 @@ export function WorkStudio({ builds = BUILDS, groups = GROUPS, walkthrough = tru
     if (!win || !walkthrough) return;
     let disposed = false;
     let revert: (() => void) | undefined;
-    (async () => {
+    const run = async () => {
       let mods;
       try { mods = await Promise.all([import("gsap"), import("gsap/ScrollTrigger")]); } catch { return; }
       if (disposed) return;
@@ -221,8 +222,9 @@ export function WorkStudio({ builds = BUILDS, groups = GROUPS, walkthrough = tru
       });
       revert = () => mm.revert();
       ScrollTrigger.refresh();
-    })();
-    return () => { disposed = true; revert?.(); };
+    };
+    const stop = whenMedia(WALK_QUERY, () => { void run(); });
+    return () => { disposed = true; stop(); revert?.(); };
   }, [walkthrough, builds]);
 
   // Fit mode: scale the selected dashboard down (never up) so it sits in the

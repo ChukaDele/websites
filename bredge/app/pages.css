@@ -386,7 +386,10 @@
 .pl-tiles { position:absolute; inset:0; display:grid; grid-template-rows:repeat(4, 1fr); }
 .pl-row { display:grid; grid-template-columns:repeat(12, 1fr); }
 /* 1px overlap hides hairline seams between tiles at fractional widths. */
-.pl-row span { display:block; margin-right:-1px; background:var(--surface); will-change:transform; }
+.pl-row span { display:block; margin-right:-1px; background:var(--surface); }
+/* Phones and low-power devices: one surface wipe instead of 48 animated tiles. */
+.pl-low .pl-tiles { background:var(--surface); }
+.pl-low .pl-row span { display:none; }
 .pl-logo {
   --fill:0px; --shift:0px; --pitch:7px;
   position:absolute; top:50%; left:50%; width:min(380px, 64vw); aspect-ratio:995 / 330; transform:translate(-50%,-50%);

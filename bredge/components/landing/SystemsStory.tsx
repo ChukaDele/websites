@@ -1,5 +1,6 @@
 "use client";
 
+import { whenNear } from "../site/motion-gate";
 import { useEffect, useRef } from "react";
 
 /**
@@ -61,7 +62,7 @@ export function SystemsStory() {
 
     let disposed = false;
     let revert: (() => void) | undefined;
-    (async () => {
+    const run = async () => {
       let mods;
       try { mods = await Promise.all([import("gsap"), import("gsap/ScrollTrigger")]); } catch { showAll(); return; }
       if (disposed) return;
@@ -100,9 +101,10 @@ export function SystemsStory() {
       }, root);
       revert = () => ctx.revert();
       ScrollTrigger.refresh();
-    })();
+    };
+    const stop = whenNear(root, () => { void run(); }, "40% 0px");
 
-    return () => { disposed = true; revert?.(); };
+    return () => { disposed = true; stop(); revert?.(); };
   }, []);
 
   return (

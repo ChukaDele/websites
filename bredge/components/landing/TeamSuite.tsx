@@ -1,5 +1,6 @@
 "use client";
 
+import { whenMedia } from "../site/motion-gate";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { ArrowRight, Check, ChartLineUp, Coins, Cube, FlowArrow, UserCircle, type Icon } from "@phosphor-icons/react";
 
@@ -154,7 +155,7 @@ export function TeamSuite() {
     if (!root || !shell) return;
     let disposed = false;
     let revert: (() => void) | undefined;
-    (async () => {
+    const run = async () => {
       let mods;
       try { mods = await Promise.all([import("gsap"), import("gsap/ScrollTrigger")]); } catch { return; }
       if (disposed) return;
@@ -183,8 +184,9 @@ export function TeamSuite() {
       });
       revert = () => mm.revert();
       ScrollTrigger.refresh();
-    })();
-    return () => { disposed = true; revert?.(); };
+    };
+    const stop = whenMedia(PIN_QUERY, () => { void run(); });
+    return () => { disposed = true; stop(); revert?.(); };
   }, []);
 
   // The question cards run as a time-lapse on their own: each question shows

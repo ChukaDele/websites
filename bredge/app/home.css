@@ -181,3 +181,10 @@
 .hero-sd-canvas[data-static] { background:
   radial-gradient(ellipse 60% 45% at 70% 38%, color-mix(in srgb, var(--brand) 38%, transparent), transparent 70%),
   radial-gradient(circle at 1px 1px, rgba(255,255,255,.22) 1px, transparent 1.4px) 0 0 / 14px 14px; }
+
+/* Below-the-fold sections skip style/layout/paint until they near the viewport.
+   Phones only: on desktop the team and work scenes are pinned by ScrollTrigger,
+   which needs their real height up front. */
+@media (max-width:900px) {
+  .xp, .tq, .ts, .ws, .hu { content-visibility:auto; contain-intrinsic-size:auto 820px; }
+}

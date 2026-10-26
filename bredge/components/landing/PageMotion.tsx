@@ -70,9 +70,11 @@ export function PageMotion() {
       });
     };
 
-    if (motionQuery.matches) void load();
+    // After first paint, never during it.
+    const idle = (fn: () => void) => { if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(fn, { timeout: 2500 }); else setTimeout(fn, 600); };
+    if (motionQuery.matches) idle(() => { void load(); });
     const onChange = (event: MediaQueryListEvent) => {
-      if (event.matches) void load();
+      if (event.matches) idle(() => { void load(); });
     };
     motionQuery.addEventListener("change", onChange);
 

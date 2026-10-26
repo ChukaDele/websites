@@ -4,9 +4,8 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { CountryCode } from "libphonenumber-js";
 
 // libphonenumber (formatting, validation, the country list) is ~80 KB, so it is
-// not part of the page bundle. It loads when the browser is idle or the visitor
-// first touches the form (any field), whichever comes first, so it is always
-// ready before a number can be typed and the form submitted. Until then the
+// not part of the page bundle. It loads when the visitor first touches the form
+// (any field), so it is always ready before a number can be typed and submitted. Until then the
 // field shows exactly what the server rendered: US, +1, the raw input.
 type Lib = typeof import("libphonenumber-js");
 let libPromise: Promise<Lib> | null = null;
@@ -43,7 +42,8 @@ export function PhoneField({ onChange }: { onChange: (v: PhoneValue) => void }) 
   const [touched, setTouched] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  // Load the library on idle, or on the first focus / press anywhere in the form.
+  // Load the library on the first focus / press anywhere in the form: it is always
+  // ready before a number can be typed, and costs nothing for visitors who only read.
   useEffect(() => {
     let cancelled = false;
     const load = () => {
@@ -57,12 +57,10 @@ export function PhoneField({ onChange }: { onChange: (v: PhoneValue) => void }) 
     const onFirst = () => { scope.removeEventListener("focusin", onFirst); scope.removeEventListener("pointerdown", onFirst); load(); };
     scope.addEventListener("focusin", onFirst);
     scope.addEventListener("pointerdown", onFirst);
-    const idle = typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(load, { timeout: 2000 }) : window.setTimeout(load, 1200);
     return () => {
       cancelled = true;
       scope.removeEventListener("focusin", onFirst);
       scope.removeEventListener("pointerdown", onFirst);
-      if (typeof window.cancelIdleCallback === "function") window.cancelIdleCallback(idle); else clearTimeout(idle);
     };
   }, []);
 

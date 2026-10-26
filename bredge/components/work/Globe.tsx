@@ -211,22 +211,37 @@ export function Globe({ className }: { className?: string }) {
       };
     };
 
-    // Load Three.js only once the globe is close to the screen.
-    // It is decoration: begin only after the page has loaded and the browser is
-    // idle, so text and controls are interactive first.
-    let idleId = 0, timer = 0;
-    const near = new IntersectionObserver(([e]) => {
-      if (!e.isIntersecting) return;
-      near.disconnect();
-      const go = () => { timer = window.setTimeout(() => {
-        const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
-        if (ric) idleId = ric(() => start(), { timeout: 3000 }); else start();
-      }, 800); };
-      if (document.readyState === "complete") go(); else window.addEventListener("load", go, { once: true });
-    }, { rootMargin: "200px" });
-    near.observe(host);
+    // Decoration, so it never competes with first load. Phones, coarse pointers
+    // and low-power devices keep the static CSS poster (no Three.js at all).
+    // Elsewhere: begin once the globe is near the screen, at least 3s after
+    // load, and then on the first user input or after 4s of idle.
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const lowPower = window.matchMedia("(max-width: 700px)").matches
+      || window.matchMedia("(pointer: coarse)").matches
+      || (nav.deviceMemory !== undefined && nav.deviceMemory <= 4)
+      || (nav.hardwareConcurrency !== undefined && nav.hardwareConcurrency <= 4);
+    let idleId = 0, timer = 0, inView = false, armed = false;
+    const inputs = ["pointerdown", "pointermove", "keydown", "wheel", "touchstart"] as const;
+    const tryStart = () => { if (inView && armed && !started) start(); };
+    const onInput = () => { armed = true; tryStart(); };
+    let near: IntersectionObserver | undefined;
+    if (!lowPower) {
+      near = new IntersectionObserver(([e]) => { inView = e.isIntersecting; tryStart(); }, { rootMargin: "200px" });
+      near.observe(host);
+      const arm = () => {
+        inputs.forEach((t) => window.addEventListener(t, onInput, { once: true, passive: true }));
+        timer = window.setTimeout(() => {
+          const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+          const fire = () => { armed = true; tryStart(); };
+          if (ric) idleId = ric(fire, { timeout: 1000 }); else fire();
+        }, 4000);
+      };
+      const wait = window.setTimeout(arm, 3000);
+      cleanup = () => window.clearTimeout(wait);
+    }
     return () => {
-      disposed = true; near.disconnect(); window.clearTimeout(timer);
+      disposed = true; near?.disconnect(); window.clearTimeout(timer);
+      inputs.forEach((t) => window.removeEventListener(t, onInput));
       (window as unknown as { cancelIdleCallback?: (n: number) => void }).cancelIdleCallback?.(idleId);
       cleanup();
     };

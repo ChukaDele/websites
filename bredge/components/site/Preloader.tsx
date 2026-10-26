@@ -26,6 +26,11 @@ export function Preloader() {
     const html = document.documentElement;
     if (!root || !html.classList.contains("preload-active")) return;
 
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const lowPower = innerWidth <= 700 || matchMedia("(pointer: coarse)").matches
+      || (nav.deviceMemory ?? 8) <= 4 || (nav.hardwareConcurrency ?? 8) <= 4;
+    if (lowPower) root.classList.add("pl-low");
+
     let finished = false;
     const finish = () => {
       if (finished) return;
@@ -68,7 +73,12 @@ export function Preloader() {
           // 3. Hold, then the logo breaks back into thin stripes and goes.
           .to(logo, { "--fill": "0px", "--shift": "10px", duration: 0.25, ease: "power2.in" }, 1.25);
 
-        // 4. Tile shutter. Alternate rows close toward opposite sides.
+        // 4. Exit. Low-power devices wipe one surface; others shutter the tile grid.
+        if (lowPower) {
+          tl.to(root, { clipPath: "inset(0 0 100% 0)", duration: 0.55, ease: "power3.inOut" }, 1.5);
+          return;
+        }
+        // Alternate rows close toward opposite sides.
         rows.forEach((row, r) => {
           const fromRight = r % 2 === 0;
           tl.to(row.children, {
