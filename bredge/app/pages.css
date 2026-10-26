@@ -367,7 +367,7 @@
   .steps, .steps.four, .steps.six { grid-template-columns:1fr; }
 }
 
-/* ---------- Preloader, every page load (Second Direction) ---------- */
+/* ---------- Preloader, each time the site opens (Second Direction) ---------- */
 .preloader { display:none; }
 .preload-active { overflow:hidden; }
 .preload-active body { overflow:hidden; }

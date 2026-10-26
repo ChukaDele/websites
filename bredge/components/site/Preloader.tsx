@@ -12,10 +12,10 @@ const MARK_SHARE = 25.3;
  * reference: the Bredge mark draws in through horizontal stripes, slides left
  * while "redge" unrolls out from behind it, holds, breaks back into stripes,
  * then a 4×12 grid of tiles shutters away to reveal the hero. ~2.2s, hard
- * safety at 3.2s. Runs on every page load.
+ * safety at 3.2s. Plays each time the site is opened (new visit or tab, and on reload), not on every page.
  *
- * Runs whenever the head script added `.preload-active` (every full page
- * load unless the visitor prefers reduced motion). A pure-CSS safety fade lifts the overlay even if
+ * Runs whenever the head script added `.preload-active` (each time the site
+ * is opened, unless the visitor prefers reduced motion). A pure-CSS safety fade lifts the overlay even if
  * JS/GSAP never runs. Never traps the visitor.
  */
 export function Preloader() {
