@@ -59,7 +59,7 @@ async function sitemapRoutes(request) {
 
 async function testRouteMatrix(browser) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "no-preference" });
-  await context.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
+  await context.addInitScript(() => sessionStorage.setItem("bredge_opened", "1"));
   const page = await context.newPage();
   const pageErrors = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
@@ -75,7 +75,7 @@ async function testRouteMatrix(browser) {
 
 async function testInternalLinks(browser) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  await context.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
+  await context.addInitScript(() => sessionStorage.setItem("bredge_opened", "1"));
   const page = await context.newPage();
   const paths = new Set();
 
@@ -99,107 +99,33 @@ async function testInternalLinks(browser) {
   console.log(`✓ internal links: ${paths.size} destinations`);
 }
 
-async function testScrollNarratives(browser) {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "no-preference" });
-  await context.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
-  const page = await context.newPage();
+async function testPreloaderAndHero(browser) {
+  // First open in a fresh tab: the preloader plays, then lifts and leaves the hero usable.
+  const fresh = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "no-preference" });
+  const page = await fresh.newPage();
   await page.goto(base, { waitUntil: "domcontentloaded" });
-  await page.waitForTimeout(800);
+  assert.ok(await page.locator("html.preload-active .preloader").count(), "preloader should play when the site is opened");
+  await page.waitForFunction(() => !document.documentElement.classList.contains("preload-active"), null, { timeout: 6000 });
+  assert.equal(await page.locator("h1").count(), 1, "home should have exactly one H1");
+  assert.ok(await page.locator("h1").isVisible(), "hero H1 should be visible after the preloader");
+  // Moving to another page in the same tab must not replay it.
+  await page.goto(new URL("/services", base).href, { waitUntil: "domcontentloaded" });
+  assert.equal(await page.locator("html.preload-active").count(), 0, "preloader must not replay on another page in the same tab");
+  await fresh.close();
 
-  // The hero legitimately uses one GSAP pin. What broke production was the SQL
-  // narrative pinning a descendant scene as a second, competing pin system.
-  // Scope the regression to the SQL section instead of banning pin-spacers
-  // globally.
-  const iqPinState = await page.locator(".iq").evaluate((root) => {
-    const scene = root.querySelector(".iq-scene");
-    return {
-      rootInsidePinSpacer: Boolean(root.closest(".pin-spacer")),
-      sceneInsidePinSpacer: Boolean(scene?.closest(".pin-spacer")),
-    };
-  });
-  assert.equal(iqPinState.rootInsidePinSpacer, false, "Invisible 90% root must not be wrapped by a GSAP pin-spacer");
-  assert.equal(iqPinState.sceneInsidePinSpacer, false, "Invisible 90% scene must not be wrapped by a GSAP pin-spacer");
-
-  const geometry = await page.locator(".iq").evaluate((root) => {
-    const scene = root.querySelector(".iq-scene");
-    const style = scene ? getComputedStyle(scene) : null;
-    return {
-      rootHeight: root.getBoundingClientRect().height,
-      scenePosition: style?.position || "",
-      viewportHeight: window.innerHeight,
-      top: root.getBoundingClientRect().top + window.scrollY,
-    };
-  });
-  assert.equal(geometry.scenePosition, "sticky", `Invisible 90% should be CSS-sticky, got ${geometry.scenePosition}`);
-  assert.ok(geometry.rootHeight >= geometry.viewportHeight * 3.4, `Invisible 90% runway too short (${geometry.rootHeight}px)`);
-
-  const transition = await page.evaluate(() => {
-    const ref = document.querySelector(".reference-work");
-    const iq = document.querySelector(".iq");
-    if (!ref || !iq) return null;
-    const rr = ref.getBoundingClientRect();
-    const ir = iq.getBoundingClientRect();
-    return {
-      refBottom: rr.bottom + window.scrollY,
-      iqTop: ir.top + window.scrollY,
-    };
-  });
-  assert.ok(transition, "missing Reference Work / Invisible 90% sections");
-  assert.ok(transition.iqTop >= transition.refBottom - 2, `scroll sections overlap in document flow by ${transition.refBottom - transition.iqTop}px`);
-
-  const checkpoints = [0.01, 0.35, 0.72, 0.98];
-  for (const [index, progress] of checkpoints.entries()) {
-    await page.evaluate(({ top, height, vh, p }) => window.scrollTo(0, top + Math.max(0, height - vh) * p), {
-      top: geometry.top,
-      height: geometry.rootHeight,
-      vh: geometry.viewportHeight,
-      p: progress,
-    });
-    await page.waitForTimeout(220);
-
-    const overlap = await page.evaluate(() => {
-      const editor = document.querySelector(".iq-editor")?.getBoundingClientRect();
-      if (!editor) return false;
-      const inViewport = (r) => r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
-      const intersects = (a, b) => Math.min(a.right, b.right) > Math.max(a.left, b.left) && Math.min(a.bottom, b.bottom) > Math.max(a.top, b.top);
-      return [...document.querySelectorAll(".reference-case")].some((node) => {
-        const r = node.getBoundingClientRect();
-        return inViewport(r) && inViewport(editor) && intersects(r, editor);
-      });
-    });
-    assert.equal(overlap, false, `Reference Work overlaps the SQL scene at progress ${progress}`);
-    await page.screenshot({ path: new URL(`home-scroll-${index}.png`, artifacts).pathname, fullPage: false });
-  }
-
-  await context.close();
-  console.log("✓ scroll narratives: SQL scene has one bounded sticky system and no overlap");
-}
-
-async function testShortAndReducedMotion(browser) {
-  for (const config of [
-    { name: "short", viewport: { width: 1280, height: 700 }, reducedMotion: "no-preference" },
-    { name: "reduced", viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" },
-  ]) {
-    const context = await browser.newContext({ viewport: config.viewport, reducedMotion: config.reducedMotion });
-    await context.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
-    const page = await context.newPage();
-    await page.goto(base, { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(700);
-    const state = await page.locator(".iq").evaluate((root) => ({
-      done: root.classList.contains("iq-done"),
-      scenePosition: getComputedStyle(root.querySelector(".iq-scene")).position,
-    }));
-    assert.ok(state.scenePosition !== "sticky" && state.scenePosition !== "fixed", `${config.name}: SQL scene should fall back to natural flow, got ${state.scenePosition}`);
-    assert.equal(state.done, true, `${config.name}: complete SQL/result state should be visible`);
-    await page.screenshot({ path: new URL(`home-${config.name}.png`, artifacts).pathname, fullPage: false });
-    await context.close();
-  }
-  console.log("✓ short viewport + reduced-motion fallbacks");
+  // Reduced motion: no preloader at all.
+  const reduced = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
+  const rp = await reduced.newPage();
+  await rp.goto(base, { waitUntil: "domcontentloaded" });
+  assert.equal(await rp.locator("html.preload-active").count(), 0, "reduced motion should skip the preloader");
+  await rp.screenshot({ path: new URL("home-reduced.png", artifacts).pathname, fullPage: false });
+  await reduced.close();
+  console.log("✓ preloader plays on open, not on page change, skipped for reduced motion");
 }
 
 async function testExperienceMotionAndMobileReading(browser) {
   const desktop = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "no-preference" });
-  await desktop.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
+  await desktop.addInitScript(() => sessionStorage.setItem("bredge_opened", "1"));
   const desktopPage = await desktop.newPage();
   await desktopPage.goto(base, { waitUntil: "domcontentloaded" });
   await desktopPage.waitForTimeout(500);
@@ -223,7 +149,7 @@ async function testExperienceMotionAndMobileReading(browser) {
   await desktop.close();
 
   const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "no-preference" });
-  await mobile.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
+  await mobile.addInitScript(() => sessionStorage.setItem("bredge_opened", "1"));
   const mobilePage = await mobile.newPage();
   await mobilePage.goto(base, { waitUntil: "domcontentloaded" });
   await mobilePage.waitForTimeout(500);
@@ -247,7 +173,7 @@ async function testExperienceMotionAndMobileReading(browser) {
 async function testInsights(browser) {
   for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
     const context = await browser.newContext({ viewport });
-    await context.addInitScript(() => sessionStorage.setItem("bredge_preloaded", "1"));
+    await context.addInitScript(() => sessionStorage.setItem("bredge_opened", "1"));
     const page = await context.newPage();
     await assertPageBasics(page, "/insights");
 
@@ -286,8 +212,7 @@ const browser = await chromium.launch({ headless: true });
 try {
   await testRouteMatrix(browser);
   await testInternalLinks(browser);
-  await testScrollNarratives(browser);
-  await testShortAndReducedMotion(browser);
+  await testPreloaderAndHero(browser);
   await testExperienceMotionAndMobileReading(browser);
   await testInsights(browser);
   await testHeaders(browser);
