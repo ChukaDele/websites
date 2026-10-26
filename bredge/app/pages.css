@@ -367,7 +367,7 @@
   .steps, .steps.four, .steps.six { grid-template-columns:1fr; }
 }
 
-/* ---------- First-entry preloader (Second Direction) ---------- */
+/* ---------- Preloader, every page load (Second Direction) ---------- */
 .preloader { display:none; }
 .preload-active { overflow:hidden; }
 .preload-active body { overflow:hidden; }
@@ -375,7 +375,7 @@
   display:block; position:fixed; inset:0; z-index:100;
   /* No-JS safety only: fires after the JS sequence would have finished, so it
      never fades the overlay mid-animation. */
-  animation:pl-safety 0.5s 4.6s forwards;
+  animation:pl-safety 0.4s 3.4s forwards;
 }
 /* Tiles are the overlay's background; the shutter exit shrinks each one. */
 .pl-tiles { position:absolute; inset:0; display:grid; grid-template-rows:repeat(4, 1fr); }
