@@ -8,7 +8,8 @@
 .hero-sd-screen { position:relative; height:100svh; min-height:600px; padding:0 max(20px, calc((100% - 1380px) / 2)); }
 .hero-sd-title { position:absolute; left:var(--hero-x); bottom:clamp(20px, 3.4vh, 40px); display:flex; flex-direction:column; align-items:flex-start; gap:clamp(14px, 2vh, 22px); }
 .hero-sd-cue { color:var(--paper); font-size:12px; opacity:.85; transition:opacity var(--motion-fast) var(--ease-out); }
-.hero-sd-cue:hover { opacity:1; }
+@media (hover: hover) and (pointer: fine) {
+.hero-sd-cue:hover { opacity:1; } }
 .hero-sd-intro { position:relative; padding:clamp(90px, 14vh, 160px) 0 clamp(100px, 16vh, 180px); }
 .hero-sd-statement { max-width:24ch; margin:0; font-size:clamp(1.9rem, 3.6vw, 3.6rem); font-weight:400; line-height:1.1; letter-spacing:-.03em; }
 @media (max-width:650px) {

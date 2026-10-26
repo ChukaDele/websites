@@ -17,10 +17,13 @@
 @media (prefers-reduced-motion:reduce) { .site-header { transition:none; } .site-header.is-hidden { transform:none; } }
 .site-nav { display:flex; align-items:center; gap:28px; }
 .site-nav .nav-item { position:relative; color:#2c3a36; font-size:13px; transition:color var(--motion-fast) var(--ease-out); }
-.site-nav a.nav-item:hover, .nav-item.has-menu:hover > a { color:var(--ink); }
+@media (hover: hover) and (pointer: fine) {
+.site-nav a.nav-item:hover, .nav-item.has-menu:hover > a { color:var(--ink); } }
 /* animated underline (scaleX, not width) — draws on hover/active, retracts on leave */
 .site-nav a.nav-item::after, .nav-item.has-menu > a::after { content:""; position:absolute; left:0; right:0; bottom:-5px; height:1.5px; background:currentColor; transform:scaleX(0); transform-origin:left; transition:transform var(--motion-base) var(--ease-out); }
-.site-nav a.nav-item:hover::after, .site-nav a.nav-item.active::after, .nav-item.has-menu:hover > a::after, .nav-item.has-menu.active > a::after { transform:scaleX(1); }
+.site-nav a.nav-item.active::after, .nav-item.has-menu.active > a::after { transform:scaleX(1); }
+@media (hover: hover) and (pointer: fine) {
+.site-nav a.nav-item:hover::after, .nav-item.has-menu:hover > a::after { transform:scaleX(1); } }
 .nav-item .chev { font-size:8px; opacity:.6; transition:transform var(--motion-fast) var(--ease-out); }
 .nav-item.has-menu.open .chev { transform:translateY(1px) rotate(180deg); }
 .nav-item.has-menu > a { display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
@@ -28,7 +31,8 @@
 .nav-item.has-menu::after { position:absolute; top:100%; left:0; width:100%; height:16px; content:""; }
 .nav-item.has-menu.open .nav-dropdown { opacity:1; visibility:visible; transform:translateY(0); }
 .nav-dropdown a { display:grid; gap:2px; padding:11px 13px; transition:background var(--motion-fast) var(--ease-out); }
-.nav-dropdown a:hover { background:var(--surface); }
+@media (hover: hover) and (pointer: fine) {
+.nav-dropdown a:hover { background:var(--surface); } }
 .nav-dropdown b { font-size:13px; font-weight:500; letter-spacing:-.01em; }
 .nav-dropdown small { color:var(--muted); font-size:11px; }
 .nav-toggle { display:none; }
@@ -71,7 +75,8 @@
 .page-hero .lede + .lede { margin-top:18px; }
 .hero-cta-row { display:flex; align-items:center; gap:28px; margin-top:40px; flex-wrap:wrap; }
 .breadcrumbs { display:flex; gap:9px; align-items:center; margin-bottom:30px; color:var(--muted); font:11px var(--font-mono); letter-spacing:.04em; }
-.breadcrumbs a:hover { color:var(--ink); }
+@media (hover: hover) and (pointer: fine) {
+.breadcrumbs a:hover { color:var(--ink); } }
 .breadcrumbs span { opacity:.5; }
 
 .section { padding:96px 0; }
@@ -462,7 +467,8 @@
 .insight-card h3 { margin:0 0 12px; font-size:clamp(1.25rem,1.9vw,1.6rem); line-height:1.08; letter-spacing:-.03em; }
 .insight-card p { color:#55615c; line-height:1.5; }
 .insight-meta { display:inline-flex; align-items:center; gap:8px; margin-top:16px; color:var(--muted); font:11px var(--font-mono); letter-spacing:.04em; }
-.insight-featured:hover .arrow, .insight-card:hover .arrow { transform:translate(2px,-2px); }
+@media (hover: hover) and (pointer: fine) {
+.insight-featured:hover .arrow, .insight-card:hover .arrow { transform:translate(2px,-2px); } }
 /* Tablet: stack copy → diagram with generous but controlled spacing. */
 @media (max-width:900px) {
   .insight-featured { grid-template-columns:1fr; gap:40px; padding-top:44px; margin-bottom:44px; }
@@ -503,7 +509,8 @@
 /* cookie settings control (link-styled button in footer) */
 .cookie-settings { border:0; background:none; padding:0; color:inherit; font:inherit; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
 .footer-bottom small a, .footer-bottom .cookie-settings { color:#8a978f; }
-.footer-bottom small a:hover, .footer-bottom .cookie-settings:hover { color:#c3d0c9; }
+@media (hover: hover) and (pointer: fine) {
+.footer-bottom small a:hover, .footer-bottom .cookie-settings:hover { color:#c3d0c9; } }
 
 /* ============================================================
    Insights — long-form article reading system
@@ -523,7 +530,8 @@
 .ax-rail-title { margin:0 0 14px; color:#5a6964; font:600 10px/1 var(--font-mono); letter-spacing:.12em; }
 .ax-rail ul { list-style:none; margin:0; padding:0; display:grid; gap:2px; }
 .ax-rail a { display:block; padding:6px 0 6px 14px; border-left:2px solid var(--line); color:var(--muted); font-size:.86rem; line-height:1.35; transition:color var(--motion-fast) var(--ease-out), border-color var(--motion-fast) var(--ease-out); }
-.ax-rail a:hover { color:var(--ink); }
+@media (hover: hover) and (pointer: fine) {
+.ax-rail a:hover { color:var(--ink); } }
 .ax-rail a.active { color:var(--ink); border-left-color:var(--brand); font-weight:500; }
 
 /* Reading column */
@@ -575,8 +583,10 @@
 .ax-related-grid { display:grid; grid-template-columns:1fr 1fr; gap:36px; margin-top:20px; }
 .ax-related-card { display:block; padding-top:22px; border-top:1px solid var(--ink); }
 .ax-related-card h3 { margin:12px 0 14px; font-size:clamp(1.2rem,1.8vw,1.55rem); line-height:1.1; letter-spacing:-.02em; }
-.ax-related-card:hover h3 { text-decoration:underline; text-underline-offset:3px; }
-.ax-related-card:hover .arrow { transform:translate(2px,-2px); }
+@media (hover: hover) and (pointer: fine) {
+.ax-related-card:hover h3 { text-decoration:underline; text-underline-offset:3px; } }
+@media (hover: hover) and (pointer: fine) {
+.ax-related-card:hover .arrow { transform:translate(2px,-2px); } }
 
 .ax-toc-mobile { display:none; }
 
@@ -598,11 +608,16 @@
 
 /* ---------- Insights index: hover microinteractions + category list ---------- */
 .insight-featured h2 { position:relative; display:inline; background-image:linear-gradient(currentColor,currentColor); background-size:0% 1.5px; background-repeat:no-repeat; background-position:0 100%; transition:background-size var(--motion-base) var(--ease-out); }
-.insight-featured:hover h2, .insight-featured:focus-visible h2 { background-size:100% 1.5px; }
+.insight-featured:focus-visible h2 { background-size:100% 1.5px; }
+@media (hover: hover) and (pointer: fine) {
+.insight-featured:hover h2 { background-size:100% 1.5px; } }
 .insight-featured, .insight-card { transition:background var(--motion-fast) var(--ease-out); }
-.insight-featured:hover, .insight-card:hover { background:color-mix(in srgb, var(--brand) 6%, transparent); }
+@media (hover: hover) and (pointer: fine) {
+.insight-featured:hover, .insight-card:hover { background:color-mix(in srgb, var(--brand) 6%, transparent); } }
 .insight-card h3 { display:inline; background-image:linear-gradient(currentColor,currentColor); background-size:0% 1.5px; background-repeat:no-repeat; background-position:0 100%; transition:background-size var(--motion-base) var(--ease-out); }
-.insight-card:hover h3, .insight-card:focus-visible h3 { background-size:100% 1.5px; }
+.insight-card:focus-visible h3 { background-size:100% 1.5px; }
+@media (hover: hover) and (pointer: fine) {
+.insight-card:hover h3 { background-size:100% 1.5px; } }
 
 .insights-all { padding:56px 0 96px; }                  /* owns secondary → ALL INSIGHTS (~56px) */
 @media (max-width:1000px) { .insights-all { padding:48px 0 80px; } }
@@ -610,16 +625,20 @@
 .insights-all-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; margin-bottom:8px; }
 .insights-tabs { display:flex; flex-wrap:wrap; gap:6px; }
 .insights-tabs button { padding:7px 12px; border:1px solid var(--line); background:var(--paper); color:#55615c; font:11px var(--font-mono); letter-spacing:.02em; cursor:pointer; transition:background var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out), border-color var(--motion-fast) var(--ease-out); }
-.insights-tabs button:hover { color:var(--ink); }
+@media (hover: hover) and (pointer: fine) {
+.insights-tabs button:hover { color:var(--ink); } }
 .insights-tabs button.on { border-color:var(--ink); background:var(--ink); color:var(--paper); }
 .insights-list { list-style:none; margin:0; padding:0; border-top:1px solid var(--line); }
 .insights-list li { border-bottom:1px solid var(--line); }
 .insights-list a { display:grid; grid-template-columns:180px 1fr auto; gap:24px; align-items:baseline; padding:22px 0; transition:background var(--motion-fast) var(--ease-out); }
-.insights-list a:hover { background:color-mix(in srgb, var(--brand) 6%, transparent); }
+@media (hover: hover) and (pointer: fine) {
+.insights-list a:hover { background:color-mix(in srgb, var(--brand) 6%, transparent); } }
 .insights-list .insight-cat { margin:0; }
 .insights-list-title { font-size:clamp(1.05rem,1.5vw,1.35rem); letter-spacing:-.02em; line-height:1.2; background-image:linear-gradient(currentColor,currentColor); background-size:0% 1.5px; background-repeat:no-repeat; background-position:0 100%; transition:background-size var(--motion-base) var(--ease-out); }
-.insights-list a:hover .insights-list-title { background-size:100% 1.5px; }
-.insights-list a:hover .arrow { transform:translate(2px,-2px); }
+@media (hover: hover) and (pointer: fine) {
+.insights-list a:hover .insights-list-title { background-size:100% 1.5px; } }
+@media (hover: hover) and (pointer: fine) {
+.insights-list a:hover .arrow { transform:translate(2px,-2px); } }
 .insight-meta .arrow { transition:transform var(--motion-fast) var(--ease-out); }
 @media (max-width:760px) { .insights-list a { grid-template-columns:1fr; gap:6px; } }
 
@@ -654,9 +673,11 @@
 /* Same button as the nav bar's "Schedule a call": cream, 6px corners, medium weight. */
 .hero-sd .button, .sh .button { gap:10px; min-height:44px; padding:0 18px; border:0; border-radius:6px; background:var(--paper); color:var(--ink); font-size:14.5px; font-weight:500; letter-spacing:-.005em; transition:background 150ms ease, transform 120ms var(--ease-out); }
 .hero-sd .button:active, .sh .button:active { transform:scale(.98); }
-.hero-sd .button:hover, .sh .button:hover { background:#fff; }
+@media (hover: hover) and (pointer: fine) {
+.hero-sd .button:hover, .sh .button:hover { background:#fff; } }
 .hero-sd .text-link, .sh .text-link { border-color:var(--paper); color:var(--paper); }
-.hero-sd .text-link:hover, .sh .text-link:hover { color:var(--lime); }
+@media (hover: hover) and (pointer: fine) {
+.hero-sd .text-link:hover, .sh .text-link:hover { color:var(--lime); } }
 .hero-sd .microcopy { color:#8d9a95; }
 @media (max-width:650px) {
   .hero-sd h1 { font-size:clamp(2.9rem, 13.5vw, 4.4rem); }
@@ -1377,7 +1398,9 @@
 .hero-sd .button:active, .sh .button:active, .navq-button:active, .ws-cta:active, .hu-cta:active { box-shadow:none; transform:translate(1px, 1px) scale(.99); }
 @media (prefers-reduced-motion:reduce) {
   .hero-sd .button, .sh .button, .navq-button, .ws-cta, .hu-cta, .hero-sd .button .arrow, .sh .button .arrow, .ws-cta svg, .hu-cta svg { transition:none !important; }
-  .hero-sd .button:hover .arrow, .sh .button:hover .arrow, .ws-cta:hover svg, .hu-cta:hover svg, .hero-sd .button:active, .sh .button:active, .navq-button:active, .ws-cta:active, .hu-cta:active { transform:none !important; }
+  .hero-sd .button:active, .sh .button:active, .navq-button:active, .ws-cta:active, .hu-cta:active { transform:none !important; }
+  @media (hover: hover) and (pointer: fine) {
+  .hero-sd .button:hover .arrow, .sh .button:hover .arrow, .ws-cta:hover svg, .hu-cta:hover svg { transform:none !important; } }
 }
 
 /* Nav: hidden while scrolling down past the hero, back on scroll up. */

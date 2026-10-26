@@ -157,8 +157,8 @@ async function testExperienceMotionAndMobileReading(browser) {
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     trackDisplay: getComputedStyle(document.querySelector(".xp-track")).display,
     repeatDisplay: getComputedStyle(document.querySelector('.xp-track span[aria-hidden="true"]')).display,
-    headingWraps: [...document.querySelectorAll("h1,h2,h3")].map((node) => getComputedStyle(node).textWrap),
-    bodyWraps: [...document.querySelectorAll(".hero-summary,.section-heading > p,.case-copy > p")].map((node) => getComputedStyle(node).textWrap),
+    headingWraps: [...document.querySelectorAll("h1,h2,h3")].map((node) => getComputedStyle(node).textWrapStyle),
+    bodyWraps: [...document.querySelectorAll(".hero-summary,.section-heading > p,.case-copy > p")].map((node) => getComputedStyle(node).textWrapStyle),
   }));
   assert.ok(mobileState.overflow <= 2, `mobile homepage horizontal overflow ${mobileState.overflow}px`);
   assert.equal(mobileState.trackDisplay, "grid", "mobile experience section should use a static grid");

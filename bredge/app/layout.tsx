@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/instrument-sans";
 import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
@@ -107,11 +107,23 @@ const analyticsCfg = {
   gtm: process.env.NEXT_PUBLIC_GTM_ID || "",
 };
 
+// Phone baseline: paint under the notch (safe-area insets pad it back), the
+// keyboard resizes the layout, and the browser chrome matches the page.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f4f1e9" },
+    { media: "(prefers-color-scheme: dark)", color: "#142321" },
+  ],
+};
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="theme-color" content="#142321" />
         <link rel="preload" href={instrumentSansLatin} as="font" type="font/woff2" crossOrigin="anonymous" />
         <script dangerouslySetInnerHTML={{ __html: preloadInit }} />
         <script dangerouslySetInnerHTML={{ __html: `window.__BREDGE_CFG=${JSON.stringify(analyticsCfg)};` }} />
