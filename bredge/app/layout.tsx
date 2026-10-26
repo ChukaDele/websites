@@ -17,10 +17,10 @@ import { Preloader } from "../components/site/Preloader";
 import { Analytics } from "../components/site/Analytics";
 import { Spotlight } from "../components/site/Spotlight";
 
-// Runs before first paint: mark first-entry (this session, motion allowed) so the
-// preloader overlay is present on the very first frame. It only plays when the
-// visit starts on the homepage; search landings on articles and tools skip it — no flash for returning
-// visitors, and it decides synchronously so there's no layout jump.
+// Runs before first paint so the preloader overlay is present on the very first
+// frame. It plays each time the site is opened (a new tab or visit, or a reload),
+// on whichever page the visitor lands, and not when they move between pages in
+// the same tab. Skipped for reduced motion. Decided synchronously: no layout jump.
 const preloadInit = `(function(){try{var n=performance.getEntriesByType('navigation')[0];var reload=n&&n.type==='reload';if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&(reload||!sessionStorage.getItem('bredge_opened'))){document.documentElement.classList.add('preload-active');}sessionStorage.setItem('bredge_opened','1');}catch(e){}})();`;
 
 // Search and social descriptions deliberately summarise the visible homepage
