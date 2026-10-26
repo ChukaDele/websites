@@ -36,7 +36,8 @@ async function assertPageBasics(page, path) {
   assert.ok(response.status() < 400, `${path}: HTTP ${response.status()}`);
   await page.waitForTimeout(120);
 
-  const h1Count = await page.locator("h1").count();
+  // Third-party calendar markup (Cal.com) is not our page structure.
+  const h1Count = await page.locator("h1:not(.cal-inline h1)").count();
   assert.equal(h1Count, 1, `${path}: expected exactly one H1, saw ${h1Count}`);
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
