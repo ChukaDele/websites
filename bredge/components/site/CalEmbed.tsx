@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { preconnect } from "react-dom";
 import { trackOnce } from "../../lib/analytics";
 
 const CAL_LINK = "dele-oyeleru-chukwuka-mcdavies-qcy0z9/30min";
@@ -15,6 +16,10 @@ declare global {
  *  the embed fails to initialise. Prefills name/email/phone from a safe
  *  sessionStorage handoff (never from visible URL params). */
 export function CalEmbed() {
+  // The embed script and its iframe come from these origins: open the
+  // connections early so the calendar appears sooner once it starts.
+  preconnect("https://app.cal.com");
+  preconnect("https://cal.com");
   const hostRef = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
 
@@ -50,7 +55,10 @@ export function CalEmbed() {
       push(cal, ar);
     };
 
-    queueMicrotask(() => {
+    // Load Cal.com (~1 MB of third-party JS) only once the calendar is about to
+    // scroll into view; on /schedule that is immediately, elsewhere it waits.
+    let t = 0;
+    const start = () => {
       if (cancelled) return;
       try {
         const Cal = C.Cal;
@@ -60,14 +68,23 @@ export function CalEmbed() {
         // Real booking completion — from Cal's supported embed event, never inferred.
         Cal.ns.bredge("on", { action: "bookingSuccessful", callback: () => trackOnce("schedule_booking_complete", {}) });
       } catch { setFailed(true); }
-    });
 
-    // If nothing rendered into the host shortly, show the fallback.
-    const t = window.setTimeout(() => {
-      if (!cancelled && hostRef.current && hostRef.current.childElementCount === 0) setFailed(true);
-    }, 4000);
+      // If nothing rendered into the host shortly, show the fallback.
+      t = window.setTimeout(() => {
+        if (!cancelled && hostRef.current && hostRef.current.childElementCount === 0) setFailed(true);
+      }, 4000);
+    };
+    const host = hostRef.current;
+    const io = host && "IntersectionObserver" in window
+      ? new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        io?.disconnect();
+        queueMicrotask(start);
+      }, { rootMargin: "600px 0px" })
+      : null;
+    if (io && host) io.observe(host); else queueMicrotask(start);
 
-    return () => { cancelled = true; window.clearTimeout(t); };
+    return () => { cancelled = true; io?.disconnect(); window.clearTimeout(t); };
   }, []);
 
   return (

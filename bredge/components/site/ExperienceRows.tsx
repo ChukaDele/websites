@@ -1,55 +1,37 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useRef } from "react";
 
-/* "Where we've worked" — genuine website identity marks with names for
- * organisations where Bredge team members previously worked. One behaviour everywhere: desktop rows
+/* "Where we've worked" — organisations Bredge team members have worked with.
+ * Typographic marks (no recreated logos). One behaviour everywhere: desktop rows
  * are SCROLL-LINKED (opposing directions, translated by the real measured
  * overflow so every name is revealed during the section's passage);
  * reduced-motion and tablet/mobile fall back to a fully-readable static grid. */
 
-/* Prior experience of Bredge team members with website marks; the section
- * clearly disclaims any client relationship, partnership or endorsement. Display names are the exact approved
- * forms: no acronym+full-name duplication, no invented Ltd/Inc/LLC suffixes.
- * Trimmed from 16 to 8: sixteen names behind a legal disclaimer read as borrowed
- * credibility, eight recognisable ones read as an honest CV. Split BY WIDTH
- * across the two rows so, where the track still overflows, both reveal at a
- * comparable rate; where it doesn't, `.xp-row` drops its edge mask (see
- * `no-overflow` below) so a stationary first name is never clipped by the fade. */
-type ExperienceName={name:string;mark:string};
-const ROW_A:ExperienceName[] = [
- {name:"TriWest Healthcare Alliance",mark:"triwest"},
- {name:"Sedgwick",mark:"sedgwick"},
- {name:"Moniepoint",mark:"moniepoint"},
- {name:"Nutrafol",mark:"nutrafol"},
-];
-const ROW_B:ExperienceName[] = [
- {name:"University of Vermont",mark:"uvm"},
- {name:"Westinghouse",mark:"westinghouse"},
- {name:"Penn Foster",mark:"pennfoster"},
- {name:"Fullscript",mark:"fullscript"},
-];
+import { DISCLAIMER, LOGOS, ROW_A, ROW_B } from "./experience-marks";
 
-const DISCLAIMER = "Bredge team members have worked at these organisations. They are not Bredge clients or endorsers.";
-
-function TeamTrack({ names }: { names: ExperienceName[] }) {
-  const render=(entry:ExperienceName,repeat:boolean)=>{
-    const child=<>
-      <img className="xp-brand-mark" src={"/brand/experience/"+entry.mark+".png"} width="32" height="32" alt="" loading="lazy" decoding="async" />
-      <span className="xp-company-name">{entry.name}</span>
-    </>;
-    return repeat
-     ? <span className="xp-company" key={entry.mark+"-repeat"} aria-hidden="true">{child}</span>
-     : <span className="xp-company" key={entry.mark}>{child}</span>;
-  };
-  return <div className="xp-track">
-    {names.map(name=>render(name,false))}
-    {names.map(name=>render(name,true))}
-  </div>;
+function Mark({ name, hidden }: { name: string; hidden?: boolean }) {
+  const logo = LOGOS[name];
+  return (
+    <span aria-hidden={hidden || undefined} className={logo ? "xp-logo" : undefined}>
+      {logo
+        ? <img src={logo.src} alt={hidden ? "" : name} width={logo.w} height={logo.h} loading="lazy" decoding="async" style={{ "--ar": logo.w / logo.h } as React.CSSProperties} />
+        : name}
+    </span>
+  );
 }
 
-export function ExperienceRows() {
+function TeamTrack({ names }: { names: string[] }) {
+  return (
+    <div className="xp-track">
+      {names.map((name) => <Mark key={name} name={name} />)}
+      {names.map((name) => <Mark key={`${name}-repeat`} name={name} hidden />)}
+    </div>
+  );
+}
+
+export function ExperienceRows({ heading = true, tone = "light" }: { heading?: boolean; tone?: "light" | "dark" }) {
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -105,8 +87,8 @@ export function ExperienceRows() {
   }, []);
 
   return (
-    <section ref={ref} className="xp section-wrap" aria-label="Where the team has worked">
-      <h2>Where we’ve worked.</h2>
+    <section ref={ref} className={`xp section-wrap${tone === "dark" ? " xp--dark" : ""}${heading ? "" : " xp--bare"}`} aria-label="Where the team has worked">
+      {heading ? <h2>Where we’ve worked.</h2> : <p className="xp-label">Our team has built data at</p>}
 
       <div className="xp-rows">
         <div className="xp-row xp-row-a"><TeamTrack names={ROW_A} /></div>

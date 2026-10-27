@@ -1,94 +1,68 @@
 import type { Metadata } from "next";
 import { PageShell, Breadcrumbs } from "../../../components/site/PageShell";
-import { RightSizedSolution } from "../../../components/interactions/RightSizedSolution";
 import { pageMetadata, serviceJsonLd } from "../../../lib/seo";
+import { BlurHero } from "../../../components/services/BlurHero";
+import { WhatWeDo, type WwdItem } from "../../../components/landing/WhatWeDo";
+import { ProblemRail, type RailItem } from "../../../components/services/ProblemRail";
+import { AREA_SERVED } from "../_components/ServiceSections";
+import "../../what-we-do.css";
+
+/* Content: the Data Projects page as written (original site), word for word.
+   Design: the Embedded Data Team page's sections. */
 
 export const metadata: Metadata = pageMetadata({
-  title: "Data Engineering & Analytics Projects | The Bredge",
-  description: "Bring The Bredge a defined data problem. We deliver data engineering, analytics, BI, automation and reporting projects from problem to working solution.",
+  title: "Fixed-Price Data Projects: Engineering, BI & Analytics | The Bredge",
+  description: "Outsourced data projects for UK and US companies at a fixed price: reconciliation, pipelines, warehouses, dashboards and reporting automation. Scoped and quoted before work starts.",
   path: "/services/data-projects",
 });
 
-const problems: Array<[string, string]> = [
-  ["“Our systems don’t agree.”", "Reconcile finance, CRM, billing and operational data into a reliable view of the business."],
-  ["“We’re still reporting manually.”", "Replace recurring spreadsheets and hand-built management packs with automated reporting."],
-  ["“Nobody trusts the dashboard.”", "Audit the underlying logic, definitions, model and source data before rebuilding the reporting layer."],
-  ["“We need a proper data foundation.”", "Build the ingestion, warehouse, transformations and models required for reliable analytics."],
-  ["“We have the data but can’t answer the question.”", "Design an analysis around a commercial, financial, product or operational decision."],
-  ["“Our BI estate has become a mess.”", "Simplify reporting, standardise metrics and reduce duplicated or contradictory dashboards."],
+// The six problems; every third pair of panels carries an image (the
+// site's own illustrations, shown in black and white).
+const problems: RailItem[] = [
+  { title: "“Our systems don’t agree.”", text: "Reconcile finance, CRM, billing and operational data into a reliable view of the business.", image: { src: "/insights/why-dashboards-disagree-640.webp", alt: "Two bars of different heights, joined by a measuring tape" } },
+  { title: "“We’re still reporting manually.”", text: "Replace recurring spreadsheets and hand-built management packs with automated reporting." },
+  { title: "“Nobody trusts the dashboard.”", text: "Audit the underlying logic, definitions, model and source data before rebuilding the reporting layer.", image: { src: "/how/understand-640.webp", alt: "A magnifying glass over a tangle of thread" } },
+  { title: "“We need a proper data foundation.”", text: "Build the ingestion, warehouse, transformations and models required for reliable analytics.", image: { src: "/how/build-640.webp", alt: "Blocks stacked into rising columns" } },
+  { title: "“We have the data but can’t answer the question.”", text: "Design an analysis around a commercial, financial, product or operational decision." },
+  { title: "“Our BI estate has become a mess.”", text: "Simplify reporting, standardise metrics and reduce duplicated or contradictory dashboards.", image: { src: "/how/validate-640.webp", alt: "A balance scale, level" } },
 ];
 
-const delivery: Array<[string, string, string]> = [
-  ["01", "Diagnose", "Understand the question, current environment and constraints."],
-  ["02", "Define", "Agree the outcome, acceptance criteria and important dependencies."],
-  ["03", "Build", "Design and implement the engineering, analysis and reporting required."],
-  ["04", "Validate", "Reconcile outputs, test logic and validate results against source systems."],
-  ["05", "Transfer", "Document how the system works and what your team needs to operate it."],
+// The five delivery steps, in the homepage "What we actually do" layout (the
+// wave only shapes the dot terrain).
+const delivery: WwdItem[] = [
+  { name: "Diagnose", text: "Understand the question, current environment and constraints.", wave: [1.6, 0.9, 0.7, 0.5] },
+  { name: "Define", text: "Agree the outcome, acceptance criteria and important dependencies.", wave: [2.4, 0.6, 1.1, 0.8] },
+  { name: "Build", text: "Design and implement the engineering, analysis and reporting required.", wave: [1.1, 1.2, 0.5, 0.35] },
+  { name: "Validate", text: "Reconcile outputs, test logic and validate results against source systems.", wave: [3.0, 0.45, 1.4, 0.6] },
+  { name: "Transfer", text: "Document how the system works and what your team needs to operate it.", wave: [1.9, 0.75, 0.9, 0.9] },
 ];
 
 export default function ProjectsPage() {
   return (
-    <PageShell>
-      <section className="section-wrap page-hero">
-        <Breadcrumbs trail={[["Services", "/services"], ["Data Projects", "/services/data-projects"]]} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd("Data Projects", "Defined-scope data projects: pipelines, warehouses and models, BI and reporting, reconciliation and automation — delivered without turning into a transformation programme.", "/services/data-projects")) }} />
-        <p className="eyebrow">DATA PROJECTS</p>
-        <h1>One problem. The right team. Delivered, not just advised.</h1>
-        <p className="lede">Bring us a defined data challenge. We’ll understand what is broken, determine what needs to change and deliver the working system — without turning every problem into a transformation programme.</p>
-        <div className="hero-cta-row"><a className="button cta-accent" href="/schedule">Discuss a project <span className="arrow" aria-hidden="true">↗</span></a></div>
-      </section>
+    <PageShell dark>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ ...serviceJsonLd("Data Projects", "Fixed-scope, fixed-price data projects for UK and US companies: pipelines, warehouses and models, BI and reporting, reconciliation and automation.", "/services/data-projects"), areaServed: AREA_SERVED }) }} />
+      <Breadcrumbs trail={[["Services", "/services"], ["Data Projects", "/services/data-projects"]]} />
 
-      <section className="section surface">
-        <div className="section-wrap">
-          <div className="section-lead">
-            <h2>We size the solution to the problem — not the other way around.</h2>
-            <p>A messy business problem rarely maps to a single service. We work out which disciplines it actually touches, then build only what the outcome needs.</p>
-          </div>
-          <RightSizedSolution />
-        </div>
-      </section>
+      <BlurHero
+        eyebrow="Data Projects"
+        title="One problem. The right team."
+        text="We size the solution to the problem — not the other way around."
+        cta={{ label: "Discuss a project", href: "/schedule" }}
+        image={{ src: "/media/services/dp-hero-1600.webp", srcSet: "/media/services/dp-hero-900.webp 900w, /media/services/dp-hero-1600.webp 1600w" }}
+      />
 
-      <section className="section">
-        <div className="section-wrap">
-          <div className="section-lead"><h2>Problems we can own.</h2></div>
-          <div className="ruled">
-            {problems.map(([q, a]) => (
-              <div className="ruled-row" key={q}><span>—</span><p className="q">{q}</p><p>{a}</p></div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <ProblemRail title="Problems we can own." items={problems} link={{ label: "Discuss a project", href: "/schedule" }} />
 
-      <section className="section surface">
-        <div className="section-wrap">
-          <div className="section-lead"><h2>Defined enough to manage. Flexible enough to solve the real problem.</h2></div>
-          <div className="ruled">
-            {delivery.map(([n, h, p]) => (
-              <div className="ruled-row" key={n}><span>{n}</span><h3>{h}</h3><p>{p}</p></div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <WhatWeDo
+        sectionId="dp-delivery"
+        mono
+        items={delivery}
+        heading={["Defined enough to manage.", "Flexible enough to solve the real problem."]}
+        mc=""
+        lead={null}
+        rows={null}
+      />
 
-      <section className="section ink">
-        <div className="section-wrap callout-inner">
-          <div>
-            <h2>We don’t sell complexity for its own sake.</h2>
-            <p>Sometimes the right answer is a new data platform. Sometimes it is three SQL models, a reliable metric definition and one excellent dashboard. Our job is to solve the problem at the level it actually exists.</p>
-          </div>
-          <div><p className="pull" style={{ color: "var(--paper)" }}>Solve it at the level the problem lives.</p></div>
-        </div>
-      </section>
-
-      <section className="section-wrap callout">
-        <div className="callout-inner">
-          <div>
-            <h2>Have a defined data problem?</h2>
-            <p>Tell us what isn’t working yet. If it’s still fuzzy, a <a className="text-link" href="/data-diagnostic">Data Diagnostic</a> is the right first step.</p>
-          </div>
-          <div><a className="button cta-accent" href="/schedule">Discuss a project <span className="arrow" aria-hidden="true">↗</span></a></div>
-        </div>
-      </section>
     </PageShell>
   );
 }

@@ -1,79 +1,48 @@
 import type { Metadata } from "next";
-import { PageShell, Breadcrumbs } from "../../components/site/PageShell";
+import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
+import { PageShell } from "../../components/site/PageShell";
+import { ResearchBriefs } from "../../components/work/ResearchBriefs";
+import { ARTICLES } from "../../components/research/registry";
 import { pageMetadata } from "../../lib/seo";
-import { dataBriefs } from "../../lib/data-briefs";
+import "../research.css";
+import { Picture } from "../../components/site/Picture";
+
+/** Card art per series (Higgsfield renders, 16:9). */
+const ART: Record<string, string> = { inflation: "/research/inflation.jpg", diet: "/research/diet.jpg", petrol: "/research/petrol.jpg" };
+const artFor = (slug: string) => ART[Object.keys(ART).find((k) => slug.includes(k)) ?? ""];
 
 export const metadata: Metadata = pageMetadata({
-  title: "Original Public-Data Briefs & Analysis | The Bredge",
-  description: "Bredge's original analysis of public Nigerian datasets: telecoms, petrol prices and healthy-diet affordability. Read the source, methodology and decision implications.",
+  title: "Nigeria Data Briefs: Inflation, Food & Fuel Prices | The Bredge Research",
+  description: "Monthly analysis of Nigeria's official statistics: inflation, the cost of a healthy diet and petrol prices, checked and explained for business leaders and investors.",
   path: "/research",
 });
-
-const researchLd = {
-  "@context":"https://schema.org", "@type":"CollectionPage",
-  "@id":"https://thebredge.com/research#collection",
-  url:"https://thebredge.com/research",
-  name:"The Bredge Data Briefs",
-  description:"Bredge-authored analysis of publicly published Nigerian statistical data, with source attribution and limitations.",
-  isPartOf:{"@id":"https://thebredge.com/#website"},
-  about: ["Data analysis","Business intelligence","Public statistics"],
-  mainEntity:{
-    "@type":"ItemList",
-    itemListElement:dataBriefs.map((brief,index)=>({
-      "@type":"ListItem", position:index+1,
-      name:brief.title, url:`https://thebredge.com/research#${brief.slug}`,
-    })),
-  },
-};
 
 export default function ResearchPage() {
   return (
     <PageShell>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(researchLd)}} />
-      <Breadcrumbs trail={[["Home","/"],["Research","/research"]]} />
-      <section className="section-wrap page-hero research-hero">
-        <p className="eyebrow">BREDGE DATA BRIEFS</p>
-        <h1>What the numbers reveal.</h1>
-        <p className="lede">Original Bredge analysis of publicly available statistics. We show the source, the period and the limits of what each figure tells you, so the work can be assessed on its methods.</p>
-        <p className="research-method">Public-data research. No client records, confidential work or claimed customer outcomes are used in these examples.</p>
+      <section className="section-wrap rx-hero">
+        <p className="eyebrow">RESEARCH</p>
+        <h1>Nigeria&rsquo;s numbers, read for business.</h1>
+        <p className="lede">A monthly series where we do to public data what we do for clients: take Nigeria&rsquo;s official releases on prices, food and fuel, recompute and check every figure, then explain what it means for the people running and investing in businesses there. Read the analysis, then try the numbers yourself.</p>
       </section>
-      <section className="section-wrap research-grid" aria-label="Selected original research">
-        {dataBriefs.map((brief,index)=>(
-          <article key={brief.slug} id={brief.slug} className="research-brief">
-            <div className="research-brief-head">
-              <span>{String(index+1).padStart(2,"0")} / {brief.category.toUpperCase()}</span>
-              <small>{brief.period}</small>
-            </div>
-            <div className="research-brief-body">
-              <div className="research-stat">
-                <strong>{brief.number}</strong>
-                <span>{brief.unit}</span>
-                <small>{brief.comparison}</small>
-              </div>
-              <div>
-                <h2>{brief.title}</h2>
-                <p>{brief.summary}</p>
-                <p className="research-decision"><b>Decision context.</b> {brief.decision}</p>
-                <details className="research-evidence">
-                  <summary>Source, method and limitations</summary>
-                  <div>
-                    <p><b>Provenance.</b> {brief.provenance}.</p>
-                    <p><b>Limitations.</b> {brief.limitations}</p>
-                    <p><b>Underlying publisher.</b> {brief.source}.</p>
-                    <a href={brief.sourceUrl} target="_blank" rel="noopener noreferrer">See the official NBS source <span aria-hidden="true">↗</span></a>
-                  </div>
-                </details>
-              </div>
-            </div>
-          </article>
+
+      <ul className="rx-list section-wrap" aria-label="Latest analysis">
+        {ARTICLES.map((a) => (
+          <li key={a.slug}>
+            <a className="rx-card" href={`/research/${a.slug}`}>
+              <figure className="rx-media">
+                {artFor(a.slug) && <Picture src={artFor(a.slug)} srcWidth={1344} sizes="(max-width: 900px) 100vw, 60vw" alt="" width={1344} height={752} />}
+                <figcaption><strong>{a.hero.value}</strong><span>{a.hero.label}</span></figcaption>
+              </figure>
+              <small>{a.series} · {a.period}</small>
+              <div><h2>{a.title}</h2><p>{a.dek}</p></div>
+              <footer><span>{a.readingMinutes} min read</span><span className="rx-go" aria-hidden="true"><ArrowUpRight size={14} weight="bold" /></span></footer>
+            </a>
+          </li>
         ))}
-      </section>
-      <section className="research-close section-wrap">
-        <p className="eyebrow">HOW WE WORK</p>
-        <h2>Interesting data is useful when it changes a decision.</h2>
-        <p>We apply the same source-first discipline when reconciling business systems, designing data models or deciding what to automate. A diagnostic starts with the questions your team needs answered and the evidence already available.</p>
-        <a className="button cta-accent" data-cta="research_diagnostic" href="/data-diagnostic">Explore a Data Diagnostic <span className="arrow" aria-hidden="true">↗</span></a>
-      </section>
+      </ul>
+
+      <div className="rx-lazy"><ResearchBriefs /></div>
     </PageShell>
   );
 }

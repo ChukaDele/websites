@@ -1,26 +1,22 @@
-import type { Metadata } from "next";
 import { PageShell } from "../../../components/site/PageShell";
-import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram } from "../../../components/insights/Article";
-import { pageMetadata } from "../../../lib/seo";
+import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram, Example, Pull, PlainEnglish, ForTheBusiness } from "../../../components/insights/Article";
+import { insightMetadata } from "../../../lib/insights";
 
 const SLUG = "why-dashboards-disagree";
 const TOC = [
-  { id: "short-answer", label: "The short answer" },
+  { id: "why", label: "Why the numbers differ" },
   { id: "usual", label: "What this usually looks like" },
-  { id: "try-first", label: "Before you rebuild anything" },
-  { id: "what-it-tells-you", label: "What the result tells you" },
-  { id: "underneath", label: "What is happening underneath" },
-  { id: "good", label: "What good looks like" },
+  { id: "try-first", label: "How to reconcile revenue, step by step" },
+  { id: "what-it-tells-you", label: "The seven difference classes" },
+  { id: "example", label: "Worked example: SaaS and distributor" },
+  { id: "underneath", label: "Grain, freshness, identity and joins" },
+  { id: "good", label: "What a single source of truth means in practice" },
   { id: "wrong", label: "Common ways this goes wrong" },
   { id: "boundary", label: "When DIY stops being sensible" },
   { id: "decision", label: "A decision guide" },
 ];
 
-export const metadata: Metadata = pageMetadata({
-  title: "Why Finance and Sales Numbers Disagree — Data Reconciliation Guide | The Bredge",
-  description: "Finance and Sales revenue numbers disagree because of grain, timing, identity and definitions — not the chart. A practical reconciliation guide and checklist.",
-  path: "/insights/why-dashboards-disagree",
-});
+export const metadata = insightMetadata(SLUG);
 
 export default function Page() {
   return (
@@ -82,22 +78,25 @@ export default function Page() {
           </Diagram>
         }
       >
-        <section id="short-answer">
-          <h2>The short answer</h2>
-          <p>The board pack says one number. The CRM says another. Finance&rsquo;s spreadsheet says a third. Every one of those figures has an honest explanation, and nobody wants another meeting about which one is right.</p>
-          <p>Here is the short answer. Finance and Sales disagree because each source measures revenue differently. They count at a different <strong>grain</strong> (the level of detail that one row represents), over a different time window, using a different definition of the word, and with a different idea of who the customer is. None of the systems is broken. They are answering slightly different questions with the same word.</p>
-          <p>That is why rebuilding the dashboard does not help. The chart is a faithful renderer: it shows whatever the query returns. The disagreement lives upstream, in the sources and the definitions, not in the visualisation. So the fix is upstream too.</p>
+        <section id="why">
+          <h2>Why do Finance and Sales numbers differ?</h2>
+          <p>Each source measures revenue in its own way. They count at a different <strong>grain</strong> (the level of detail that one row represents), over a different time window, using a different definition of the word, and with a different idea of who the customer is. None of the systems is broken. They are answering slightly different questions with the same word.</p>
+          <PlainEnglish>
+            <p>Finance, Sales and billing count revenue at different moments, at different levels of detail and under different rules, so their totals differ even when every system is working. The fix is to explain the gap record by record and agree one definition for the board, not to rebuild the dashboard.</p>
+          </PlainEnglish>
+          <Pull>The chart is a faithful renderer. The disagreement lives upstream, in the sources and the definitions, so the fix is upstream too.</Pull>
+          <p>That is why rebuilding the dashboard does not help. If you would rather have someone find the cause for you, a <a href="/data-diagnostic">Data Diagnostic</a> does exactly this across your finance, CRM and billing data. If you want to do it yourself, the method below works, and the <a href="/resources/revenue-reconciliation-checklist">revenue reconciliation checklist</a> is a printable version of it.</p>
         </section>
 
         <section id="usual">
-          <h2>What this usually looks like</h2>
+          <h2>What a revenue mismatch looks like in practice</h2>
           <p>It usually starts in a monthly meeting. The revenue on the board pack does not match the number the sales director quotes from the CRM. Someone opens Finance&rsquo;s workbook and finds a third figure. Each person is certain their number is correct, because within their own system it is.</p>
           <p>The commercial team counts a deal when it is signed. Finance counts revenue when it can be recognised, spread across the months in which the service is actually delivered. Billing counts money when it raises an invoice. A refund is a negative order in one system and a deleted order in another. A single customer is one account in the CRM, two billing entities, and three logins in the product.</p>
           <p>So the meeting turns into archaeology. People screenshot tiles, export spreadsheets, and argue from totals. An hour later everyone agrees to &ldquo;look into it&rdquo;, and the same gap reappears next month. The pattern is familiar: the numbers are close enough to feel like they should match, and far enough apart to matter.</p>
         </section>
 
         <section id="try-first">
-          <h2>Before you rebuild anything</h2>
+          <h2>How do you reconcile revenue between Finance, CRM and billing?</h2>
           <p>You can usually locate the cause yourself in an afternoon, without touching the BI tool. The goal is not to force the numbers to match. It is to explain the gap: to break it into named, understood parts. A reconciliation is finished when every pound of difference has a reason, not when the difference happens to be small.</p>
           <p>Work from records, not totals. Two totals can match by accident, built from errors that cancel out. Two totals can differ for a reason that is entirely correct. Only the underlying rows tell you which.</p>
           <TryThisFirst title="Before you rebuild anything">
@@ -114,7 +113,7 @@ export default function Page() {
         </section>
 
         <section id="what-it-tells-you">
-          <h2>What the result tells you</h2>
+          <h2>The seven difference classes, and what each one means</h2>
           <p>Each class points at a different cause, and each cause has a different owner. Read your gap like this.</p>
           <ul>
             <li><strong>Timing</strong>: the sources were measured at different moments, or over slightly different windows. Likely cause: different refresh schedules, or one number includes late-arriving transactions the other has not seen yet.</li>
@@ -128,8 +127,37 @@ export default function Page() {
           <p>The last one matters most. A definition difference is not something engineering can fix on its own. Someone has to decide which definition is canonical for the board pack, and then everyone has to use it.</p>
         </section>
 
+        <section id="example">
+          <h2>Worked example: reconciling revenue at a SaaS company and a distributor</h2>
+          <p>The same seven classes explain the gap whatever the stack. Two illustrative cases show how a reconciliation reads once every part of the difference has a name.</p>
+          <Example setting="UK SaaS · Stripe, HubSpot, Xero" title="Why June revenue in HubSpot is £34,000 higher than Finance">
+            <p>HubSpot shows £412,000 of closed-won revenue for June. Finance&rsquo;s recognised revenue in Xero is £378,000. Matching records, not totals, splits the £34,000 gap like this:</p>
+            <div className="in-table-wrap"><table>
+              <thead><tr><th>Class</th><th>What the records showed</th><th>Gap</th></tr></thead>
+              <tbody>
+                <tr><td>Definition</td><td>Two annual contracts booked in full at signature; Finance recognises one twelfth a month</td><td>£22,000</td></tr>
+                <tr><td>Timing</td><td>Deals closed on 30 June, invoiced in Stripe on 1 July</td><td>£7,500</td></tr>
+                <tr><td>Currency</td><td>US dollar deals converted at the deal-date rate in HubSpot, the invoice-date rate in Xero</td><td>£1,500</td></tr>
+                <tr><td>Duplication</td><td>One deal recorded twice after a pipeline was merged</td><td>£3,000</td></tr>
+              </tbody>
+            </table></div>
+            <p>Every pound now has a reason. Only the duplicate is an error; the rest are correct answers to different questions.</p>
+          </Example>
+          <Example setting="US wholesale distributor · SAP Business One, Salesforce, Excel" title="Why the sales team&rsquo;s quarter beats the management accounts">
+            <p>The sales director&rsquo;s Salesforce report shows $4.86m of orders for the quarter. The management accounts, built from SAP Business One, show $4.52m. A regional manager&rsquo;s Excel summary says $4.70m. Matching orders to invoices line by line explains the $340,000 between Salesforce and the ledger:</p>
+            <ul>
+              <li><strong>Scope:</strong> $210,000 of orders were transfers to a sister company that Finance treats as intercompany and excludes.</li>
+              <li><strong>Timing:</strong> $90,000 of orders were booked in Salesforce in the last week of the quarter but invoiced in SAP Business One in the next.</li>
+              <li><strong>Identity:</strong> one large customer exists as three customer codes across regions, so $40,000 of credit notes were posted to an account Salesforce does not link to, and never netted off in the sales view.</li>
+              <li><strong>Grain:</strong> the Excel summary was built from shipment lines, not invoices, so partial shipments were counted twice.</li>
+            </ul>
+            <p>$210,000 + $90,000 + $40,000 explains the full $340,000. The Excel figure is retired, because its grain was wrong.</p>
+          </Example>
+        </section>
+
         <section id="underneath">
-          <h2>What is happening underneath</h2>
+          <h2>Grain, freshness, identity and join cardinality explained</h2>
+          <ForTheBusiness>These four ideas explain nearly every revenue gap, and two short queries tell you which one you have.</ForTheBusiness>
           <p>Underneath the reconciliation, four technical ideas explain almost every gap.</p>
           <p><strong>Grain</strong> is the level of detail that one row represents. An orders table has one row per order; an order-lines table has one row per line within an order. Sum the wrong one and you double-count. Every table should have one clearly stated grain, and any join that crosses grains should fan out on purpose, not by accident.</p>
           <p><strong>Source freshness</strong> is how recently a source was last updated. If one dataset refreshes hourly and another nightly, the two will disagree every morning, and both will be correct. Always check the refresh timestamp before you suspect the logic.</p>
@@ -158,19 +186,19 @@ having count(*) > 1;`}</pre>
         </section>
 
         <section id="good">
-          <h2>What good looks like</h2>
+          <h2>What a single source of truth means in practice</h2>
           <p>Good does not mean every system holds the same number. It means every number is explainable and traceable. In practice that looks like four things.</p>
           <ul>
-            <li>One governed definition per metric, written in plain English, owned by a named person, and used by every report &mdash; the semantic layer, not forty copies scattered across forty queries.</li>
+            <li>One governed definition per metric, written in plain English, owned by a named person, and used by every report: the semantic layer, not forty copies scattered across forty queries.</li>
             <li>Sources reconciled on a routine, especially finance against the warehouse, so the gap is a monitored check rather than a monthly fire drill.</li>
             <li>Automated tests that fail loudly when a source double-counts, a join fans out, or a total moves more than expected.</li>
             <li>Lineage you can follow: the ability to trace any figure on a dashboard back through the model to the source row it came from.</li>
           </ul>
-          <p>When these are in place, a disagreement becomes information. It tells you two definitions have diverged, and you can say exactly where and why &mdash; in minutes, not in another meeting.</p>
+          <p>When these are in place, a disagreement becomes information. It tells you two definitions have diverged, and you can say exactly where and why, in minutes, not in another meeting.</p>
         </section>
 
         <section id="wrong">
-          <h2>Common ways this goes wrong</h2>
+          <h2>Common revenue reconciliation mistakes</h2>
           <ul>
             <li>Rebuilding the dashboard. It moves the argument to a new chart; it does not settle it. The cause is upstream.</li>
             <li>Comparing totals instead of records. Matching totals can hide compensating errors, and differing totals can be entirely correct. Only the rows tell the truth.</li>
@@ -182,7 +210,7 @@ having count(*) > 1;`}</pre>
         </section>
 
         <section id="boundary">
-          <h2>When DIY stops being sensible</h2>
+          <h2>When revenue reconciliation needs a system</h2>
           <p>The afternoon reconciliation is worth doing, and often it is enough. It stops being enough when the same reconciliation has to run reliably every day, across systems that each define a customer differently, with nobody clearly responsible for the result. At that point you are no longer explaining a one-off gap. You are running a system (at every monthly close, when the accounts are finalised), and it needs to be built like one.</p>
           <SystemBoundary
             conditions={[
@@ -196,7 +224,7 @@ having count(*) > 1;`}</pre>
         </section>
 
         <section id="decision">
-          <h2>A decision guide</h2>
+          <h2>Revenue gap types and the first fix for each</h2>
           <p>Once you have classified the gap, the first move is usually obvious. Use this as a quick lookup.</p>
           <table className="article-table">
             <thead>
@@ -244,7 +272,9 @@ having count(*) > 1;`}</pre>
               </tr>
             </tbody>
           </table>
-          <p>If you are not sure which class is causing most of your gap, <a href="/data-diagnostic">a Data Diagnostic</a> is a fast way to find out &mdash; and to tell whether this is a one-afternoon reconciliation or a system that now needs building.</p>
+          <p>If you are not sure which class is causing most of your gap, <a href="/data-diagnostic">a Data Diagnostic</a> is a fast way to find out, and to tell whether this is a one-afternoon reconciliation or a system that now needs building. If the identity class dominates, read <a href="/insights/one-customer-view">how to build a single customer view</a> next.</p>
+          <p>For subscription businesses, the same reconciliation applies to recurring revenue: <a href="/insights/saas-metrics-from-stripe">how to calculate MRR from Stripe</a> explains why invoice totals and MRR differ. To stop definitions drifting again, record each agreed metric in the <a href="/resources/kpi-dictionary-template">KPI dictionary template</a>. When the reconciliation has to run every month, <a href="/services/data-projects">our data projects</a> build it into tested models.</p>
+          <p>Two system-specific versions of this problem have their own guides: <a href="/insights/crm-closed-won-vs-stripe">HubSpot closed-won vs Stripe billing</a> and <a href="/insights/shopify-payouts-xero-ga4-revenue">Shopify sales vs payouts, Xero and GA4</a>. If past figures move when a customer changes region, see <a href="/insights/customer-history-scd2">SCD type 2 in dbt</a>. For finished examples, see <a href="/work">models we have built</a>.</p>
         </section>
       </ArticleLayout>
     </PageShell>

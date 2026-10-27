@@ -1,26 +1,22 @@
-import type { Metadata } from "next";
 import { PageShell } from "../../../components/site/PageShell";
-import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram } from "../../../components/insights/Article";
-import { pageMetadata } from "../../../lib/seo";
+import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram, Example, Pull, ForYourDataPerson } from "../../../components/insights/Article";
+import { insightMetadata } from "../../../lib/insights";
 
 const SLUG = "before-you-build-a-data-warehouse";
 const TOC = [
-  { id: "short-answer", label: "The short answer" },
+  { id: "what-is", label: "What a warehouse is for" },
   { id: "usual", label: "What this usually looks like" },
-  { id: "try-first", label: "Before you build anything" },
+  { id: "try-first", label: "Six readiness questions" },
   { id: "what-it-tells-you", label: "What your answers tell you" },
+  { id: "example", label: "Worked example: not yet, and yes" },
   { id: "underneath", label: "What a warehouse actually does" },
-  { id: "good", label: "What good looks like" },
+  { id: "good", label: "Right-sized at each stage" },
   { id: "wrong", label: "Common ways this goes wrong" },
   { id: "boundary", label: "When you genuinely need one" },
   { id: "decision", label: "A readiness decision guide" },
 ];
 
-export const metadata: Metadata = pageMetadata({
-  title: "Do You Need a Data Warehouse? A Practical Decision Guide | The Bredge",
-  description: "Do you need a data warehouse yet? A practical readiness checklist covering requirements, the modern data stack, and cases where a warehouse is premature.",
-  path: "/insights/before-you-build-a-data-warehouse",
-});
+export const metadata = insightMetadata(SLUG);
 
 export default function Page() {
   return (
@@ -111,8 +107,8 @@ export default function Page() {
           </Diagram>
         }
       >
-        <section id="short-answer">
-          <h2>The short answer</h2>
+        <section id="what-is">
+          <h2>What is a data warehouse, and when is it worth building?</h2>
           <p>
             A data warehouse is a central database that pulls data out of several systems, cleans and reshapes it, and holds the
             result so it can be analysed together. Throughout this article a <em>consumer</em> means anyone or anything that reads
@@ -130,10 +126,16 @@ export default function Page() {
             smaller database that consolidates only what you need. This article is about telling the two situations apart honestly,
             because building early is expensive and quietly hard to undo.
           </p>
+          <Pull>The cheapest warehouse is the one you did not need to build. The second cheapest is the one you scoped precisely before you started.</Pull>
+          <p>
+            This guide is about readiness. If you already know you need better reporting and are choosing between tools, read{" "}
+            <a href="/insights/power-bi-warehouse-or-both">Power BI, a warehouse, or both: what to buy first</a>. If you want the
+            requirements pinned down by someone outside the business, that is part of a <a href="/data-diagnostic">Data Diagnostic</a>.
+          </p>
         </section>
 
         <section id="usual">
-          <h2>What this usually looks like</h2>
+          <h2>Signs you might need a data warehouse</h2>
           <p>
             The question rarely arrives as a technical decision. It arrives as friction. Dashboards have multiplied, and two of
             them disagree about the same number. Someone keeps a private spreadsheet because they trust it more than the reporting
@@ -153,7 +155,7 @@ export default function Page() {
         </section>
 
         <section id="try-first">
-          <h2>Before you build anything</h2>
+          <h2>Six questions that tell you if you need a data warehouse</h2>
           <p>
             Run this readiness checklist before you provision anything. Answer each question with a number or a name, not a
             feeling. If most answers come back small, you are looking at a task, not a system.
@@ -183,7 +185,7 @@ export default function Page() {
               </li>
               <li>
                 <strong>What actually breaks today?</strong> Write the specific failure: the meeting that argues about numbers, the
-                report that takes two days, the query that times out. If you cannot name it, you are not ready to build — you are
+                report that takes two days, the query that times out. If you cannot name it, you are not ready to build; you are
                 ready to do discovery.
               </li>
             </ol>
@@ -211,12 +213,24 @@ export default function Page() {
           </p>
           <p>
             And if nobody will own it, the honest answer is &ldquo;not yet&rdquo;, whatever the other answers say. An unowned
-            warehouse decays into exactly the mess it was meant to replace — only now it is a mess with a monthly bill.
+            warehouse decays into exactly the mess it was meant to replace, only now it is a mess with a monthly bill.
           </p>
         </section>
 
+        <section id="example">
+          <h2>Worked example: one &ldquo;not yet&rdquo; and one &ldquo;yes&rdquo;</h2>
+          <Example setting="UK manufacturer · SAP Business One, Sage payroll, Excel" title="A CFO who wants a warehouse for the board pack">
+            <p>Answers to the six questions: two sources that matter (SAP Business One and the payroll export); a monthly refresh; one finance team and the board as consumers; one disputed definition (gross margin after transport costs); a finance manager willing to own it; and what breaks is a board pack that takes four days to assemble.</p>
+            <p>Verdict: not yet. A Power BI semantic model reading a read-only copy of the SAP Business One database, with gross margin defined once, removes most of the four days. A warehouse becomes worth it if the business adds a second ERP, a distribution system, or needs history the source systems overwrite, such as past price lists or customer groupings.</p>
+          </Example>
+          <Example setting="US Series A SaaS · Stripe, HubSpot, Postgres, Amplitude" title="A growth team stitching four exports every week">
+            <p>Answers: four sources that a single answer has to cross (net revenue retention by acquisition channel needs all of them); daily refresh; growth, finance and the board as consumers; three disputed definitions; a named analytics engineer; and what breaks is a weekly growth review argued from spreadsheets.</p>
+            <p>Verdict: yes. Managed connectors into BigQuery or Snowflake, models in dbt with stated grain, and one semantic layer for MRR, churn and activation. Scoped tightly to those decisions, not to every table in every tool.</p>
+          </Example>
+        </section>
+
         <section id="underneath">
-          <h2>What a warehouse actually does</h2>
+          <h2>What does a data warehouse actually do?</h2>
           <p>Strip away the branding and a warehouse is four stages in a line: sources, ingestion, transformation and modelling, then serving.</p>
           <p>
             <em>Ingestion</em> is moving raw data from each source into the warehouse. <em>Transformation and modelling</em> is
@@ -235,31 +249,43 @@ export default function Page() {
             warehouse to hold the data, a transformation tool to model it, and a BI (business intelligence) tool to serve it. None
             of it is exotic, and most of it you rent rather than build.
           </p>
+          <p>One idea keeps a warehouse&rsquo;s running cost roughly flat as data grows: the incremental model, which processes only new or changed rows on each run instead of rebuilding every table from scratch.</p>
+          <ForYourDataPerson title="How an incremental model works, in SQL">
           <p>
-            The one idea worth understanding in depth is the <em>incremental model</em>: processing only new or changed rows on
-            each run, instead of rebuilding every table from scratch. It is what keeps cost roughly flat as data grows. A simple
-            incremental pattern uses a high-water mark: find the newest row you have already loaded, then load only the rows newer
-            than that.
-          </p>
-          <pre>
-            <span className="c">-- Append only the rows that changed since the last run</span>{"\n"}
-            <span className="k">INSERT INTO</span>{" analytics.orders                    "}<span className="c">-- the modelled table</span>{"\n"}
-            <span className="k">SELECT</span>{" order_id, customer_id, amount, updated_at"}{"\n"}
-            <span className="k">FROM</span>{"   raw.orders                              "}<span className="c">-- raw, freshly ingested source</span>{"\n"}
-            <span className="k">WHERE</span>{"  updated_at > ("}<span className="k">SELECT</span>{" max(updated_at) "}<span className="k">FROM</span>{" analytics.orders);"}
-          </pre>
-          <p>
-            On the first run the modelled table is empty, so every row loads. On every run afterwards, the subquery finds the latest
-            <code> updated_at</code> already stored, and the <code>WHERE</code> clause lets through only rows newer than that. You
-            process a day of changes, not the whole of history. In production you would usually <em>merge</em> rather than append,
-            so an update to an existing order replaces the old row instead of duplicating it, but the high-water-mark idea is the
-            same. This is the difference between a warehouse that costs about the same each month and one whose bill climbs with
-            every row you have ever collected.
-          </p>
+              The one idea worth understanding in depth is the <em>incremental model</em>: processing only new or changed rows on
+              each run, instead of rebuilding every table from scratch. It is what keeps cost roughly flat as data grows. A simple
+              incremental pattern uses a high-water mark: find the newest row you have already loaded, then load only the rows newer
+              than that.
+            </p>
+            <pre>{`-- Append only the rows that changed since the last run
+insert into analytics.orders (order_id, customer_id, amount, updated_at)
+select order_id, customer_id, amount, updated_at
+from raw.orders
+where updated_at > (
+    select coalesce(max(updated_at), timestamp '1900-01-01')
+    from analytics.orders
+);`}</pre>
+            <p>
+              On the first run the modelled table is empty, so every row loads. On every run afterwards, the subquery finds the latest
+              <code> updated_at</code> already stored, and the <code>WHERE</code> clause lets through only rows newer than that. You
+              process a day of changes, not the whole of history. In production you would usually <em>merge</em> rather than append,
+              so an update to an existing order replaces the old row instead of duplicating it, but the high-water-mark idea is the
+              same. This is the difference between a warehouse that costs about the same each month and one whose bill climbs with
+              every row you have ever collected.
+            </p>
+            <p>
+              Two edge cases break this simple version. A row updated in the same second as the stored maximum is skipped,
+              because the filter is strictly greater than. And a row that arrives late, with an <code>updated_at</code> older
+              than the last run, is never loaded. Production models fix both with a lookback window: reprocess the last few days
+              on every run and merge on the key, so a re-read row replaces itself instead of duplicating. Once tables reach
+              billions of rows, the choice of strategy and partitioning decides the bill; see{" "}
+              <a href="/insights/incremental-models-at-scale">how to reduce BigQuery and Snowflake costs on large tables</a>.
+            </p>
+          </ForYourDataPerson>
         </section>
 
         <section id="good">
-          <h2>What good looks like</h2>
+          <h2>What a right-sized data stack looks like</h2>
           <p>
             Right-sizing matters more than any tool choice. The correct architecture is the smallest one that answers your
             recurring questions reliably. Here is what that looks like at three scales.
@@ -290,7 +316,7 @@ export default function Page() {
         </section>
 
         <section id="wrong">
-          <h2>Common ways this goes wrong</h2>
+          <h2>Common data warehouse mistakes</h2>
           <p>A few failures show up again and again. All are expensive, and all are avoidable.</p>
           <ul>
             <li>
@@ -327,7 +353,7 @@ export default function Page() {
           </p>
           <SystemBoundary
             conditions={[
-              "Several sources must be joined and modelled together to answer your most important questions, not simply stored side by side.",
+              "Several sources must be joined and modelled together to answer your most important questions, not stored side by side.",
               "Many consumers rely on the result, repeatedly, and re-deriving it by hand no longer scales.",
               "Definitions must be governed centrally, so one metric means one thing across every report.",
               "The result must refresh reliably on a schedule (typically daily) without someone running it by hand.",
@@ -379,11 +405,12 @@ export default function Page() {
             </tbody>
           </table>
           <p>
-            If you can place yourself in one row with confidence, act on that row. If you cannot — if the honest answer to
-            &ldquo;what breaks today?&rdquo; is still vague — that uncertainty is itself the finding. Pinning the requirements down
-            before you provision anything is exactly what <a href="/data-diagnostic">a Data Diagnostic</a> is for. The cheapest
-            warehouse is the one you did not need to build; the second cheapest is the one you scoped precisely before you started.
+            If you can place yourself in one row with confidence, act on that row. If you cannot, because the honest answer to
+            &ldquo;what breaks today?&rdquo; is still vague, that uncertainty is itself the finding. Pinning the requirements down
+            before you provision anything is exactly what <a href="/data-diagnostic">a Data Diagnostic</a> is for. The{" "}
+            <a href="/resources/data-project-brief-template">data project brief template</a> turns your answers into a scoped brief.
           </p>
+          <p>If you are a small business with two or three systems, <a href="/insights/first-reporting-stack">how to automate reporting without a data team</a> describes the smaller setup to try first. Before committing to a platform, the <a href="/resources/warehouse-query-cost-estimator">warehouse query cost estimator</a> shows how bytes scanned and warehouse time turn into running cost, and the <a href="/resources/data-project-brief-template">data project brief template</a> pins down the scope. When the answer is a build, <a href="/services/data-projects">our data warehouse projects</a> scope and deliver it.</p>
         </section>
       </ArticleLayout>
     </PageShell>

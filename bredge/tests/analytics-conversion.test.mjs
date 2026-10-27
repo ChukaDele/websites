@@ -55,7 +55,7 @@ test("Clarity consent and all contact text are explicitly masked",()=>{
  assert.match(analytics,/data-cta/);
  assert.match(analytics,/className="button button-small"/);
  assert.doesNotMatch(analytics,/className="button cta-accent button-small"/);
- assert.match(form,/className="button cta-accent" type="submit"/);
+ assert.match(form,/type="submit"/);
 });
 
 

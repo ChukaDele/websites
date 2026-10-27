@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
-import { ResourcePage } from "../../../components/insights/ResourcePage";
-import { pageMetadata } from "../../../lib/seo";
-import { getResource } from "../../../lib/resources";
+import { redirect } from "next/navigation";
+import { redirectedResources } from "../../../lib/resources";
 
-const R = getResource("data-warehouse-readiness")!;
-export const metadata: Metadata = pageMetadata({ title: R.seoTitle, description: R.seoDescription, path: "/resources/data-warehouse-readiness" });
-
+// Folded into the parent insight, which already carries the six readiness
+// questions; this URL stays alive for old links and bookmarks.
 export default function Page() {
-  return <ResourcePage slug="data-warehouse-readiness" />;
+  redirect(redirectedResources["data-warehouse-readiness"]);
 }

@@ -5,8 +5,8 @@ import buildInfo from "./build-info.json";
 import { enforceContactRateLimit, type ContactRateLimitBinding } from "../lib/contact-rate-limit";
 
 interface Env {
-  CONTACT_RATE_LIMITER?: ContactRateLimitBinding;
   ASSETS: Fetcher;
+  CONTACT_RATE_LIMITER?: ContactRateLimitBinding;
   DB: D1Database;
   IMAGES: {
     input(stream: ReadableStream): {
@@ -28,20 +28,65 @@ interface ExecutionContext {
 // dangerouslyAllowSVG: true in next.config.js and uncomment below:
 // const imageConfig: ImageConfig = { dangerouslyAllowSVG: true };
 
+// --- Caching policy -------------------------------------------------------
+// Hashed build output (/_next/static/*) and the un-hashed files in public/ are
+// served by Workers Static Assets before this Worker runs; their Cache-Control
+// comes from dist/client/_headers (vinext's immutable rule) and public/_headers.
+// This Worker decides the policy for what it renders itself.
+//
+// HTML pages: no browser caching (max-age=0, so a deploy is visible on the next
+// load), but a shared cache may hold a page for 5 minutes and serve it stale for
+// up to an hour while it refetches. Pages are the same for every visitor (no
+// cookies, no per-user content), so this is safe. Only applied to successful
+// GET/HEAD HTML responses without Set-Cookie; /api/* is always no-store.
+const HTML_CACHE_CONTROL = "public, max-age=0, s-maxage=300, stale-while-revalidate=3600";
+// robots.txt / sitemap.xml are rendered by routes but change rarely.
+const METADATA_CACHE_CONTROL = "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400";
+
+function applyCachePolicy(headers: Headers, response: Response, request: Request, url: URL) {
+  if (url.pathname.startsWith("/api/")) {
+    headers.set("Cache-Control", "no-store");
+    return;
+  }
+  if (request.method !== "GET" && request.method !== "HEAD") return;
+  if (response.status !== 200 || headers.has("set-cookie")) return;
+  if (url.pathname === "/robots.txt" || url.pathname === "/sitemap.xml") {
+    headers.set("Cache-Control", METADATA_CACHE_CONTROL);
+    return;
+  }
+  const type = headers.get("content-type") || "";
+  if (type.startsWith("text/html")) {
+    headers.set("Cache-Control", HTML_CACHE_CONTROL);
+    // Vary on what changes the HTML; RSC payloads for client-side navigation are
+    // served at the same URL with an RSC request header, which vinext already
+    // lists in Vary, so keep that and add Accept-Encoding for compressed copies.
+    const vary = headers.get("vary");
+    if (!vary || !/accept-encoding/i.test(vary)) headers.set("Vary", vary ? `${vary}, Accept-Encoding` : "Accept-Encoding");
+  }
+}
+
+// Only the canonical site may be indexed. Preview and staging hosts
+// (*.workers.dev, custom preview domains, localhost) get a noindex header, so a
+// copy of the site can never compete with thebredge.com in search. Pages render
+// the same HTML on every host, which is what lets them be cached and prerendered.
+const PRODUCTION_HOSTS = new Set(["thebredge.com", "www.thebredge.com"]);
+
 function withResponseHeaders(response: Response, request: Request): Response {
   const headers = new Headers(response.headers);
+  if (!PRODUCTION_HOSTS.has(new URL(request.url).hostname)) headers.set("X-Robots-Tag", "noindex, nofollow");
+  applyCachePolicy(headers, response, request, new URL(request.url));
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("X-Frame-Options", "SAMEORIGIN");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
-  const hostname = new URL(request.url).hostname;
-  // Dedicated PR and Workers.dev previews must never be indexed as separate sites.
-  if (hostname !== "thebredge.com" && hostname !== "www.thebredge.com") {
-    headers.set("X-Robots-Tag", "noindex, nofollow");
-  }
   if (new URL(request.url).protocol === "https:") {
     headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
   }
+
+  // Enforced now: only directives that cannot affect analytics, fonts or the
+  // Cal.com iframe (it is framed BY us; frame-ancestors governs who frames us).
+  // Blocks clickjacking in CSP-aware browsers, plugin content and <base> hijack.
+  headers.set("Content-Security-Policy", "frame-ancestors 'self'; object-src 'none'; base-uri 'self'");
 
   // Start CSP in report-only mode. The site has third-party analytics and the
   // scheduling embed, so enforcement should only follow production observation.
@@ -55,6 +100,30 @@ function withResponseHeaders(response: Response, request: Request): Response {
     statusText: response.statusText,
     headers,
   });
+}
+
+// Stylesheets must not block the first paint: the preloader (inline CSS) paints
+// at once and lifts only after they are applied. Each hashed build stylesheet is
+// requested as print media and switched to all on load (<noscript> keeps it
+// working without JS). The script at the end of <body> marks `css-ready`.
+const CSS_READY_SCRIPT = `<script>(function(){var d=document,h=d.documentElement,done=0;function f(){if(done)return;done=1;h.classList.add("css-ready")}function chk(){var l=d.querySelectorAll("link[data-nb]");for(var i=0;i<l.length;i++)if(l[i].media==="print")return setTimeout(chk,40);f()}chk();setTimeout(f,4000)})()</script>`;
+
+function deferStylesheets(response: Response, request: Request): Response {
+  if (request.method !== "GET" || response.status !== 200) return response;
+  if (!(response.headers.get("content-type") || "").startsWith("text/html")) return response;
+  return new HTMLRewriter()
+    .on('link[rel="stylesheet"]', {
+      element(el) {
+        const href = el.getAttribute("href");
+        if (!href || !href.startsWith("/_next/static/css/")) return;
+        el.setAttribute("media", "print");
+        el.setAttribute("data-nb", "");
+        el.setAttribute("onload", "this.media='all'");
+        el.after(`<noscript><link rel="stylesheet" href="${href}"></noscript>`, { html: true });
+      },
+    })
+    .on("body", { element(el) { el.append(CSS_READY_SCRIPT, { html: true }); } })
+    .transform(response);
 }
 
 const worker = {
@@ -89,7 +158,7 @@ const worker = {
     }
 
     const response = await handler.fetch(request, env, ctx);
-    return withResponseHeaders(response, request);
+    return withResponseHeaders(deferStylesheets(response, request), request);
   },
 };
 

@@ -1,26 +1,21 @@
-import type { Metadata } from "next";
 import { PageShell } from "../../../components/site/PageShell";
-import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram } from "../../../components/insights/Article";
-import { pageMetadata } from "../../../lib/seo";
+import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram, Example, Pull, ForYourDataPerson } from "../../../components/insights/Article";
+import { insightMetadata } from "../../../lib/insights";
 
 const SLUG = "when-to-hire-a-data-team";
 const TOC = [
-  { id: "short-answer", label: "The short answer" },
-  { id: "usual", label: "What this usually looks like" },
-  { id: "try-first", label: "Start with these questions" },
-  { id: "roles", label: "The roles, in plain English" },
+  { id: "signals", label: "Signs you need a data team" },
+  { id: "try-first", label: "Five questions before you hire" },
+  { id: "roles", label: "Analyst vs analytics engineer vs data engineer" },
+  { id: "example", label: "Worked example: two first moves" },
   { id: "underneath", label: "How the work actually sequences" },
-  { id: "good", label: "What good looks like" },
-  { id: "wrong", label: "Common ways this goes wrong" },
+  { id: "good", label: "Right-sized at each stage" },
+  { id: "wrong", label: "Common hiring mistakes" },
   { id: "boundary", label: "When a hire is not the answer" },
-  { id: "decision", label: "A decision guide" },
+  { id: "decision", label: "Who to hire first: a decision guide" },
 ];
 
-export const metadata: Metadata = pageMetadata({
-  title: "When to Hire a Data Team — Analyst vs Data Engineer vs Fractional Team | The Bredge",
-  description: "When to hire a data team, who to hire first, and the difference between an analyst, analytics engineer and data engineer — plus fractional and embedded options.",
-  path: "/insights/when-to-hire-a-data-team",
-});
+export const metadata = insightMetadata(SLUG);
 
 export default function Page() {
   return (
@@ -78,14 +73,9 @@ export default function Page() {
           </Diagram>
         }
       >
-        <section id="short-answer">
-          <h2>The short answer</h2>
-          <p>You need a data capability when two things are true at once. First, decisions are being delayed, or they are being made on numbers people do not trust. Second, the work has become recurring rather than one-off. A data capability is simply the reliable ability to turn raw data into answers people act on.</p>
-          <p>The first move is not always a hire. A permanent hire is a large, slow, fixed commitment. If the work is still lumpy, or its shape is not yet clear, a scoped project or an embedded team often gives you the same capability sooner and with less risk. Hire when the work is continuous, specific to your business, and you can attract and keep the right person. Until then, borrow the capability and learn what you actually need before you commit to headcount.</p>
-        </section>
-
-        <section id="usual">
-          <h2>What this usually looks like</h2>
+        <section id="signals">
+          <h2>What are the signs you need a data team?</h2>
+          <p>A data capability is the reliable ability to turn raw data into answers people act on. The first move towards one is not always a hire. A permanent hire is a large, slow, fixed commitment. If the work is still lumpy, or its shape is not yet clear, a scoped project or <a href="/services/embedded-data-team">a fractional, embedded data team</a> often gives you the same capability sooner and with less risk. Hire when the work is continuous, specific to your business, and you can attract and keep the right person.</p>
           <p>The shift rarely arrives as a single event. It shows up as symptoms, and they tend to appear together.</p>
           <ul>
             <li>One analyst is overloaded, and questions now wait in a queue.</li>
@@ -94,11 +84,12 @@ export default function Page() {
             <li>Different teams quote different figures for the same thing, and no one owns the definition.</li>
             <li>Workbooks have become load-bearing. A renamed tab or a broken formula can take out a board report.</li>
           </ul>
-          <p>One or two of these is normal for a growing company. All of them together mean the setup has been outgrown. At that point, continuing to muddle through costs more than fixing it. You simply pay the cost in delayed decisions rather than in an invoice.</p>
+          <p>One or two of these is normal for a growing company. All of them together mean the setup has been outgrown.</p>
+          <Pull>Continuing to muddle through costs more than fixing it. You pay in delayed decisions rather than in an invoice.</Pull>
         </section>
 
         <section id="try-first">
-          <h2>Start with these questions</h2>
+          <h2>Five questions to answer before you hire</h2>
           <p>Before you write a job advert, work through a short decision tree. Each answer points to a role or a delivery model, not straight to a hire.</p>
           <TryThisFirst title="Start with these questions">
             <ol>
@@ -112,36 +103,68 @@ export default function Page() {
         </section>
 
         <section id="roles">
-          <h2>The roles, in plain English</h2>
+          <h2>Analyst vs analytics engineer vs data engineer</h2>
           <p>Three roles do most of the work, and they are often confused. Here is each one in plain English first, then precisely.</p>
           <p><strong>A data analyst answers questions.</strong> In plain terms, they take a business question and come back with a defensible number, a chart, or a report. Precisely, they explore data, build and maintain reports and dashboards, and work directly with stakeholders. They sit closest to the decision.</p>
           <p><strong>An analytics engineer makes the data trustworthy.</strong> In plain terms, they turn messy source tables into clean datasets everyone can rely on. Precisely, they do modelling: the work of shaping raw source tables into clean, tested datasets with a clear, agreed meaning. They own the semantic layer, which is the single place where each metric is defined once, so every report uses the same definition of &ldquo;revenue&rdquo; or &ldquo;active customer&rdquo;. They also write tests that fail loudly when the data is wrong. This is the role most growing companies are missing.</p>
           <p><strong>A data engineer moves data reliably.</strong> In plain terms, they build the plumbing. Precisely, they build and run pipelines, which are the automated paths that move data from source systems into where it is used, and they handle integration and orchestration. Orchestration is the scheduling and sequencing of those jobs, so each step runs in the right order and a failure is caught rather than passed silently downstream. This role earns its keep once volume and reliability demands are genuinely high.</p>
+          <div className="in-table-wrap"><table>
+            <thead><tr><th>Role</th><th>Owns</th><th>Typical tools</th><th>Hire first when</th></tr></thead>
+            <tbody>
+              <tr><td>Data analyst</td><td>Questions, reports, dashboards</td><td>Excel, Power BI, SQL</td><td>Nobody turns data into answers</td></tr>
+              <tr><td>Analytics engineer</td><td>Clean, tested models and metric definitions</td><td>SQL, dbt, a warehouse</td><td>Reports exist but numbers are disputed</td></tr>
+              <tr><td>Data engineer</td><td>Pipelines, integration, orchestration</td><td>Python, connectors, cloud platforms</td><td>Data arrives late or will not join up</td></tr>
+            </tbody>
+          </table></div>
           <p>Alongside these sits <strong>BI capability</strong>. BI stands for business intelligence, which is the tools and practice of building and reading reports. Sometimes this is a dedicated role. More often, at an early stage, the analyst covers it.</p>
           <p>You do not have to add any of these through a permanent hire. A <strong>scoped project</strong> delivers a defined build with a clear end, such as a first warehouse or a reporting rebuild. An <strong>embedded or fractional team</strong> is a small external group that works inside your business, giving you senior capability now without a full internal team yet. That is what <a href="/services/embedded-data-team">an embedded data team</a> is for: consistent progress while the shape of the work is still settling.</p>
         </section>
 
+        <section id="example">
+          <h2>Worked example: two companies, two different first moves</h2>
+          <Example setting="Series B SaaS · Stripe, HubSpot, Amplitude, BigQuery" title="Two analysts, and a board that does not trust MRR">
+            <p>A growth team has two analysts building dashboards in Looker Studio. MRR in the board deck differs from Stripe by a few percent every month, and churn is defined three ways. The binding constraint is modelling, not analysis or pipelines: the data already lands in BigQuery through managed connectors.</p>
+            <p>First move: an analytics engineer (hired, or embedded while the role is defined) to build one tested MRR and churn model in dbt that every report reads. A third analyst would have produced a fourth definition.</p>
+          </Example>
+          <Example setting="UK wholesale distributor · Sage 200, Excel, emailed orders" title="A finance team that rebuilds the sales report every Monday">
+            <p>The finance manager and one assistant spend Monday mornings exporting from Sage 200, merging branch spreadsheets with orders that arrive by email, and fixing customer codes by hand. Nobody is asking for new analysis. They want last week&rsquo;s numbers on time and agreed.</p>
+            <p>First move: a scoped project to automate the extract, map branches and customers once, and publish one reconciled weekly report. A permanent senior hire would have little to do once that build is done; a part-time analyst or an embedded team can run it afterwards. The setup itself is described in <a href="/insights/first-reporting-stack">how to automate reporting without a data team</a>.</p>
+          </Example>
+        </section>
+
         <section id="underneath">
-          <h2>How the work actually sequences</h2>
+          <h2>In what order should you build a data team?</h2>
           <p>The work has a natural order, and ignoring it is expensive. More dashboards do not help if the data beneath them is wrong. So trustworthy, modelled data usually has to come before more reporting, not after it.</p>
           <p>For most companies the sensible sequence is: get answers with an analyst, then make those answers trustworthy and repeatable with analytics engineering, then harden the pipelines with a data engineer once managed tools can no longer keep up. Each layer stands on the one before it.</p>
           <p>The common mismatch is hiring against the title rather than the constraint. A senior data engineer hired to &ldquo;build reports&rdquo; will build excellent infrastructure that answers no one&rsquo;s question. A junior analyst asked to fix pipelines will be out of their depth and unsupported. Both outcomes are avoidable. Match the hire to the layer that is actually blocking you, not to the role that sounds most foundational.</p>
-          <p>The piece a growing company most often skips is the analytics engineer. Their job is small, owned, and testable. As an illustration, a single model that defines &ldquo;active customer&rdquo; once, with a test attached, so every report reads the same figure:</p>
-          <pre>{`-- models/marts/active_customers.sql
--- One definition of "active customer", read by every report.
+          <p>The piece a growing company most often skips is the analytics engineer. Their job is small, owned and testable: define a metric such as &ldquo;active customer&rdquo; once, attach a test, and make every report read that one definition. The value is not the code. It is that no team can quietly invent its own version of &ldquo;active&rdquo; in a private spreadsheet, which is why the role usually comes before more dashboards.</p>
+          <ForYourDataPerson title="What an analytics engineer's first model and test look like in dbt">
+            <p>A dbt model is a SQL file that builds one table or view. This one defines an active customer as anyone with an order in the last 90 days. It reads a staging model, <code>stg_orders</code>, which holds one row per order:</p>
+            <pre>{`-- models/marts/active_customers.sql
 select
     customer_id,
     max(order_date) as last_order_date
-from stg_orders
+from {{ ref('stg_orders') }}
 group by customer_id
-having max(order_date) >= current_date - interval '90 days'
+having max(order_date) >= current_date - interval '90 days'`}</pre>
+            <p>The tests live in a YAML file beside the model. dbt runs them with <code>dbt build</code> or <code>dbt test</code>, and the run fails if any customer appears twice or has no ID:</p>
+            <pre>{`# models/marts/active_customers.yml
+version: 2
 
--- test: active_customers.customer_id is unique and never null`}</pre>
-          <p>The value is not the SQL. It is that the rule lives in one place, the test fails the moment two rows share a customer, and no team can quietly invent its own version of &ldquo;active&rdquo; in a private spreadsheet. That is the trust an analytics engineer produces, and it is why the role usually comes before more dashboards.</p>
+models:
+  - name: active_customers
+    description: "Customers with at least one order in the last 90 days."
+    columns:
+      - name: customer_id
+        data_tests:
+          - unique
+          - not_null`}</pre>
+            <p>The interval syntax shown works on Snowflake and Postgres; on BigQuery use <code>date_sub(current_date(), interval 90 day)</code>. The <code>data_tests</code> key is the current name in dbt; older projects use <code>tests</code>. See the <a href="https://docs.getdbt.com/docs/build/data-tests" target="_blank" rel="noopener noreferrer">dbt data tests documentation</a>.</p>
+          </ForYourDataPerson>
         </section>
 
         <section id="good">
-          <h2>What good looks like</h2>
+          <h2>What a right-sized data team looks like at each stage</h2>
           <p>What &ldquo;right-sized&rdquo; looks like changes with stage. As a hypothetical progression:</p>
           <ul>
             <li><strong>Early.</strong> One capable analyst, or a fractional analyst, answering questions against a tidy source or two. No warehouse and no pipelines. This is enough for a while, and stretching past it early wastes money.</li>
@@ -152,10 +175,10 @@ having max(order_date) >= current_date - interval '90 days'
         </section>
 
         <section id="wrong">
-          <h2>Common ways this goes wrong</h2>
+          <h2>Common first-hire mistakes</h2>
           <ul>
             <li><strong>Hiring too early.</strong> A senior specialist with too little well-defined work spends a year underused, and may leave out of boredom before the real work arrives.</li>
-            <li><strong>Hiring the wrong first role.</strong> Building infrastructure before there is a question that needs it is the classic version — impressive plumbing, no answers.</li>
+            <li><strong>Hiring the wrong first role.</strong> Building infrastructure before there is a question that needs it is the classic version: impressive plumbing, no answers.</li>
             <li><strong>Hiring one person to do three jobs.</strong> Analyst, analytics engineer and data engineer are different disciplines. One generalist expected to be all three will do all three thinly.</li>
             <li><strong>Leaving no one to manage them.</strong> A first hire with no manager, no clear priorities, and no one to unblock them will stall, however capable they are.</li>
             <li><strong>Under-levelling the role.</strong> A junior with no senior to learn from plateaus, and the definitions that no one owns stay disputed.</li>
@@ -165,7 +188,7 @@ having max(order_date) >= current_date - interval '90 days'
 
         <section id="boundary">
           <h2>When a hire is not the answer</h2>
-          <p>Not every data problem is solved by adding a person. Some are solved by a better tool, a tidier definition, or a direct connection from a BI tool to the source. A hire, or a team, becomes the right answer only when the work has become a system to run rather than a task to finish — when it recurs, spans systems, and needs a clear owner. If you want an outside read on whether you are at that point, <a href="/how-we-work">how we work</a> sets out how we scope it before anyone commits to headcount.</p>
+          <p>Not every data problem is solved by adding a person. Some are solved by a better tool, a tidier definition, or a direct connection from a BI tool to the source. A hire, or a team, becomes the right answer only when the work has become a system to run rather than a task to finish: when it recurs, spans systems, and needs a clear owner. If you want an outside read on whether you are at that point, <a href="/how-we-work">how we work</a> sets out how we scope it before anyone commits to headcount.</p>
           <SystemBoundary
             conditions={[
               "The same cross-system work recurs every week, rather than arriving once and finishing.",
@@ -178,7 +201,7 @@ having max(order_date) >= current_date - interval '90 days'
         </section>
 
         <section id="decision">
-          <h2>A decision guide</h2>
+          <h2>Who should we hire first? A decision guide</h2>
           <p>Read from the constraint you actually have, not from the org chart you imagine. The first move follows the gap.</p>
           <table className="article-table">
             <thead>
@@ -216,6 +239,9 @@ having max(order_date) >= current_date - interval '90 days'
               </tr>
             </tbody>
           </table>
+          <p>If you want a printable version, use the <a href="/resources/first-data-hire-decision-tree">first data hire decision tree</a>. If the answer is &ldquo;an embedded team&rdquo;, see <a href="/services/embedded-data-team">how our embedded data team works</a>.</p>
+          <p>To compare the cost of each option for your workload, use the <a href="/resources/hire-vs-fractional-data-team-cost">hire vs fractional vs project cost calculator</a>. If the backlog is the problem, a <a href="/data-diagnostic">Data Diagnostic</a> helps you pick the first piece of work, and <a href="/insights/saas-metrics-from-stripe">how to calculate MRR from Stripe</a> shows the kind of modelling an analytics engineer owns.</p>
+          <p>If the first move is a scoped project, the <a href="/resources/data-project-brief-template">data project brief template</a> helps you brief it, and <a href="/services/data-projects">how our data projects work</a> shows what a delivery looks like.</p>
         </section>
       </ArticleLayout>
     </PageShell>

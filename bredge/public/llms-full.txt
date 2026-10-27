@@ -18,132 +18,283 @@ The Bredge helps growing and mid-market organisations reconcile conflicting data
 
 ## Published Insights (canonical URLs and descriptions)
 
-### Why do Finance and Sales have different revenue numbers?
-URL: https://thebredge.com/insights/why-dashboards-disagree
-Published: 2026-07-14
-Topic: Data reliability
-Summary: The board pack says £4.2m, CRM says £4.5m, and Finance has a spreadsheet with £4.3m. Every number has an explanation. Here is how to find it — before anyone rebuilds a dashboard.
+### How to automate reporting for a small business without a data team
+URL: https://thebredge.com/insights/first-reporting-stack
+Published: 2026-10-21
+Topic: Data systems
+Summary: Most small businesses do not need a data platform. They need the five numbers they rebuild every Monday to appear on their own, correct, with one person spending a few hours a month keeping it that way. Here is the smallest setup that does that, and what not to buy.
 
-### When do we actually need a data team — and who should we hire first?
+### Why don't Finance and Sales revenue numbers match?
+URL: https://thebredge.com/insights/why-dashboards-disagree
+Published: 2026-07-14; updated: 2026-10-21
+Topic: Data reliability
+Summary: The board pack says one number, the CRM says another, and Finance has a spreadsheet with a third. Every figure has an explanation. Here is how to find it before anyone rebuilds a dashboard.
+
+### How to calculate MRR from Stripe, and why yours doesn't match
+URL: https://thebredge.com/insights/saas-metrics-from-stripe
+Published: 2026-10-21
+Topic: Data reliability
+Summary: MRR summed from invoices, MRR from the Stripe dashboard and MRR in the board deck are three different numbers. Annual plans, prorations, coupons, failed payments and currencies each move them apart. Here is how to define it once and break it into movements a board can read.
+
+### How to connect QuickBooks Online and Xero to Power BI in 2026
+URL: https://thebredge.com/insights/connect-quickbooks-xero-to-power-bi
+Published: 2026-10-21
+Topic: Analytics & BI
+Summary: Microsoft has retired its QuickBooks Online connector, there has never been a Microsoft connector for Xero, and Xero now prices API access by connections and data. Here are the routes that still work, what each costs to run and which to choose.
+
+### How to handle GDPR deletion requests in a data warehouse
+URL: https://thebredge.com/insights/gdpr-deletion-requests-data-warehouse
+Published: 2026-10-21
+Topic: Data systems
+Summary: Deleting a customer from the CRM takes a minute. Deleting them from the warehouse, its history tables, Time Travel, backups and every Power BI model built on top is an engineering job. Here is how to find the person, purge or pseudonymise them everywhere, and prove it.
+
+### When to hire a data team, and who to hire first
 URL: https://thebredge.com/insights/when-to-hire-a-data-team
-Published: 2026-07-21
+Published: 2026-07-21; updated: 2026-10-21
 Topic: Running a data function
 Summary: More data work does not always mean more headcount. How to tell when you have outgrown one analyst, and whether your first move is a hire, a project, or an embedded team.
 
-### Do we actually need a data warehouse yet?
-URL: https://thebredge.com/insights/before-you-build-a-data-warehouse
-Published: 2026-07-28
-Topic: Data systems
-Summary: A warehouse solves specific problems. Build it before you have them and you inherit cost and complexity you did not need. The questions that decide whether it is time.
+### How to calculate ARR for investors: the bridge, cohorts and definitions they ask for
+URL: https://thebredge.com/insights/investor-ready-arr
+Published: 2026-10-21
+Topic: Data reliability
+Summary: In diligence, buyers rebuild your ARR from contracts, billing and recognised revenue. If yours does not tie, the conversation moves from growth to trust. Here is the evidence pack to build before anyone asks: written definitions, an ARR bridge, a customer-by-month table and cohort retention.
 
-### Our customer data lives in five systems. How do we get one reliable customer view?
-URL: https://thebredge.com/insights/one-customer-view
-Published: 2026-08-04
-Topic: Data systems
-Summary: CRM, billing, product, finance and support each have their own idea of who a customer is. A single customer view is an identity problem first, and a dashboard problem last.
+### Why don't Shopify sales, payouts, Xero and GA4 match?
+URL: https://thebredge.com/insights/shopify-payouts-xero-ga4-revenue
+Published: 2026-10-21
+Topic: Data reliability
+Summary: Shopify shows one sales figure, the bank receives less, Xero shows a third number and GA4 a fourth. Each measures something different. Once you know what each one counts, you can build one revenue figure and a bridge to the others.
 
-### We rebuild the same management report every month. How do we automate it without making it more fragile?
+### How to prove a data warehouse migration didn't change the numbers
+URL: https://thebredge.com/insights/warehouse-migration-parity
+Published: 2026-10-21
+Topic: Data reliability
+Summary: Migrations stall at sign-off because nobody can show that the new platform produces the same figures as the old one. Parity is provable: compare row counts by day, key sets, column hashes and measure totals, in that order, and explain every difference.
+
+### How to automate monthly management reporting without making it fragile
 URL: https://thebredge.com/insights/automate-monthly-reporting
-Published: 2026-08-08
+Published: 2026-08-08; updated: 2026-10-21
 Topic: Analytics & BI
 Summary: Automating a monthly report the wrong way just moves the fragility somewhere you can no longer see it. What to move upstream, what to leave in Excel, and how to keep it auditable.
 
-### We know our data setup is messy. What should we fix first?
-URL: https://thebredge.com/insights/what-to-fix-first
-Published: 2026-08-09
-Topic: Running a data function
-Summary: Everything feels broken, so nothing gets fixed. A way to inventory the mess, score it by impact and effort, and choose the one change that makes the next three easier.
+### Do you need a data warehouse yet? Six questions to decide
+URL: https://thebredge.com/insights/before-you-build-a-data-warehouse
+Published: 2026-07-28; updated: 2026-10-21
+Topic: Data systems
+Summary: A warehouse solves specific problems. Build it before you have them and you inherit cost and complexity you did not need. Six questions that decide whether it is time.
 
-### Why is our Power BI dashboard so slow?
+### Power BI licensing for small businesses: Pro, Premium Per User or Fabric?
+URL: https://thebredge.com/insights/power-bi-licensing-small-business
+Published: 2026-10-21
+Topic: Analytics & BI
+Summary: Power BI Pro now costs $14 per user per month and every viewer needs a licence unless the content sits on a large Fabric capacity. For a small business the right answer depends on how many people view reports, how big the model is and how often it refreshes.
+
+### Why doesn't HubSpot closed-won revenue match what Stripe billed?
+URL: https://thebredge.com/insights/crm-closed-won-vs-stripe
+Published: 2026-10-21
+Topic: Data reliability
+Summary: The CRM says the team closed one number this quarter; Stripe billed another. Both are right about different things. Here is how to link deals to subscriptions, measure the lag between closing and billing, and report a gap the board can read.
+
+### How to model multi-entity consolidation and FX translation in a data warehouse
+URL: https://thebredge.com/insights/multi-entity-consolidation
+Published: 2026-10-21
+Topic: Analytics & BI
+Summary: The group pack is assembled from three ledgers, three currencies and a spreadsheet of intercompany balances that never quite nets to zero. A warehouse can carry most of that mechanically, if it is modelled the way finance actually consolidates.
+
+### How to reduce BigQuery and Snowflake costs on billion-row tables
+URL: https://thebredge.com/insights/incremental-models-at-scale
+Published: 2026-10-21
+Topic: Data systems
+Summary: At a few million rows, a full rebuild every night is fine. At a few billion, the same model scans years of history to add one day. The levers that fix it are well documented; most teams pull only one of them.
+
+### Power BI or a data warehouse: which do you need first?
+URL: https://thebredge.com/insights/power-bi-warehouse-or-both
+Published: 2026-08-09; updated: 2026-10-21
+Topic: Data systems
+Summary: "We need better reporting" hides three different problems. Separating the reporting layer, the model and the integration tells you what to buy, and in what order.
+
+### How to match customers across HubSpot, Stripe and Xero
+URL: https://thebredge.com/insights/one-customer-view
+Published: 2026-08-04; updated: 2026-10-21
+Topic: Data systems
+Summary: HubSpot, Stripe and Xero each create their own customer record, with their own ID. Until those records are linked, revenue per customer, churn and pipeline-to-cash reports are guesses. Here is how to link them with rules you can see and test.
+
+### Fabric capacity throttling explained: why Power BI reports stop loading
+URL: https://thebredge.com/insights/fabric-capacity-throttling
+Published: 2026-10-21
+Topic: Analytics & BI
+Summary: Executives open a report and it hangs, or fails with a capacity error. On Microsoft Fabric, that is usually throttling: the capacity has borrowed so much future compute that Fabric starts delaying, then rejecting, work. Here is how the stages work, how to find the cause and how to size an F SKU.
+
+### Power BI refresh failed: how to fix the common errors
+URL: https://thebredge.com/insights/power-bi-refresh-failed
+Published: 2026-10-21
+Topic: Analytics & BI
+Summary: The dashboard shows yesterday's numbers and the refresh history is red. Most failures come down to five causes: memory, query folding, the gateway, credentials and timeouts. Here is how to tell which one you have and fix it.
+
+### Why is Power BI so slow, and how do you fix it?
 URL: https://thebredge.com/insights/power-bi-slow
-Published: 2026-08-09
+Published: 2026-08-09; updated: 2026-10-21
 Topic: Analytics & BI
 Summary: A slow Power BI report is usually a data-model problem wearing a dashboard costume. Where the time actually goes, and the model choices that fix it.
 
-### We spend days cleaning Excel files before every report. What should we automate first?
+### How to automate repeated Excel data cleaning with Power Query
 URL: https://thebredge.com/insights/excel-cleaning-automation
-Published: 2026-08-09
+Published: 2026-08-09; updated: 2026-10-21
 Topic: Analytics & BI
-Summary: If you repeat the same clean-up every month, it is a transformation waiting to be written down once. What to automate first, what to fix at source, and what to leave in Excel.
+Summary: If you repeat the same clean-up every month, it is a transformation waiting to be written down once. The Power Query steps that do it, what to fix at source, and what Excel should still do.
 
-### How do we know whether our data is actually reliable?
-URL: https://thebredge.com/insights/is-our-data-reliable
-Published: 2026-08-09
-Topic: Data reliability
-Summary: Reliable does not mean it looks right in a chart. It means it passes explicit checks — completeness, uniqueness, validity, freshness, reconciliation — that someone owns.
-
-### We need better reporting. Do we need Power BI, a warehouse, or both?
-URL: https://thebredge.com/insights/power-bi-warehouse-or-both
-Published: 2026-08-09
+### How to reduce Fivetran costs under MAR pricing
+URL: https://thebredge.com/insights/reduce-fivetran-costs
+Published: 2026-10-21
 Topic: Data systems
-Summary: "We need better reporting" hides three different problems. Separating the reporting layer, the model and the integration tells you what to buy — and in what order.
+Summary: Fivetran bills on monthly active rows, now counted per connection, and since January 2026 deletes count too. The bill is driven by a handful of tables that change constantly. Find them, then decide whether to stop syncing them, sync them differently or move them.
 
-## Bredge original public-data briefs
+### How to reduce Snowflake, BigQuery and Databricks costs at the platform level
+URL: https://thebredge.com/insights/warehouse-platform-costs
+Published: 2026-10-21
+Topic: Data systems
+Summary: Model tuning saves money query by query. The settings around the models decide whether you pay for idle warehouses, unbounded scans and interactive clusters running batch jobs. Here are the platform-level levers on each, from the vendors' own documentation.
 
-### Nigeria's telecom subscriber base recovered through 2025.
-URL: https://thebredge.com/research#nigeria-telecoms-q4-2025
-Period: Q4 2025
-Finding: 179.64M — active voice subscriptions
-Summary: Our quarterly brief traces the rebound from the Q3 2024 subscriber trough and compares the Q4 2025 market shares, regional distribution and porting flows. The analysis distinguishes a total subscription measure from an individual-customer count.
-Source: National Bureau of Statistics, Nigerian Telecoms Data Q3–Q4 2025; underlying NCC administrative data
-Underlying primary source: https://microdata.nigerianstat.gov.ng/index.php/catalog/179/related-materials
-Caveats: Mobile subscriptions are not unique people. Number-porting volumes are small relative to the subscriber base and should not be presented as overall churn.
+### How to make change data capture (CDC) reliable in your data warehouse
+URL: https://thebredge.com/insights/change-data-capture
+Published: 2026-10-21
+Topic: Data reliability
+Summary: Replication looks solved until someone counts open orders in both places. Deletes that never arrive, duplicates after a restart, placeholder values overwriting real ones: the failure modes of change data capture are specific, and so are the fixes.
 
-### Petrol prices varied substantially between Nigerian states.
-URL: https://thebredge.com/research#nigeria-pms-may-2026
-Period: May 2026
-Finding: ₦1,596.25 — national average price per litre
-Summary: The Bredge fuel-price brief maps state and regional differences in the NBS survey. It compares the national price with the range paid across states, rather than treating a country average as a universal distribution cost.
-Source: National Bureau of Statistics, Premium Motor Spirit (Petrol) Price Watch, May 2026
-Underlying primary source: https://microdata.nigerianstat.gov.ng/index.php/catalog/157/related-materials
-Caveats: Survey averages do not describe every pump or predict a current pump price. Values describe May 2026 and must not be presented as today's prices.
+### Which dbt tests should you add first? A data quality starter set
+URL: https://thebredge.com/insights/is-our-data-reliable
+Published: 2026-08-09; updated: 2026-10-21
+Topic: Data reliability
+Summary: Adding a test to every column feels thorough and ends in alert fatigue: hundreds of warnings nobody reads. Start with the tests that protect keys, joins, freshness and the totals the board sees, and give every one that can fail a run an owner.
 
-### A healthy diet cost ₦1,589 per adult per day nationally.
-URL: https://thebredge.com/research#nigeria-cohd-april-2026
-Period: April 2026
-Finding: ₦1,589 — average cost of a healthy diet per adult per day
-Summary: The Bredge brief compares the national healthy-diet reference cost with state and zonal variation, then shows which food groups contribute most to the estimated total. It keeps a nutritional affordability metric separate from general food inflation.
-Source: National Bureau of Statistics and GAIN, Cost of a Healthy Diet, April 2026
-Underlying primary source: https://microdata.nigerianstat.gov.ng/index.php/catalog/146/related-materials
-Caveats: CoHD is a modelled least-cost measure, not the amount each household actually spends. Month-on-month and year-on-year comparisons are not shown in this public summary. Refer to the original NBS source for published period-on-period changes.
+### SCD type 2 in dbt: snapshots and point-in-time joins explained
+URL: https://thebredge.com/insights/customer-history-scd2
+Published: 2026-10-21
+Topic: Data systems
+Summary: If your customer table is overwritten in place, every reassignment quietly restates history: last year's regional revenue changes and nobody signed it off. Keeping history is a modelling decision, and the joins that use it have sharp edges.
+
+### How to upgrade to dbt v2 (Fusion) without breaking CI
+URL: https://thebredge.com/insights/dbt-fusion-upgrade
+Published: 2026-10-21
+Topic: Data systems
+Summary: The dbt Fusion engine became generally available as dbt v2 in September 2026. Most upgrade breakages trace back to the deprecation warnings dbt 1.10 introduced, especially for teams running with --warn-error. Clear those first and the engine upgrade is mostly a rollout plan.
+
+### How to speed up slow dbt runs: find the critical path first
+URL: https://thebredge.com/insights/speed-up-dbt-runs
+Published: 2026-10-21
+Topic: Data systems
+Summary: A dbt run that took twenty minutes now takes two hours, and the board numbers are late. The cause is rarely every model. Read run_results.json to find the slowest models and the chain that sets the finish time, then fix those.
 
 ## Public checklists and resources
 
-### Revenue reconciliation checklist
-URL: https://thebredge.com/resources/revenue-reconciliation-checklist
-Type: Checklist
-Purpose: Run this before anyone rebuilds a report. It reconciles two revenue figures at record level and classifies every difference, so you fix the cause rather than the chart.
-Related evidence and background: https://thebredge.com/insights/why-dashboards-disagree
-
-### Critical-data quality checklist
-URL: https://thebredge.com/resources/data-quality-checklist
-Type: Checklist
-Purpose: Reliable does not mean it looks right in a chart. It means the data passes explicit checks that someone owns. Run these against the few datasets your decisions actually depend on.
-Related evidence and background: https://thebredge.com/insights/is-our-data-reliable
-
-### Data warehouse readiness checklist
-URL: https://thebredge.com/resources/data-warehouse-readiness
-Type: Checklist
-Purpose: A warehouse solves specific problems. Answer these before you build one. If most answers are no, a simpler option is usually cheaper and faster.
-Related evidence and background: https://thebredge.com/insights/before-you-build-a-data-warehouse
-
-### First data hire decision guide
-URL: https://thebredge.com/resources/first-data-hire-decision-tree
-Type: Decision guide
-Purpose: Your first data move should follow the constraint that is actually blocking decisions, not a generic org chart. Work through these to point at a role or an alternative.
-Related evidence and background: https://thebredge.com/insights/when-to-hire-a-data-team
-
-### Monthly reporting automation map
+### Reporting automation map and hours estimate
 URL: https://thebredge.com/resources/reporting-automation-map
-Type: Map
-Purpose: Map the report before you automate it, so automation removes effort without hiding fragility. Fill this in for one monthly report.
+Type: Calculator
+Purpose: To automate a monthly report safely, map every step first and separate mechanical work from judgement. Mechanical steps move upstream into tested logic; judgement and the final review stay with people. This map estimates the hours that frees from your own inputs.
 Related evidence and background: https://thebredge.com/insights/automate-monthly-reporting
 
-### Data diagnostic checklist
+### Revenue reconciliation workbench
+URL: https://thebredge.com/resources/revenue-reconciliation-checklist
+Type: Workbench
+Purpose: To reconcile revenue between two systems, fix the definition and time range, match records on a shared key, then explain every difference by class until what is left is inside your tolerance. This workbench does the arithmetic and keeps the checklist with you.
+Related evidence and background: https://thebredge.com/insights/why-dashboards-disagree
+
+### Hire vs fractional vs project: cost calculator
+URL: https://thebredge.com/resources/hire-vs-fractional-data-team-cost
+Type: Calculator
+Purpose: A data hire costs more than the salary: add employer on-costs, recruiting fees, tools, the months the seat is empty and the months it takes to ramp up. This calculator puts that next to a fractional team and a fixed project, using figures you enter, so you can see which is cheaper for your workload and when that flips.
+Related evidence and background: https://thebredge.com/insights/when-to-hire-a-data-team
+
+### ARR bridge and cohort table builder
+URL: https://thebredge.com/resources/arr-bridge-cohort-builder
+Type: Workbench
+Purpose: An ARR bridge explains each month's change in recurring revenue as new, reactivated, expansion, contraction and churn; a cohort table shows how each month's new customers retain. Paste or upload one row per customer per month with their MRR, and the builder calculates both, plus trailing 12-month NRR and GRR, entirely in your browser.
+Related evidence and background: https://thebredge.com/insights/saas-metrics-from-stripe
+
+### First data hire decision tree
+URL: https://thebredge.com/resources/first-data-hire-decision-tree
+Type: Decision tree
+Purpose: Your first data hire should match the constraint that blocks decisions today: an analyst if nobody has time to answer questions, an analytics engineer if the numbers disagree, a data engineer if data does not move reliably. Answer a few questions and the tree points to a role, a project or a fractional team.
+Related evidence and background: https://thebredge.com/insights/when-to-hire-a-data-team
+
+### KPI dictionary template
+URL: https://thebredge.com/resources/kpi-dictionary-template
+Type: Template
+Purpose: A KPI dictionary is one agreed definition per metric: what it means, the formula, the grain, the source system, the owner and how currency is treated. Start from a pack below, edit it to your business, and export it to Excel or Google Sheets.
+Related evidence and background: https://thebredge.com/insights/why-dashboards-disagree
+
+### Power BI refresh error lookup
+URL: https://thebredge.com/resources/power-bi-refresh-error-lookup
+Type: Checklist
+Purpose: Most Power BI refresh failures come from six causes: memory limits, the two- or five-hour timeout, an unreachable gateway, expired credentials, incremental refresh queries that do not fold, and a schedule switched off after four failures. Paste your error message and the lookup matches it to the documented cause, the fix steps and the Microsoft Learn page.
+Related evidence and background: https://thebredge.com/insights/power-bi-slow
+
+### Power BI licensing cost calculator
+URL: https://thebredge.com/resources/power-bi-licensing-cost-calculator
+Type: Calculator
+Purpose: For most small teams, Pro for everyone is cheapest: $14 per user per month at Microsoft's US list price. Premium Per User at $24 makes sense when you need more than 8 refreshes a day or models over 1 GB. A Fabric F64 capacity pays off only when enough people view reports that their Pro licences cost more than the capacity, because on F64 and above viewers need only a free licence.
+Related evidence and background: https://thebredge.com/insights/power-bi-warehouse-or-both
+
+### SaaS metrics definitions and calculator
+URL: https://thebredge.com/resources/saas-metrics-definitions
+Type: Calculator
+Purpose: SaaS metrics are only comparable when each one has a single written definition: what counts as recurring, which customers are in the cohort, and which costs are in acquisition. Enter one period's figures and the calculator returns MRR, ARR, NRR, GRR, churn and CAC payback with the formula shown for each.
+Related evidence and background: https://thebredge.com/insights/saas-metrics-from-stripe
+
+### Data audit checklist and priority matrix
 URL: https://thebredge.com/resources/data-diagnostic-checklist
 Type: Checklist
-Purpose: When everything feels broken, sequence matters more than ambition. Inventory the mess, then score each issue by impact and effort to decide what to fix first.
-Related evidence and background: https://thebredge.com/insights/what-to-fix-first
+Purpose: A data audit inventories ten areas of your data setup, rates each one, then prioritises the problems by impact and effort. Rate your own setup here and the matrix sequences what to fix first, foundations before dashboards.
+Related evidence and background: https://thebredge.com/insights/is-our-data-reliable
+
+### Data project brief template
+URL: https://thebredge.com/resources/data-project-brief-template
+Type: Template
+Purpose: A good data project brief states the decision the work serves, what is in and out of scope, the systems involved, how you will test that it is done, and who runs it afterwards. Fill in the sections here and copy a brief you can send to several suppliers, so their proposals answer the same question.
+Related evidence and background: https://thebredge.com/insights/when-to-hire-a-data-team
+
+### Migration validation SQL generator
+URL: https://thebredge.com/resources/migration-validation-sql-generator
+Type: Template
+Purpose: Run the same checks on the old and the new system and compare the results: row counts by month, duplicate and missing keys, sums and ranges per column, and a fingerprint of every row by month. Describe the table once and the generator writes matching SQL for both dialects, with values formatted the same way on each engine so the results can be compared directly.
+Related evidence and background: https://thebredge.com/insights/change-data-capture
+
+### Warehouse query cost estimator
+URL: https://thebredge.com/resources/warehouse-query-cost-estimator
+Type: Calculator
+Purpose: On BigQuery on-demand, cost is bytes scanned times your rate per TiB, and a dbt merge with a unique key is billed for the rows it reads plus the whole target table. On a large unpartitioned table, that makes an incremental merge dearer than a full rebuild. Enter your table size, row width, lookback and schedule to compare five build patterns per run and per month.
+Related evidence and background: https://thebredge.com/insights/incremental-models-at-scale
+
+### dbt incremental strategy picker
+URL: https://thebredge.com/resources/dbt-incremental-strategy-picker
+Type: Decision tree
+Purpose: Use microbatch for append-only events on dbt 1.9 or later, merge for rows updated in place (delete+insert where merge fails on duplicate keys), a snapshot when you need past versions, and a plain table while a rebuild still takes minutes. Answer six questions and the picker returns the strategy for your adapter, a config block to copy, the edge cases to test and the commands to backfill history in ranges.
+Related evidence and background: https://thebredge.com/insights/incremental-models-at-scale
+
+### dbt run_results.json analyser
+URL: https://thebredge.com/resources/dbt-run-results-analyser
+Type: Workbench
+Purpose: A slow dbt run is usually a handful of models and one long chain of dependencies, not the whole project. Upload run_results.json, and manifest.json if you have it, to see the slowest models, time by materialisation, how busy your threads were, the critical path that sets the minimum run time, and every failing test, all in your browser.
+Related evidence and background: https://thebredge.com/insights/incremental-models-at-scale
+
+### Fivetran MAR cost estimator
+URL: https://thebredge.com/resources/fivetran-mar-cost-estimator
+Type: Calculator
+Purpose: Fivetran bills on monthly active rows: each distinct row inserted, updated or deleted in a month, counted per connection and table, once however often it changes. Enter the rows that change in each connection to estimate MAR, see what history mode adds, and cost it at your own effective rate.
+Related evidence and background: https://thebredge.com/insights/change-data-capture
+
+### Backfill planner for billions of rows
+URL: https://thebredge.com/resources/backfill-planner
+Type: Calculator
+Purpose: Backfill billions of rows in date-range chunks that each finish well inside your job timeout, run a few at a time, oldest first, and make every chunk replace its own range so a rerun cannot duplicate data. Enter your history, a trial chunk's rows per second and your concurrency to get the chunk count, the running time, the commands and a progress table.
+Related evidence and background: https://thebredge.com/insights/incremental-models-at-scale
+
+### Data freshness SLA calculator
+URL: https://thebredge.com/resources/data-freshness-sla-calculator
+Type: Calculator
+Purpose: Worst-case staleness is the source lag plus, for every stage on its own schedule, its full interval and run time; a stage chained to the one before adds only its run time. Enter your connector, dbt and BI schedules to see the worst and typical staleness, whether your SLA holds, and the warn and error thresholds for dbt source freshness.
+Related evidence and background: https://thebredge.com/insights/is-our-data-reliable
 
 ## Using and citing this index
 

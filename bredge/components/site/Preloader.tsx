@@ -2,16 +2,20 @@
 
 import { useEffect, useRef } from "react";
 
-const sources = ["PRODUCT", "BILLING", "CRM", "FINANCE", "SUPPORT"];
+const ROWS = 4;
+const COLS = 12;
+// Where the "b" mark ends and "redge" begins, as a share of the cropped logo.
+const MARK_SHARE = 25.3;
 
 /**
- * First-entry signature preloader: five disagreeing source records
- * (PRODUCT/BILLING/CRM/FINANCE/SUPPORT) align, one amber exception resolves, a
- * green signal passes across the system, and the geometry collapses into the
- * Bredge mark — which the hero then forms around. ~1.1s, hard safety ≤1.5s.
+ * First-entry preloader (Second Direction), modelled on the ZettaJoule
+ * reference: the Bredge mark draws in through horizontal stripes, slides left
+ * while "redge" unrolls out from behind it, holds, breaks back into stripes,
+ * then a 4×12 grid of tiles shutters away to reveal the hero. ~2.2s, hard
+ * safety at 3.2s. Plays each time the site is opened (new visit or tab, and on reload), not on every page.
  *
- * Only runs when the head script added `.preload-active` (first visit this
- * session, motion allowed). A pure-CSS safety fade lifts the overlay even if
+ * Runs whenever the head script added `.preload-active` (each time the site
+ * is opened, unless the visitor prefers reduced motion). A pure-CSS safety fade lifts the overlay even if
  * JS/GSAP never runs. Never traps the visitor.
  */
 export function Preloader() {
@@ -22,16 +26,20 @@ export function Preloader() {
     const html = document.documentElement;
     if (!root || !html.classList.contains("preload-active")) return;
 
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const lowPower = innerWidth <= 700 || matchMedia("(pointer: coarse)").matches
+      || (nav.deviceMemory ?? 8) <= 4 || (nav.hardwareConcurrency ?? 8) <= 4;
+    if (lowPower) root.classList.add("pl-low");
+
     let finished = false;
     const finish = () => {
       if (finished) return;
       finished = true;
-      try { sessionStorage.setItem("bredge_preloaded", "1"); } catch { /* ignore */ }
-      html.classList.remove("preload-active");
+            html.classList.remove("preload-active");
       html.classList.add("preload-done");
       root.style.display = "none";
     };
-    const safety = window.setTimeout(finish, 1500);
+    const safety = window.setTimeout(finish, 3200);
 
     let killed = false;
     let ctx: { revert: () => void } | undefined;
@@ -40,31 +48,59 @@ export function Preloader() {
       try { ({ default: gsap } = await import("gsap")); } catch { finish(); return; }
       if (killed) return;
       const q = gsap.utils.selector(root);
-      const rows = q(".pl-record");
-      const line = q(".pl-line");
-      const signal = q(".pl-signal");
-      const exception = q(".pl-record.pending .pl-dot");
-      const mark = q(".pl-mark");
+      const logo = q(".pl-logo")[0];
+      const mark = q(".pl-mark-layer")[0];
+      const word = q(".pl-word-layer")[0];
+      const rows = q(".pl-row");
+
       const c = gsap.context(() => {
-        const offsets = [-46, 30, -20, 38, -30];
-        const tl = gsap.timeline({ defaults: { ease: "power2.out" }, onComplete: finish });
-        // ACT 1–3 — records perceptible, misaligned, then align to one grid
-        tl.fromTo(rows,
-          { x: (i: number) => offsets[i] ?? 0, opacity: 0.45, scaleX: 0.9 },
-          { x: 0, opacity: 1, scaleX: 1, duration: 0.36, stagger: 0.035 }, 0.05)
-          // one identity remains unresolved (amber)
-          .fromTo(exception, { backgroundColor: "#c8cec9" }, { backgroundColor: "#f0bf6c", duration: 0.14 }, 0.40)
-          // ACT 4 — green signal passes across the system; the exception resolves
-          .fromTo(signal, { xPercent: -130, opacity: 0.9 }, { xPercent: 130, duration: 0.4, ease: "power1.inOut" }, 0.54)
-          .to(exception, { backgroundColor: "#90d26f", duration: 0.16 }, 0.66)
-          .to(signal, { opacity: 0, duration: 0.1 }, 0.94)
-          .fromTo(line, { scaleX: 0.15, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.26 }, 0.72)
-          // ACT 5 — geometry collapses into the Bredge mark
-          .to(rows, { opacity: 0, y: 6, duration: 0.24, stagger: 0.015 }, 0.82)
-          .to(line, { opacity: 0, duration: 0.2 }, 0.86)
-          .fromTo(mark, { opacity: 0, scale: 0.66, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.32, ease: "power3.out" }, 0.86)
-          // ACT 6 — the mark holds while the overlay lifts into the hero
-          .to(root, { autoAlpha: 0, duration: 0.3, ease: "power1.in" }, 1.16);
+        // One progress value drives both halves so the wordmark's left edge
+        // always sits exactly at the mark's right edge.
+        const slide = { p: 0 };
+        const applySlide = () => {
+          const rest = (1 - slide.p) * (100 - MARK_SHARE);
+          gsap.set(mark, { xPercent: rest });
+          word.style.clipPath = `inset(0 0 0 ${MARK_SHARE + rest}%)`;
+        };
+        applySlide();
+
+        const tl = gsap.timeline({ onComplete: finish });
+        // Stylesheets load without blocking the first paint; the overlay holds
+        // here until they are applied, so the page never lifts onto unstyled content.
+        tl.call(() => {
+          if (html.classList.contains("css-ready")) return;
+          tl.pause();
+          const watch = new MutationObserver(() => {
+            if (html.classList.contains("css-ready")) { watch.disconnect(); tl.resume(); }
+          });
+          watch.observe(html, { attributes: true, attributeFilter: ["class"] });
+        }, [], 1.15);
+        // 1. The mark draws in as stripes that thicken to solid. This runs in CSS
+        //    (pl-draw, inlined in <head>) from the very first paint, so the logo
+        //    is on screen before any script. Hand over at its end state.
+        logo.style.animation = "none";
+        gsap.set(logo, { "--fill": "7px", "--shift": "0px" });
+        // 2. The mark slides left; "redge" unrolls out from behind it.
+        tl.to(slide, { p: 1, duration: 0.75, ease: "power3.inOut", onUpdate: applySlide }, 0.35)
+          // 3. Hold, then the logo breaks back into thin stripes and goes.
+          .to(logo, { "--fill": "0px", "--shift": "10px", duration: 0.25, ease: "power2.in" }, 1.25);
+
+        // 4. Exit. Low-power devices wipe one surface; others shutter the tile grid.
+        if (lowPower) {
+          tl.to(root, { clipPath: "inset(0 0 100% 0)", duration: 0.55, ease: "power3.inOut" }, 1.5);
+          return;
+        }
+        // Alternate rows close toward opposite sides.
+        rows.forEach((row, r) => {
+          const fromRight = r % 2 === 0;
+          tl.to(row.children, {
+            scaleX: 0,
+            transformOrigin: fromRight ? "0% 50%" : "100% 50%",
+            duration: 0.4,
+            ease: "power3.inOut",
+            stagger: { each: 0.022, from: fromRight ? "end" : "start" },
+          }, 1.45 + r * 0.04);
+        });
       }, root);
       ctx = c;
     })();
@@ -74,25 +110,18 @@ export function Preloader() {
 
   return (
     <div ref={rootRef} className="preloader" aria-hidden="true">
-      <div className="pl-stage">
-        <div className="pl-records">
-          {sources.map((s, i) => (
-            <div key={s} className={`pl-record${i === 2 ? " pending" : ""}`}>
-              {/* Drawn via CSS content, not a text node: the preloader renders
-                  before <main> in the DOM, so as real text these five source
-                  names were the first words a crawler met — ahead of the brand
-                  and the nav. Screen readers were already covered by the
-                  aria-hidden root. */}
-              <span className="pl-label" data-label={s} />
-              <span className="pl-dot" />
-              <i /><i />
-            </div>
-          ))}
-        </div>
-        <div className="pl-line" />
-        <div className="pl-signal" />
+      <div className="pl-tiles">
+        {Array.from({ length: ROWS }, (_, r) => (
+          <div key={r} className="pl-row">
+            {Array.from({ length: COLS }, (_, c) => <span key={c} />)}
+          </div>
+        ))}
+      </div>
+      <div className="pl-logo">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="pl-mark" src="/favicon.svg" width={72} height={72} alt="" aria-hidden="true" />
+        <img className="pl-word-layer" src="/brand/bredge-logo-preloader.webp" alt="" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="pl-mark-layer" src="/brand/bredge-logo-preloader.webp" alt="" />
       </div>
     </div>
   );

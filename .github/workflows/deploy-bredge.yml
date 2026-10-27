@@ -23,7 +23,7 @@ jobs:
   # Keep this required status in the release DAG, on every PR and main run.
   validator-tests:
     name: validator-tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -38,7 +38,7 @@ jobs:
 
   bredge-secret-scan:
     name: bredge-secret-scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: read
@@ -56,7 +56,7 @@ jobs:
 
   bredge-quality:
     name: bredge-quality
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     # These are PUBLIC measurement IDs only, not credentials. Compile them
     # into the same tested artifact that the protected release later deploys.
@@ -194,7 +194,7 @@ jobs:
   bredge-release-preflight:
     name: bredge-release-preflight
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Reject non-main or mismatched release requests
         env:
@@ -213,7 +213,7 @@ jobs:
     name: bredge-production
     needs: [bredge-quality, bredge-secret-scan, validator-tests, bredge-release-preflight]
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     environment:
       name: Cloudflare

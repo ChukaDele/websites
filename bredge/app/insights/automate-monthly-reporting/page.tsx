@@ -1,26 +1,22 @@
-import type { Metadata } from "next";
 import { PageShell } from "../../../components/site/PageShell";
-import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram } from "../../../components/insights/Article";
-import { pageMetadata } from "../../../lib/seo";
+import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram, Example, Pull, ForYourDataPerson } from "../../../components/insights/Article";
+import { insightMetadata } from "../../../lib/insights";
 
 const SLUG = "automate-monthly-reporting";
 const TOC = [
-  { id: "short-answer", label: "The short answer" },
-  { id: "usual", label: "What this usually looks like" },
+  { id: "how", label: "The safe way to automate" },
+  { id: "usual", label: "Why monthly reports become fragile" },
   { id: "try-first", label: "Map it before you automate it" },
   { id: "what-it-tells-you", label: "What the map tells you" },
   { id: "underneath", label: "What to move, and what to keep in Excel" },
-  { id: "good", label: "What good looks like" },
+  { id: "example", label: "Worked example: a multi-branch pack" },
+  { id: "good", label: "What a controlled report looks like" },
   { id: "wrong", label: "Common ways this goes wrong" },
   { id: "boundary", label: "When this becomes a system" },
-  { id: "decision", label: "A decision guide" },
+  { id: "decision", label: "Where each step belongs" },
 ];
 
-export const metadata: Metadata = pageMetadata({
-  title: "How to Automate Monthly Management Reporting Safely | The Bredge",
-  description: "Automate monthly management and board reporting without adding fragility — what to move upstream, what Excel should still do, and how to keep it auditable.",
-  path: "/insights/automate-monthly-reporting",
-});
+export const metadata = insightMetadata(SLUG);
 
 export default function Page() {
   return (
@@ -42,7 +38,7 @@ export default function Page() {
 
               {/* ── TOP BAND: manual, fragile ───────────────────────── */}
               <rect x="16" y="16" width="9" height="9" fill="#f0bf6c" />
-              <text x="31" y="24" fontSize="9">BEFORE — MANUAL, REBUILT BY HAND</text>
+              <text x="31" y="24" fontSize="9">BEFORE: MANUAL, REBUILT BY HAND</text>
 
               {/* source stack */}
               <rect x="16" y="44" width="70" height="20" fill="#f3f0e8" stroke="rgba(20,35,33,.35)" />
@@ -79,7 +75,7 @@ export default function Page() {
 
               {/* ── BOTTOM BAND: controlled, tested ─────────────────── */}
               <rect x="16" y="162" width="9" height="9" fill="#90d26f" />
-              <text x="31" y="170" fontSize="9">AFTER — CONTROLLED, TESTED, AUDITABLE</text>
+              <text x="31" y="170" fontSize="9">AFTER: CONTROLLED, TESTED, AUDITABLE</text>
 
               {/* source stack */}
               <rect x="16" y="196" width="70" height="20" fill="#f3f0e8" stroke="rgba(20,35,33,.35)" />
@@ -111,7 +107,7 @@ export default function Page() {
 
               {/* excel last mile */}
               <rect x="400" y="200" width="104" height="48" fill="#f3f0e8" stroke="rgba(20,35,33,.35)" />
-              <text x="452" y="220" textAnchor="middle" fontSize="9">EXCEL —</text>
+              <text x="452" y="220" textAnchor="middle" fontSize="9">EXCEL:</text>
               <text x="452" y="234" textAnchor="middle" fontSize="9">LAST MILE</text>
               <text x="452" y="262" textAnchor="middle" fontSize="7" fill="#4a5a54">judgement · layout</text>
 
@@ -125,16 +121,17 @@ export default function Page() {
           </Diagram>
         }
       >
-        <section id="short-answer">
-          <h2>The short answer</h2>
-          <p>The safe way to automate a monthly report is to separate the mechanical work from the judgement, and to add checks so that automation cannot fail silently.</p>
-          <p>Automate the parts that are mechanical and repeatable: collecting the data, joining it, calculating the figures, and checking them. Move that work upstream, into tested logic that runs the same way every month, rather than leaving it inside a workbook that one person rebuilds by hand. Keep the spreadsheet for the last mile: the judgement, the commentary, and the presentation that a person still has to do.</p>
+        <section id="how">
+          <h2>How do you automate monthly management reporting safely?</h2>
+          <p>Separate the mechanical work from the judgement, and add checks so that automation cannot fail silently. Automate the parts that are mechanical and repeatable: collecting the data, joining it, calculating the figures, and checking them. Move that work upstream, into tested logic that runs the same way every month, rather than leaving it inside a workbook that one person rebuilds by hand. Keep the spreadsheet for the last mile: the judgement, the commentary, and the presentation that a person still has to do.</p>
           <p>Excel is not the problem. A spreadsheet is an excellent place to shape a final view and add human judgement. It is a poor place to store the definitive calculation for a report that several people depend on every month. The fix is to give each part of the work the right home, not to ban the tool.</p>
-          <p>Above all, add review controls. Automation without checks does not remove fragility; it hides it. A pipeline that breaks quietly is worse than a manual step that breaks loudly, because no one notices until the wrong number is already in the board pack: the monthly summary that leadership relies on.</p>
+          <p>Above all, add review controls.</p>
+          <Pull>Automation without checks does not remove fragility; it hides it. A pipeline that breaks quietly is worse than a manual step that breaks loudly.</Pull>
+          <p>This is the pillar guide for management and board reporting. If your immediate pain is cleaning the same Excel files every month, the <a href="/insights/excel-cleaning-automation">Power Query clean-up guide</a> is the tactical companion. If you would rather have it built, this is what our <a href="/services/data-projects">reporting automation projects</a> do.</p>
         </section>
 
         <section id="usual">
-          <h2>What this usually looks like</h2>
+          <h2>Why monthly management reports become fragile</h2>
           <p>Most monthly reporting starts as a sensible spreadsheet and grows into something no one meant to build.</p>
           <p>The routine is familiar. Someone exports data from several systems: the CRM, the billing platform, the general ledger, perhaps a payroll or operations tool. They paste each export into a master workbook. They line the exports up by hand, matching a customer here and an account code there. Formulas then turn the raw rows into the figures the board sees. Finally, the numbers are copied into a formatted pack and sent out.</p>
           <p>This works, until it does not. The joins are manual, so a renamed column or an extra header row breaks them without warning. The calculations live in cells that only one person fully understands. The workbook has become load-bearing: a single tab, formula, or paste can change a reported number, and nothing flags it. When that person is on leave, the report stops. When a figure looks wrong, no one can quickly say why, because there is no record of where each number came from.</p>
@@ -142,6 +139,7 @@ export default function Page() {
         </section>
 
         <section id="try-first">
+          <h2>How to map a monthly report before you automate it</h2>
           <TryThisFirst title="Map it before you automate it">
             <p>Before you automate anything, map what you actually do. Automating a process you have not mapped usually just automates the mess. Spend an hour building a <strong>Monthly Reporting Automation Map</strong>: a plain list of every step in the current report, from raw source to final pack. For each report, write down:</p>
             <ol>
@@ -152,6 +150,7 @@ export default function Page() {
               <li><strong>The single points of failure.</strong> Mark any step that only one person can do, or that breaks without warning.</li>
               <li><strong>What must be auditable.</strong> Mark any figure that has to be traced back to its source, or defended to auditors or the board.</li>
             </ol>
+            <p>The <a href="/resources/reporting-automation-map">monthly reporting automation map</a> is a printable template for this exercise.</p>
           </TryThisFirst>
         </section>
 
@@ -165,12 +164,13 @@ export default function Page() {
         </section>
 
         <section id="underneath">
-          <h2>What to move, and what to keep in Excel</h2>
+          <h2>What to move upstream, and what to keep in Excel</h2>
           <p>Underneath the tidy version of this workflow are a few well-understood engineering ideas. None is exotic; together they are what separate a controlled report from a fragile one.</p>
           <p><strong>Upstream transformation</strong> means doing the joining and calculating before the spreadsheet, in a place built for it, usually SQL over a database or data warehouse, rather than in workbook formulas. To transform data is to turn raw source rows into the shaped figures a report needs. The output is a <strong>tested data model</strong>: a defined table, with a clearly stated grain (what one row represents, for example one account per month), that the report reads from. The logic lives in version-controlled code, not in cells, so it can be reviewed, tested, and reused.</p>
           <p><strong>Data quality tests</strong> are automated assertions about that model. An assertion is a rule that must always hold; if it does not, the run fails and stops. Typical assertions check row counts (did every source arrive?), nulls (is any key or amount missing?), and totals (does the model tie back to a trusted control figure, such as the ledger balance?). These tests are what stop a broken join from ever reaching the board pack.</p>
+          <ForYourDataPerson title="The P&amp;L model and two tests, in SQL">
           <p>A small, concrete example. The model below builds one profit-and-loss line per account per month, joined on a resolved account key rather than on the account name. Two tests follow it. Each test is written so that it returns rows only when something is wrong. A healthy run returns nothing.</p>
-          <pre>{`-- model: mart_monthly_pnl
+            <pre>{`-- model: mart_monthly_pnl
 -- Grain: one row per account per month.
 select
     date_trunc('month', gl.posted_at) as period,
@@ -193,26 +193,50 @@ where coa.report_line is null;
 select period, line, amount
 from mart_monthly_pnl
 where line = 'cost_of_sales' and amount > 0;`}</pre>
-          <p>The first test lists any ledger entry that did not match a report line — a broken join, the classic silent failure of a manual workbook. The second lists any cost line that has posted a positive amount, which usually signals a sign or mapping error. Because each query returns rows only on failure, the orchestrator can treat any returned row as a reason to stop and raise an alert, before anyone sees the number.</p>
-          <p><strong>Refresh and orchestration timing</strong> decide when this runs. Orchestration is simply the scheduling and ordering of the steps (extract, transform, test, publish) so that each waits for the one before it. The schedule must fit the <strong>close process</strong>: the monthly routine by which each source is finalised and the period is locked. Running before the close produces numbers that are correct only for unfinished data.</p>
+            <p>The first test lists any ledger entry that did not match a report line: a broken join, the classic silent failure of a manual workbook. The second lists any cost line that has posted a positive amount, which usually signals a sign or mapping error. Because each query returns rows only on failure, the orchestrator can treat any returned row as a reason to stop and raise an alert, before anyone sees the number.</p>
+          </ForYourDataPerson>
+          <p><strong>Refresh and orchestration timing</strong> decide when this runs. Orchestration is the scheduling and ordering of the steps (extract, transform, test, publish) so that each waits for the one before it. The schedule must fit the <strong>close process</strong>: the monthly routine by which each source is finalised and the period is locked. Running before the close produces numbers that are correct only for unfinished data.</p>
           <p><strong>Exception handling</strong> is the plan for when a test fails. A controlled workflow does not carry on regardless; it stops, tells a named person, and records what happened. <strong>Source ownership</strong> makes that possible: each input has an owner who is responsible for it and who is contacted when it breaks. <strong>Distribution</strong> (sending the finished pack to its readers) happens only after the checks pass and a person signs off, not automatically the moment the pipeline finishes.</p>
           <p>Finally, <strong>auditability</strong>, or lineage. Lineage is the traceable path from a figure in the final pack, back through the model, to the exact source rows that produced it. With lineage, any number can be explained and defended. Without it, a disputed figure becomes an argument no one can settle.</p>
         </section>
 
+        <section id="example">
+          <h2>Worked example: automating a multi-branch management pack</h2>
+          <Example setting="UK distributor with a US branch · SAP Business One, Sage payroll, Excel" title="From five branch workbooks to one checked pack">
+            <p>Today, each of five branches exports a sales and stock report from SAP Business One, payroll comes from Sage, and the finance lead spends the first week of the month aligning branch codes and cost centres in Excel before writing commentary.</p>
+            <ol>
+              <li><strong>Mechanical, moved upstream:</strong> a scheduled extract from a read-only copy of the SAP Business One database; one mapping table for branches, cost centres and report lines; the P&amp;L model above.</li>
+              <li><strong>Checks:</strong> every journal maps to a report line; branch totals tie to the trial balance; payroll cost ties to the Sage payroll summary.</li>
+              <li><strong>Judgement, kept in Excel:</strong> accruals, one-off adjustments, variance commentary and the board narrative.</li>
+            </ol>
+            <p>One branch trades in US dollars, so the pack shows growth two ways, with the rates stored once in a table and applied by the model, not typed into cells:</p>
+            <div className="in-table-wrap"><table>
+              <thead><tr><th>View</th><th>Q3 last year</th><th>Q3 this year</th><th>Growth</th></tr></thead>
+              <tbody>
+                <tr><td>US branch revenue in dollars</td><td>$1.50m</td><td>$1.65m</td><td>+10.0%</td></tr>
+                <tr><td>Reported in sterling (1.25 then 1.35 $ per £)</td><td>£1.20m</td><td>£1.22m</td><td>+1.9%</td></tr>
+                <tr><td>Constant currency (both at 1.25 $ per £)</td><td>£1.20m</td><td>£1.32m</td><td>+10.0%</td></tr>
+              </tbody>
+            </table></div>
+            <p>The branch grew 10%; the stronger pound hid most of it in the reported figure. The rates are placeholders. Use the rate source your auditors accept, and see <a href="/insights/multi-entity-consolidation">multi-entity consolidation and FX</a> when separate legal entities are involved.</p>
+          </Example>
+          <p>The same shape works for a SaaS board pack: Stripe and Xero or QuickBooks upstream, MRR and cash tied to the ledger by tests, and commentary kept with the finance lead.</p>
+        </section>
+
         <section id="good">
-          <h2>What good looks like</h2>
+          <h2>What a controlled monthly report looks like</h2>
           <p>A controlled monthly report looks calm, because the fragile parts have been designed out.</p>
           <ul>
             <li><strong>The sources are owned.</strong> Each input has a named owner and a known refresh time, so there is no mystery about when data is ready or who to ask.</li>
             <li><strong>The logic is tested.</strong> Joins and calculations live in version-controlled code with data quality tests, not in workbook cells. A broken join fails a test instead of quietly changing a number.</li>
             <li><strong>The refresh is timed to the close.</strong> The pipeline runs after the last source is final, never before, so the figures are built on complete data.</li>
-            <li><strong>Excel does the last mile.</strong> The spreadsheet is where a person adds judgement, commentary, and presentation — the work that genuinely needs a human. It reads from the tested model; it does not re-derive the numbers.</li>
+            <li><strong>Excel does the last mile.</strong> The spreadsheet is where a person adds judgement, commentary, and presentation: the work that genuinely needs a human. It reads from the tested model; it does not re-derive the numbers.</li>
             <li><strong>There is an audit trail.</strong> Every figure can be traced back to its source, and every run records what it did and whether the checks passed.</li>
           </ul>
         </section>
 
         <section id="wrong">
-          <h2>Common ways this goes wrong</h2>
+          <h2>Common reporting automation mistakes</h2>
           <p>The same few mistakes turn automation into a new kind of fragility.</p>
           <ul>
             <li><strong>Automating the mess unchanged.</strong> Wrapping a script around a broken manual process just makes the same errors faster and harder to see. Map and fix the process first.</li>
@@ -225,13 +249,13 @@ where line = 'cost_of_sales' and amount > 0;`}</pre>
         </section>
 
         <section id="boundary">
-          <h2>When this becomes a system</h2>
+          <h2>When monthly reporting needs a system</h2>
           <p>A single, well-owned spreadsheet, updated calmly once a month, may not need any of this. Do not build a pipeline to solve a problem you do not have. But a monthly report tends to cross a line (from a personal spreadsheet into a small system that the business runs on), and past that line the manual approach costs more than it saves.</p>
           <SystemBoundary
             intro="You have moved from a helpful spreadsheet to a reporting system when several of these are true at once:"
             conditions={[
               "Several sources feed the report, and they have to be joined the same way every month.",
-              "The calculation must be trusted and repeatable — the same inputs must always give the same figure.",
+              "The calculation must be trusted and repeatable: the same inputs must always give the same figure.",
               "It must run to a deadline every month, tied to the close, not when someone finds the time.",
               "Failures need to be caught before distribution, not discovered by a reader of the board pack.",
               "More than one person depends on it, yet no one clearly owns it end to end.",
@@ -240,7 +264,7 @@ where line = 'cost_of_sales' and amount > 0;`}</pre>
         </section>
 
         <section id="decision">
-          <h2>A decision guide</h2>
+          <h2>Where each reporting step belongs</h2>
           <p>Once the map is done, most steps sort cleanly into one of three homes: an upstream model, a review control, or the Excel last mile. Use this as a starting point.</p>
           <table className="article-table">
             <thead>
@@ -298,7 +322,9 @@ where line = 'cost_of_sales' and amount > 0;`}</pre>
               </tr>
             </tbody>
           </table>
-          <p>The pattern holds across almost every monthly report: move the mechanical middle upstream into tested logic, wrap it in checks, and keep Excel for the judgement and presentation it is genuinely good at. That is the shape of most well-scoped <a href="/services/data-projects">reporting automation projects</a> — less dramatic than a rebuild, and far harder to break.</p>
+          <p>The pattern holds across almost every monthly report: move the mechanical middle upstream into tested logic, wrap it in checks, and keep Excel for the judgement and presentation it is genuinely good at. That is the shape of most well-scoped <a href="/services/data-projects">reporting automation projects</a>: less dramatic than a rebuild, and far harder to break.</p>
+          <p>Estimate the hours you would get back with the <a href="/resources/reporting-automation-map">reporting automation map</a>, and record each figure&rsquo;s definition in the <a href="/resources/kpi-dictionary-template">KPI dictionary template</a>. Groups with entities in several currencies should read <a href="/insights/multi-entity-consolidation">how to model multi-entity consolidation and FX</a>. When the monthly close depends on one person, <a href="/services/data-projects">a reporting automation project</a> moves the mechanical steps into tested logic.</p>
+          <p>If your accounting system is QuickBooks Online or Xero, read <a href="/insights/connect-quickbooks-xero-to-power-bi">how to connect QuickBooks Online and Xero to Power BI</a> first, because the connection options changed in 2025 and 2026. For finished packs, see <a href="/work">work we have delivered</a>.</p>
         </section>
       </ArticleLayout>
     </PageShell>

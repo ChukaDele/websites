@@ -1,26 +1,23 @@
-import type { Metadata } from "next";
 import { PageShell } from "../../../components/site/PageShell";
-import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram } from "../../../components/insights/Article";
-import { pageMetadata } from "../../../lib/seo";
+import { ArticleLayout, TryThisFirst, SystemBoundary, Diagram, Example, Pull, PlainEnglish, ForTheBusiness, ForYourDataPerson } from "../../../components/insights/Article";
+import { insightMetadata } from "../../../lib/insights";
 
 const SLUG = "one-customer-view";
 const TOC = [
-  { id: "short-answer", label: "The short answer" },
-  { id: "usual", label: "What this usually looks like" },
-  { id: "try-first", label: "You can test this yourself" },
-  { id: "what-it-tells-you", label: "What the result tells you" },
-  { id: "underneath", label: "What is happening underneath" },
+  { id: "what-is", label: "What matching customers means" },
+  { id: "usual", label: "Why joining on name or email fails" },
+  { id: "hubspot-stripe-xero", label: "HubSpot, Stripe and Xero IDs" },
+  { id: "try-first", label: "Measure your identity problem" },
+  { id: "what-it-tells-you", label: "What the exception rate tells you" },
+  { id: "example", label: "Worked example: UK phone numbers" },
+  { id: "underneath", label: "How identity resolution works" },
   { id: "good", label: "What good looks like" },
   { id: "wrong", label: "Common ways this goes wrong" },
   { id: "boundary", label: "When this becomes a system" },
-  { id: "decision", label: "A decision guide" },
+  { id: "decision", label: "Which matching approach to use" },
 ];
 
-export const metadata: Metadata = pageMetadata({
-  title: "How to Build One Customer View Across CRM, Billing and Product Data | The Bredge",
-  description: "Build a single customer view across CRM, billing and product data with identity resolution, canonical customer IDs, source precedence and exception handling.",
-  path: "/insights/one-customer-view",
-});
+export const metadata = insightMetadata(SLUG);
 
 export default function Page() {
   return (
@@ -93,29 +90,87 @@ export default function Page() {
           </Diagram>
         }
       >
-        <section id="short-answer">
-          <h2>The short answer</h2>
+        <section id="what-is">
+          <h2>What does it mean to match customers across systems?</h2>
           <p>A single customer view is one reliable record of each customer, assembled from every system that holds part of the picture. Most teams treat it as a reporting task. Build a customer 360 dashboard, the thinking goes, and the problem is solved. It is not. A single customer view is an identity problem first, and a reporting problem last.</p>
+          <PlainEnglish>
+            <p>Your CRM, billing, product and finance systems each keep their own list of customers, and the lists do not line up. Before any report can show one figure per customer, someone has to decide which records are the same customer, using rules everyone can see. Uncertain matches go to a person to check, not into the numbers.</p>
+            <ul>
+              <li><strong>Ask your team</strong>: out of 100 customers, how many match cleanly across every system?</li>
+              <li><strong>Expect back</strong>: one customer ID owned by the data model, written match rules, and a short exceptions list someone reviews.</li>
+            </ul>
+          </PlainEnglish>
           <p>Each system mints its own customer identifier. Your CRM (the sales system) knows a customer one way. Your billing platform knows the same customer another way. Your product database, your finance ledger and your support desk each hold a third, fourth and fifth identifier. None of them agree, because none of them were built to.</p>
-          <p>Before any dashboard can be trusted, you have to decide which records across these systems describe the same real customer. Then you map them to one <strong>canonical customer ID</strong>: the single identifier that everything else points to. This work is called <strong>identity resolution</strong>. Do it well and the dashboard is straightforward. Skip it and the dashboard is confidently wrong. A 360 view rendered on top of unresolved identities does not fix the identities; it hides them behind a clean chart.</p>
+          <p>Before any dashboard can be trusted, you have to decide which records across these systems describe the same real customer. Then you map them to one <strong>canonical customer ID</strong>: the single identifier that everything else points to. This work is called <strong>identity resolution</strong>. Do it well and the dashboard is straightforward. Skip it and the dashboard is confidently wrong.</p>
+          <Pull>A 360 view rendered on top of unresolved identities does not fix the identities. It hides them behind a clean chart.</Pull>
+          <p>The rest of this guide shows how to measure the problem yourself in an hour. If customers have to be resolved across systems every day, that is the core of our <a href="/services/data-projects">data reconciliation and identity projects</a>.</p>
         </section>
 
         <section id="usual">
-          <h2>What this usually looks like</h2>
+          <h2>Why joining on company name or email fails</h2>
           <p>On paper you have five systems. In practice you have five different customers who happen to be the same company.</p>
           <p>Suppose a company, Northwind Ltd, buys from you. Sales created the account as &ldquo;Northwind Limited&rdquo;. Billing set it up as &ldquo;Northwind Ltd&rdquo; under a different registered address. The product system knows them only by the email domain of the first user who signed up. Finance carries them under a debtor code inherited from the old accounting system. Support has two tickets filed under two slightly different names. Every one of these is locally correct. Together they are a mess.</p>
-          <p>When someone asks a reasonable question — how much is Northwind worth, are they growing, are they at risk of leaving — the answer depends on which system you start from. So you try to join the systems together. The obvious keys are email address and company name, so those are what people reach for. The result is worse, not better.</p>
+          <p>When someone asks a reasonable question (how much is Northwind worth, are they growing, are they at risk of leaving), the answer depends on which system you start from. So you try to join the systems together. The obvious keys are email address and company name, so those are what people reach for. The result is worse, not better.</p>
           <p>Names are not unique, and they change. Two real companies can share a name. One company can be written five ways. Email addresses belong to people, not companies, and people move on. Joining on either key produces two failures at once. It merges customers who are not the same, and it splits customers who are. This is the same root cause behind <a href="/insights/why-dashboards-disagree">why finance and sales numbers disagree</a>: identity, grain and definitions, not the chart itself.</p>
         </section>
 
+        <section id="hubspot-stripe-xero">
+          <h2>How to link HubSpot companies, Stripe customers and Xero contacts</h2>
+          <ForTheBusiness>Shared IDs make every new customer match automatically, so only old records need rules and review.</ForTheBusiness>
+          <p>Each of the three systems mints its own ID: a HubSpot company ID, a Stripe customer ID (<code>cus_</code> followed by letters and digits) and a Xero ContactID. Rules and fuzzy matching are the fallback. The first fix is to make the systems carry each other&rsquo;s IDs from now on:</p>
+          <ul>
+            <li><strong>Stripe</strong>: store the HubSpot company ID in the customer&rsquo;s <a href="https://docs.stripe.com/metadata" target="_blank" rel="noopener noreferrer">metadata</a> when the customer is created, for example <code>hubspot_company_id</code>.</li>
+            <li><strong>HubSpot</strong>: add a <a href="https://knowledge.hubspot.com/properties/create-and-edit-properties" target="_blank" rel="noopener noreferrer">custom company property</a> for the Stripe customer ID.</li>
+            <li><strong>Xero</strong>: Xero contacts have an <a href="https://developer.xero.com/documentation/api/accounting/contacts" target="_blank" rel="noopener noreferrer">AccountNumber</a> field. If your Stripe-to-Xero sync app does not already use it, store the Stripe customer ID there.</li>
+          </ul>
+          <p>Historical records still need matching. Normalised email domain is the strongest rule for companies, as long as free email providers are excluded: two customers with Gmail addresses are not the same company.</p>
+          <ForYourDataPerson title="Candidate matches between Stripe customers and HubSpot companies, in SQL">
+            <p>This Snowflake query matches on the ID in Stripe metadata first, then on email domain. Column names depend on your connector; the ones below follow a typical Stripe and HubSpot sync with metadata stored as JSON:</p>
+            <pre>{`with stripe as (
+    select
+        id                                    as stripe_customer_id,
+        metadata:hubspot_company_id::string   as hubspot_company_id,
+        lower(split_part(email, '@', 2))      as email_domain
+    from raw_stripe.customer
+),
+hubspot as (
+    select
+        id                                    as hubspot_company_id,
+        iff(startswith(lower(domain), 'www.'),
+            substr(lower(domain), 5),
+            lower(domain))                    as domain
+    from raw_hubspot.company
+)
+select
+    s.stripe_customer_id,
+    coalesce(s.hubspot_company_id, h.hubspot_company_id) as hubspot_company_id,
+    case
+        when s.hubspot_company_id is not null then 'id_in_metadata'
+        when h.hubspot_company_id is not null then 'email_domain'
+        else 'unmatched'
+    end as match_method
+from stripe as s
+left join hubspot as h
+    on  s.hubspot_company_id is null
+    and h.domain = s.email_domain
+    and s.email_domain not in (
+        'gmail.com', 'googlemail.com', 'outlook.com', 'hotmail.com',
+        'yahoo.com', 'icloud.com', 'live.com', 'aol.com'
+    );`}</pre>
+            <p>Check the result before you trust it. If one Stripe customer returns more than one row, several HubSpot companies share that domain: send those to the exception queue rather than picking one.</p>
+          </ForYourDataPerson>
+        </section>
+
         <section id="try-first">
+          <h2>How to measure your customer identity problem in an hour</h2>
+          <ForTheBusiness>One hour tells you whether a single customer view is a modelling job or a clean-up of the source systems.</ForTheBusiness>
           <TryThisFirst title="You can test this yourself">
             <p>You do not need a warehouse to find out how bad the identity problem is. You need a spreadsheet and an hour. Work through this Customer Identity Mapping Worksheet in order.</p>
             <ol>
               <li>List each source system in a row: CRM, billing, product, finance, support. Beside each, write the name of its customer key, the field it uses to identify a customer.</li>
               <li>Pick one system as the <strong>source of record for identity</strong>: the system you trust most to say a customer exists. This is your starting point, not the winner for every attribute.</li>
               <li>Define your <strong>deterministic match rules</strong>: exact, rule-based matches on a shared key. For example: &ldquo;billing customer matches CRM account when the company registration numbers are identical.&rdquo; Write the rules down. If two systems share no reliable key, record that; it is a finding.</li>
-              <li>Take a sample of customers from your source of record — a hundred is enough. For each one, apply your rules and try to find the matching record in every other system.</li>
+              <li>Take a sample of customers from your source of record. A hundred is enough. For each one, apply your rules and try to find the matching record in every other system.</li>
               <li>Count how many match cleanly on a shared key in every system. These are your resolved customers.</li>
               <li>Put every customer that did not match cleanly into an exception list: no match, an ambiguous match, or more than one candidate match.</li>
               <li>Divide the exception count by the sample size. That is your <strong>exception rate</strong>. Write it at the top of the sheet.</li>
@@ -124,15 +179,35 @@ export default function Page() {
         </section>
 
         <section id="what-it-tells-you">
-          <h2>What the result tells you</h2>
+          <h2>What your exception rate tells you</h2>
           <p>The exception rate is the headline number. It is the share of customers that did not resolve cleanly to a single identity across your systems.</p>
           <p>A low rate means your systems already share enough reliable identifiers. Most records line up on a shared key, and only a handful need a human to look at them. In that case a single customer view is mostly a modelling exercise, and it is well worth doing.</p>
           <p>A high rate means the problem is upstream, in the systems themselves. They were never designed to reference each other. No amount of dashboard work will close that gap, because the gap is in the data, not the display.</p>
           <p>Match quality matters as much as the count. A clean match on a shared, stable key (a company registration number, or an account ID that one system passes to another) is trustworthy. A match on a name, or on a similarity score, is a guess with a probability attached. Two teams can report a 90% match rate and still be standing on almost entirely guesses. So count the matches, but grade them too. A worksheet that separates &ldquo;matched on a shared key&rdquo; from &ldquo;matched on a name&rdquo; tells you far more than a single percentage.</p>
         </section>
 
+        <section id="example">
+          <h2>Worked example: matching small-business customers on UK phone numbers</h2>
+          <Example setting="UK trade supplier · HubSpot, Sage 200, delivery app" title="One customer, four records, three branches">
+            <p>A trade supplier wants revenue per customer across its Leeds, Bradford and Wakefield branches. Each branch created its own account code in Sage 200. Reps log visits in HubSpot, and drivers confirm deliveries in a separate app. Most customers are sole traders, so there is no company number to match on.</p>
+            <p>Phone number is the only key all three systems share, but it is written several ways. The numbers below are from Ofcom&rsquo;s range reserved for fiction, not real customers:</p>
+            <div className="in-table-wrap"><table>
+              <thead><tr><th>System</th><th>Record</th><th>Phone as stored</th><th>Normalised (E.164)</th></tr></thead>
+              <tbody>
+                <tr><td>Sage 200 (Leeds)</td><td>LEE0412 J Patel Plumbing</td><td>07700 900123</td><td>+447700900123</td></tr>
+                <tr><td>Sage 200 (Bradford)</td><td>BRA0977 Patel Plumbing &amp; Heating</td><td>+44 (0)7700 900123</td><td>+447700900123</td></tr>
+                <tr><td>HubSpot</td><td>Jay Patel, Patel P&amp;H</td><td>447700900123</td><td>+447700900123</td></tr>
+                <tr><td>Delivery app</td><td>J. Patel</td><td>07700900123</td><td>+447700900123</td></tr>
+              </tbody>
+            </table></div>
+            <p>Normalising to E.164, the international format, makes a deterministic rule possible: same normalised number, same customer. The Bradford record shows the classic trap. Stripping spaces and brackets from &ldquo;+44 (0)7700 900123&rdquo; gives +4407700900123, which matches nothing. The rule must drop the trunk zero after +44. A library such as Google&rsquo;s libphonenumber handles these cases. Numbers shared by several businesses, such as a shared office line, go to the exception queue rather than being merged. If 18 of a sample of 100 customers land there, the exception rate is 18%: high enough to need a routine, not a one-off clean-up.</p>
+          </Example>
+          <p>The same pattern applies in a SaaS stack: HubSpot company records, Stripe customers and product workspaces usually share a domain or a Stripe customer ID that can be passed between systems, and that shared ID is worth more than any fuzzy match.</p>
+        </section>
+
         <section id="underneath">
-          <h2>What is happening underneath</h2>
+          <h2>How identity resolution works: deterministic, probabilistic and the rest</h2>
+          <ForTheBusiness>These rules decide whether customer counts, revenue per customer and churn are right.</ForTheBusiness>
           <p>The worksheet is a manual version of what a real system does continuously. Here are the parts, in plain English first and then precisely.</p>
           <p><strong>Deterministic matching</strong> is exact, rule-based matching on a shared key. If the CRM account and the billing customer carry the same company registration number, they are the same customer. There is no judgement involved. Deterministic matching is fast, explainable and safe. Its only limit is that it needs a shared key to exist.</p>
           <p><strong>Probabilistic matching</strong>, also called fuzzy matching, is what you use when no shared key exists. It scores how similar two records are (on name, address, domain and other fields) and treats a high enough score as a match. It is useful, and it is dangerous. A high score is a probability, not a fact. The characteristic failure is the <strong>false merge</strong>: two genuinely different customers scored as one, silently collapsed into a single record. A false merge is hard to spot and expensive to unpick, because once two customers share a canonical ID, every downstream figure blends them. Probabilistic matching should raise candidates for review, not decide silently.</p>
@@ -182,7 +257,7 @@ WHERE rn = 1
         </section>
 
         <section id="good">
-          <h2>What good looks like</h2>
+          <h2>What reliable customer matching looks like</h2>
           <ul>
             <li>Every source record maps to one canonical customer ID, and that ID is owned by the identity model, not by any operational system.</li>
             <li>Source precedence is written down, attribute by attribute, so anyone can say why a given name or address won.</li>
@@ -193,7 +268,7 @@ WHERE rn = 1
         </section>
 
         <section id="wrong">
-          <h2>Common ways this goes wrong</h2>
+          <h2>Common customer matching mistakes</h2>
           <ul>
             <li>Merging on email address or company name. Both are unstable and non-unique, and they split and merge customers at the same time.</li>
             <li>Forcing a 100% match. Real data never resolves completely. Chasing the last few per cent produces false merges that are worse than the honest gap they replace.</li>
@@ -204,7 +279,7 @@ WHERE rn = 1
         </section>
 
         <section id="boundary">
-          <h2>When this becomes a system</h2>
+          <h2>When customer matching needs a system</h2>
           <p>A one-off worksheet is the right first step, and for a small company with two systems and a low exception rate it may be enough for a while. It stops being enough when the same identities have to be resolved again and again, correctly, without a person redoing the matching each time. At that point the manual sheet becomes a liability, because every refresh reopens the same questions. This is the shape of our <a href="/services/data-projects">data reconciliation and identity projects</a>: a maintained identity map, documented precedence, and a monitored exception queue, rather than a spreadsheet rebuilt each month.</p>
           <SystemBoundary
             conditions={[
@@ -218,7 +293,7 @@ WHERE rn = 1
         </section>
 
         <section id="decision">
-          <h2>A decision guide</h2>
+          <h2>Which matching approach should you use?</h2>
           <p>Match the approach to the keys you actually have. Most working systems use more than one, in order: deterministic first, probabilistic only for what is left, and human review for the residue.</p>
           <table className="article-table">
             <thead>
@@ -251,6 +326,9 @@ WHERE rn = 1
               </tr>
             </tbody>
           </table>
+          <p>If your exception rate is high and you cannot tell why, a <a href="/data-diagnostic">Data Diagnostic</a> will show which systems need a shared key first. Identity is also the deepest cause of <a href="/insights/why-dashboards-disagree">revenue numbers that disagree</a>.</p>
+          <p>Once identities are resolved, attributes such as region or segment still change over time; <a href="/insights/customer-history-scd2">SCD type 2 in dbt</a> covers how to keep that history. The <a href="/resources/revenue-reconciliation-checklist">revenue reconciliation workbench</a> helps you measure how much of a revenue gap is caused by identity, and the <a href="/resources/data-project-brief-template">data project brief template</a> helps you scope the matching work.</p>
+          <p>Once customers are linked, the same IDs let you reconcile pipeline to billing; see <a href="/insights/crm-closed-won-vs-stripe">HubSpot closed-won vs Stripe billing</a>.</p>
         </section>
       </ArticleLayout>
     </PageShell>

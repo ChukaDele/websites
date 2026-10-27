@@ -24,6 +24,8 @@ export function pageMetadata({
   description: string;
   path: string;
 }): Metadata {
+  // Every page title names the brand (entity signal; SERP and browser tab).
+  if (!/the bredge/i.test(title)) title = `${title} | ${SITE}`;
   const url = path === "/" ? "/" : path;
   return {
     title,

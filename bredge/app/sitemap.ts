@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { articles } from "../lib/insights";
 import { resources } from "../lib/resources";
+import { ARTICLES as RESEARCH } from "../components/research/registry";
 
 const base = "https://thebredge.com";
 
@@ -13,10 +14,10 @@ const routes: Array<[string, number, MetadataRoute.Sitemap[number]["changeFreque
   ["/services/embedded-data-team", 0.8, "monthly"],
   ["/services/data-projects", 0.8, "monthly"],
   ["/data-diagnostic", 0.8, "monthly"],
+  ["/work", 0.8, "monthly"],
+  ["/research", 0.8, "weekly"],
   ["/how-we-work", 0.6, "monthly"],
-  ["/about", 0.6, "monthly"],
   ["/insights", 0.7, "weekly"],
-  ["/research", 0.7, "monthly"],
   ["/resources", 0.6, "monthly"],
   ["/contact", 0.5, "monthly"],
 ];
@@ -25,5 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const pages = routes.map(([path, priority, changeFrequency]) => ({ url: `${base}${path}`, changeFrequency, priority }));
   const posts = articles.map((a) => ({ url: `${base}/insights/${a.slug}`, changeFrequency: "yearly" as const, priority: 0.6 }));
   const res = resources.map((r) => ({ url: `${base}/resources/${r.slug}`, changeFrequency: "yearly" as const, priority: 0.5 }));
-  return [...pages, ...posts, ...res];
+  // Research articles carry their real publication date.
+  const research = RESEARCH.map((a) => ({ url: `${base}/research/${a.slug}`, lastModified: a.published, changeFrequency: "monthly" as const, priority: 0.7 }));
+  return [...pages, ...research, ...posts, ...res];
 }

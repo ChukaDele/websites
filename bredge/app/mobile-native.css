@@ -302,10 +302,14 @@ html { scroll-padding-top: calc(90px + env(safe-area-inset-top, 0px)); }
 
 /* Coarse pointers shouldn't get stranded in hover-only decorative states. */
 @media (hover:none) {
-  .problem-card:hover { background: transparent; color: var(--ink); }
-  .problem-card:hover p { color: #66736d; }
-  .button:hover { background: var(--ink); }
-  .footer-grid:hover i { background: rgba(130,187,111,.04); transform:none; }
+  @media (hover: hover) and (pointer: fine) {
+  .problem-card:hover { background: transparent; color: var(--ink); } }
+  @media (hover: hover) and (pointer: fine) {
+  .problem-card:hover p { color: #66736d; } }
+  @media (hover: hover) and (pointer: fine) {
+  .button:hover { background: var(--ink); } }
+  @media (hover: hover) and (pointer: fine) {
+  .footer-grid:hover i { background: rgba(130,187,111,.04); transform:none; } }
   a:active, button:active { opacity: .9; }
 }
 

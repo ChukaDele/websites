@@ -1,0 +1,45 @@
+# Cache rules for files served by Workers Static Assets (before the Worker runs).
+# vinext only writes its own _headers when public/ has none, so this file must
+# carry the immutable rule for hashed build output itself.
+# Do not add a /* rule: Cloudflare joins the values of every matching rule,
+# which would corrupt the immutable header below.
+
+# Content-hashed build output (JS, CSS, fonts): never changes under a name.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Un-hashed files in public/ keep their names when replaced, so browsers
+# revalidate after a day (the ETag makes that a cheap 304) and caches may serve
+# them stale for a week while refetching.
+
+/brand/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/logos/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/how/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/research/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/insights/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/media/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/og.png
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/favicon*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/apple-touch-icon.png
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/icon-*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/site.webmanifest
+  Cache-Control: public, max-age=86400
+  Content-Type: application/manifest+json
+/llms.txt
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+  Content-Type: text/plain; charset=utf-8
+/llms-full.txt
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+  Content-Type: text/plain; charset=utf-8
+/.well-known/*
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400

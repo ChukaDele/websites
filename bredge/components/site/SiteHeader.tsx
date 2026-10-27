@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 const services = [
@@ -11,98 +11,208 @@ const services = [
   ["Data Diagnostic", "/data-diagnostic", "Find out what to fix first"],
 ];
 
-const primary = [
-  ["How we work", "/how-we-work"],
-  ["Insights", "/insights"],
-  ["About", "/about"],
+// Insights and Resources sit together under "Learn". Resources leads over
+// Research: the tools are what US and UK visitors use; the research series
+// stays one click away in the footer.
+const learn = [
+  ["Insights", "/insights", "Practical guides on data, analytics and reporting"],
+  ["Resources", "/resources", "Free working tools for data teams"],
 ];
 
-function Arrow() {
-  return <span aria-hidden="true" className="arrow">↗</span>;
-}
+const primary = [
+  ["Work", "/work"],
+  ["How we work", "/how-we-work"],
+];
+const [work, howWeWork] = primary;
 
-export function SiteHeader({ variant = "solid" }: { variant?: "solid" | "overlay" }) {
-  const [servicesOpen, setServicesOpen] = useState(false);
+/**
+ * Two-state header (Second Direction):
+ *  - At the top: a full-width static bar. Wordmark left, links centred,
+ *    "Schedule a call" as a quiet text link right.
+ *  - Once scrolled: a compact floating bar, centred near the top, with the
+ *    mark, the same links and a solid "Schedule a call" button.
+ * The switch is driven by an IntersectionObserver on a sentinel at the top of
+ * the page. Past the hero, a light scroll listener hides the floating bar while
+ * scrolling down and brings it back on any scroll up.
+ */
+export function SiteHeader({ variant = "solid", tone = "light" }: { variant?: "solid" | "overlay"; tone?: "light" | "dark" }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [scrollState, setScrollState] = useState<"top" | "hidden" | "compact">("top");
-  const headerRef = useRef<HTMLElement>(null);
+  const [scrolled, setScrolled] = useState(false);
+  const sentinelRef = useRef<HTMLSpanElement>(null);
   const pathname = usePathname() || "/";
   const servicesActive = pathname.startsWith("/services") || pathname === "/data-diagnostic";
-  const lock = servicesOpen || menuOpen;
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
-  // Never hide while a menu is open — derived, so no setState-in-effect.
-  const appliedState = lock && scrollState === "hidden" ? "compact" : scrollState;
-
-  // Adaptive header: hide on meaningful scroll-down, return compact on scroll-up.
+  // Escape closes the mobile menu and hands focus back to the visible toggle.
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let lastY = window.scrollY;
-    let acc = 0;
-    const THRESH = 16;   // accumulated movement to flip state (defeats trackpad noise)
-    const HIDE_AT = 140; // don't hide until past the fold-ish
-    let ticking = false;
-    const update = () => {
-      ticking = false;
-      const y = Math.max(0, window.scrollY);
-      const dy = y - lastY;
-      if ((dy > 0 && acc < 0) || (dy < 0 && acc > 0)) acc = 0; // reset on direction change
-      acc += dy;
-      const focusInside = headerRef.current?.contains(document.activeElement);
-      if (y < 80) setScrollState("top");
-      else if (lock || focusInside) setScrollState((s) => (s === "top" ? "compact" : s));
-      else if (acc > THRESH && y > HIDE_AT) { setScrollState("hidden"); acc = 0; }
-      else if (acc < -THRESH) { setScrollState("compact"); acc = 0; }
-      lastY = y;
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setMenuOpen(false);
+      const bar = scrolled ? ".navq-pill" : ".navq-bar";
+      headerRef.current?.querySelector<HTMLButtonElement>(`${bar} .navq-toggle`)?.focus();
     };
-    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [menuOpen, scrolled]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => setScrolled(!entry.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // Past the hero (and never before one full screen, so every page behaves
+  // the same), the floating bar gets out of the way while reading down and
+  // comes back the moment you scroll up.
+  const [hidden, setHidden] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    let last = window.scrollY, raf = 0;
+    const heroEnd = () => {
+      const first = document.querySelector("main > section");
+      const end = first ? first.getBoundingClientRect().bottom + window.scrollY : 0;
+      return Math.max(end, window.innerHeight);
+    };
+    const update = () => {
+      raf = 0;
+      const y = window.scrollY, dy = y - last;
+      if (Math.abs(dy) < 6) return;
+      last = y;
+      const focused = headerRef.current?.contains(document.activeElement);
+      setHidden(dy > 0 && y > heroEnd() - 80 && !focused);
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [lock]);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("scroll", onScroll); };
+  }, []);
+
+  // The mark always leads home; on the homepage itself it returns to the top.
+  const goHome = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (pathname !== "/") return;
+    e.preventDefault();
+    setMenuOpen(false);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+  };
+
+  const darkTop = tone === "dark" && !menuOpen;
 
   return (
     <>
-    <header ref={headerRef} className={`site-header${variant === "solid" ? " site-header--solid" : ""} is-${appliedState}`}>
-      <a className="brand" href="/" aria-label="The Bredge home"><img src="/brand/bredge-logo.svg" alt="The Bredge" width="80" height="31" /></a>
-
-      <nav className="site-nav" aria-label="Primary navigation">
-        <div
-          className={`nav-item has-menu${servicesOpen ? " open" : ""}${servicesActive ? " active" : ""}`}
-          onMouseEnter={() => setServicesOpen(true)}
-          onMouseLeave={() => setServicesOpen(false)}
-          onFocus={() => setServicesOpen(true)}
-          onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setServicesOpen(false); }}
-        >
-          <a href="/services" aria-haspopup="true" aria-expanded={servicesOpen}>Services <span className="chev" aria-hidden="true">▾</span></a>
-          <div className="nav-dropdown" role="menu">
-            {services.map(([label, href, blurb]) => (
-              <a key={href} href={href} role="menuitem"><b>{label}</b><small>{blurb}</small></a>
-            ))}
-          </div>
+      <span ref={sentinelRef} className="navq-sentinel" aria-hidden="true" />
+      <header ref={headerRef} className={`navq navq--${variant}${darkTop ? " navq--dark" : ""}${scrolled ? " is-scrolled" : ""}${hidden && !menuOpen ? " is-hidden" : ""}${menuOpen ? " is-menu" : ""}`}>
+        {/* Static bar */}
+        <div className="navq-bar" inert={scrolled || undefined} aria-hidden={scrolled || undefined}>
+          <a className="navq-logo" href="/" aria-label="The Bredge home" onClick={goHome}>
+            {darkTop ? (
+              <span className="navq-logo-dark">
+                <img className="navq-logo-word" src="/brand/bredge-logo-preloader.webp" alt="" />
+                <img className="navq-logo-mark" src="/brand/bredge-logo-preloader.webp" alt="" />
+              </span>
+            ) : (
+              <img src="/brand/bredge-logo.webp" alt="" width="80" height="31" />
+            )}
+          </a>
+          <NavLinks pathname={pathname} servicesActive={servicesActive} />
+          <a className="navq-text-cta" href="/schedule">Schedule a call <Chevron /></a>
+          <MenuToggle open={menuOpen} onToggle={() => setMenuOpen((v) => !v)} />
         </div>
-        {primary.map(([label, href]) => <a key={href} className={`nav-item${pathname === href ? " active" : ""}`} href={href} aria-current={pathname === href ? "page" : undefined}>{label}</a>)}
-      </nav>
 
-      <a className="button cta-accent button-small header-cta" data-cta="header_schedule" href="/schedule">Schedule a call <Arrow /></a>
+        {/* Floating bar, once scrolled */}
+        <div className="navq-pill" inert={!scrolled || undefined} aria-hidden={!scrolled || undefined}>
+          <a className="navq-mark" href="/" aria-label="The Bredge home" onClick={goHome}><span><img src="/brand/bredge-logo-preloader.webp" alt="" /></span></a>
+          <NavLinks pathname={pathname} servicesActive={servicesActive} />
+          <a className="navq-button" href="/schedule">Schedule a call</a>
+          <MenuToggle open={menuOpen} onToggle={() => setMenuOpen((v) => !v)} />
+        </div>
+      </header>
 
-      <button className="nav-toggle" aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen((v) => !v)}>
-        <span className={menuOpen ? "open" : ""} />
-      </button>
-    </header>
-
-    {menuOpen && (
-      <div className="mobile-menu">
-        <p className="mobile-eyebrow">SERVICES</p>
-        {services.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}
-        <p className="mobile-eyebrow">COMPANY</p>
-        {primary.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}
-        <a className="button cta-accent mobile-cta" href="/schedule" onClick={() => setMenuOpen(false)}>Schedule a call <Arrow /></a>
-      </div>
-    )}
+      {menuOpen && (
+        <div className="mobile-menu" id="site-mobile-menu">
+          <p className="mobile-eyebrow">SERVICES</p>
+          {services.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}
+          <p className="mobile-eyebrow">LEARN</p>
+          {learn.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}
+          <p className="mobile-eyebrow">COMPANY</p>
+          {primary.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}
+          <a className="button mobile-cta" href="/schedule" onClick={() => setMenuOpen(false)}>Schedule a call</a>
+        </div>
+      )}
     </>
+  );
+}
+
+function NavLinks({ pathname, servicesActive }: { pathname: string; servicesActive: boolean }) {
+  const learnActive = learn.some(([, href]) => pathname.startsWith(href));
+  return (
+    <nav className="navq-links" aria-label="Primary navigation">
+      <NavMenu label="Services" href="/services" items={services} active={servicesActive} />
+      <NavLink link={work} pathname={pathname} />
+      <NavMenu label="Learn" href="/insights" items={learn} active={learnActive} />
+      <NavLink link={howWeWork} pathname={pathname} />
+    </nav>
+  );
+}
+
+function NavLink({ link: [label, href], pathname }: { link: string[]; pathname: string }) {
+  const on = pathname === href;
+  return <a className={`navq-item${on ? " is-active" : ""}`} href={href} aria-current={on ? "page" : undefined}>{label}</a>;
+}
+
+/** A top-level item with a dropdown of links. */
+function NavMenu({ label, href, items, active }: { label: string; href: string; items: string[][]; active: boolean }) {
+  const [open, setOpen] = useState(false);
+  const panelId = `${useId()}-${label.toLowerCase()}`;
+  const triggerRef = useRef<HTMLAnchorElement>(null);
+  const escaped = useRef(false);
+  // Disclosure navigation (not an ARIA menu): opens on hover or focus, links
+  // are reached with Tab, Escape closes and returns focus to the trigger.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      const hadFocus = triggerRef.current?.parentElement?.contains(document.activeElement);
+      setOpen(false);
+      if (hadFocus) { escaped.current = true; triggerRef.current?.focus(); escaped.current = false; }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+  return (
+    <div
+      className={`navq-item navq-has-menu${open ? " is-open" : ""}${active ? " is-active" : ""}`}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => { if (!escaped.current) setOpen(true); }}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(false); }}
+    >
+      <a ref={triggerRef} href={href} aria-expanded={open} aria-controls={panelId}>{label} <span className="navq-plus" aria-hidden="true" /></a>
+      <div className="navq-dropdown" id={panelId}>
+        {items.map(([l, h, blurb]) => (
+          <a key={h} href={h}><b>{l}</b><small>{blurb}</small></a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MenuToggle({ open, onToggle }: { open: boolean; onToggle: () => void }) {
+  return (
+    <button className="navq-toggle" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} aria-controls="site-mobile-menu" onClick={onToggle}>
+      <span className={open ? "open" : ""} />
+    </button>
+  );
+}
+
+function Chevron() {
+  return (
+    <svg className="navq-chevron" viewBox="0 0 8 12" aria-hidden="true"><path d="M2 1.5 6.5 6 2 10.5" /></svg>
   );
 }

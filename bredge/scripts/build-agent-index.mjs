@@ -12,10 +12,9 @@ if(nodeMajor < 22 || (nodeMajor === 22 && nodeMinor < 18)){
 }
 // Evaluate TypeScript sources only after the runtime is known to support
 // built-in erasable TS stripping. Static imports execute too early for this.
-const [{ articles }, { resources }, { dataBriefs }] = await Promise.all([
+const [{ articles }, { resources }] = await Promise.all([
   import("../lib/insights.ts"),
   import("../lib/resources.ts"),
-  import("../lib/data-briefs.ts"),
 ]);
 const BASE = "https://thebredge.com";
 const out = new URL("../public/llms-full.txt", import.meta.url);
@@ -55,25 +54,13 @@ for (const item of articles) {
   lines.push(`Summary: ${safe(item.standfirst)}`);
   lines.push("");
 }
-lines.push("## Bredge original public-data briefs", "");
-for (const brief of dataBriefs) {
-  lines.push(`### ${safe(brief.title)}`);
-  lines.push(`URL: ${BASE}/research#${brief.slug}`);
-  lines.push(`Period: ${brief.period}`);
-  lines.push(`Finding: ${brief.number} — ${brief.unit}`);
-  lines.push(`Summary: ${safe(brief.summary)}`);
-  lines.push(`Source: ${safe(brief.source)}`);
-  lines.push(`Underlying primary source: ${brief.sourceUrl}`);
-  lines.push(`Caveats: ${safe(brief.limitations)}`);
-  lines.push("");
-}
 lines.push("## Public checklists and resources", "");
 for(const item of resources) {
   if (!articleSlugs.has(item.article)) throw Error("Resource points to an unknown Insight: "+item.slug);
   lines.push(`### ${safe(item.title)}`);
   lines.push(`URL: ${BASE}/resources/${encodeURIComponent(item.slug)}`);
   lines.push(`Type: ${safe(item.kind)}`);
-  lines.push(`Purpose: ${safe(item.intro)}`);
+  lines.push(`Purpose: ${safe(item.dek)}`);
   lines.push(`Related evidence and background: ${BASE}/insights/${encodeURIComponent(item.article)}`);
   lines.push("");
 }
