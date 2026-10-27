@@ -36,7 +36,7 @@ export function ResourceIndex({ items, icpLabels, topics }: { items: ResourceCar
           <li key={r.slug} hidden={!visible.has(r.slug)}>
             <a className="in-card" href={`/resources/${r.slug}`}>
               <span className="in-media" aria-hidden="true">
-                <img src={TILE_PICS[i % TILE_PICS.length]} alt="" width={960} height={660} loading={i < 3 ? "eager" : "lazy"} decoding="async" />
+                <img src={TILE_PICS[i % TILE_PICS.length]} alt="" width={960} height={660} loading="lazy" decoding="async" fetchPriority="low" />
               </span>
               <small>{r.topic} · {r.kind}</small>
               <h3>{r.title}</h3>

@@ -42,7 +42,7 @@ export default function ResearchPage() {
         ))}
       </ul>
 
-      <ResearchBriefs />
+      <div className="rx-lazy"><ResearchBriefs /></div>
     </PageShell>
   );
 }

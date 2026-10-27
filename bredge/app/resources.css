@@ -578,3 +578,6 @@ main.subpage:has(.pxh) .in-filters { background:rgba(255,255,255,.94); }
 .in-ix.rs-index { padding-top:100px; padding-bottom:clamp(72px, 9vw, 120px); }
 .in-filters.rs-topics { display:flex; flex-wrap:wrap; gap:6px; }
 .in-filters.rs-topics .in-chip { flex:none; }
+
+/* Below the 100svh hero: skip style/layout/paint for the tool grid until it nears the viewport. */
+.rs-index { content-visibility:auto; contain-intrinsic-size:auto 1400px; }

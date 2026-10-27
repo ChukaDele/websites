@@ -75,11 +75,13 @@ export function Preloader() {
           });
           watch.observe(html, { attributes: true, attributeFilter: ["class"] });
         }, [], 1.15);
-        // 1. The mark draws in as stripes that thicken to solid.
-        tl.fromTo(logo, { "--fill": "0px", "--shift": "-14px" },
-          { "--fill": "7px", "--shift": "0px", duration: 0.35, ease: "power2.out" }, 0.1)
-          // 2. The mark slides left; "redge" unrolls out from behind it.
-          .to(slide, { p: 1, duration: 0.75, ease: "power3.inOut", onUpdate: applySlide }, 0.35)
+        // 1. The mark draws in as stripes that thicken to solid. This runs in CSS
+        //    (pl-draw, inlined in <head>) from the very first paint, so the logo
+        //    is on screen before any script. Hand over at its end state.
+        logo.style.animation = "none";
+        gsap.set(logo, { "--fill": "7px", "--shift": "0px" });
+        // 2. The mark slides left; "redge" unrolls out from behind it.
+        tl.to(slide, { p: 1, duration: 0.75, ease: "power3.inOut", onUpdate: applySlide }, 0.35)
           // 3. Hold, then the logo breaks back into thin stripes and goes.
           .to(logo, { "--fill": "0px", "--shift": "10px", duration: 0.25, ease: "power2.in" }, 1.25);
 

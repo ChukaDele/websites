@@ -188,3 +188,6 @@
 @media (max-width:900px) {
   .xp, .tq, .ts, .ws, .hu { content-visibility:auto; contain-intrinsic-size:auto 820px; }
 }
+/* The hire-us section sits after every pinned scene, so its height cannot move
+   a ScrollTrigger start: safe to skip its work at every width. */
+.hu { content-visibility:auto; contain-intrinsic-size:auto 820px; }

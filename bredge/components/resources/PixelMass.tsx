@@ -67,7 +67,7 @@ export function PixelMass({ className }: { className?: string }) {
 
     const build = () => {
       const r = canvas.getBoundingClientRect();
-      w = r.width; h = r.height; dpr = Math.min(2, window.devicePixelRatio || 1);
+      w = r.width; h = r.height; dpr = Math.min(1.5, window.devicePixelRatio || 1);
       cell = Math.max(16, Math.round(Math.min(w, 1800) / 54));
       cols = Math.ceil(w / cell); rows = Math.ceil(h / cell);
       canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
@@ -140,14 +140,25 @@ export function PixelMass({ className }: { className?: string }) {
       kick();
     };
 
-    build();
-    draw();
-    const ro = new ResizeObserver(() => { build(); kick(); });
-    ro.observe(canvas);
-    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) kick(); });
-    io.observe(canvas);
-    if (!reduce) timer = window.setInterval(morph, 140);
-
+    // The heading and copy are server-rendered text; the pixel field is decoration,
+    // so it is built only after the first paint, when the browser is idle.
+    let ro: ResizeObserver | undefined, io: IntersectionObserver | undefined;
+    let started = false, idleId = 0, paintRaf = 0;
+    const start = () => {
+      if (started) return;
+      started = true;
+      build();
+      draw();
+      ro = new ResizeObserver(() => { build(); kick(); });
+      ro.observe(canvas);
+      io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) kick(); });
+      io.observe(canvas);
+      if (!reduce) timer = window.setInterval(morph, 140);
+    };
+    paintRaf = requestAnimationFrame(() => {
+      if (typeof window.requestIdleCallback === "function") idleId = window.requestIdleCallback(start, { timeout: 1200 });
+      else idleId = window.setTimeout(start, 200);
+    });
     const host = canvas.parentElement;
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     const onMove = (e: PointerEvent) => {
@@ -160,7 +171,8 @@ export function PixelMass({ className }: { className?: string }) {
     if (host && fine && !reduce) host.addEventListener("pointermove", onMove, { passive: true });
 
     return () => {
-      cancelAnimationFrame(raf); clearInterval(timer); ro.disconnect(); io.disconnect();
+      cancelAnimationFrame(raf); cancelAnimationFrame(paintRaf); clearInterval(timer); ro?.disconnect(); io?.disconnect();
+      if (typeof window.cancelIdleCallback === "function") window.cancelIdleCallback(idleId); else clearTimeout(idleId);
       if (host) host.removeEventListener("pointermove", onMove);
     };
   }, []);
