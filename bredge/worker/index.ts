@@ -75,6 +75,12 @@ function withResponseHeaders(response: Response, request: Request): Response {
   const headers = new Headers(response.headers);
   if (!PRODUCTION_HOSTS.has(new URL(request.url).hostname)) headers.set("X-Robots-Tag", "noindex, nofollow");
   applyCachePolicy(headers, response, request, new URL(request.url));
+  // Point agents at the machine-readable entry points from every HTML response.
+  if ((headers.get("Content-Type") || "").includes("text/html")) {
+    headers.append("Link", '</llms.txt>; rel="describedby"; type="text/plain"');
+    headers.append("Link", '</sitemap.xml>; rel="sitemap"; type="application/xml"');
+    headers.append("Link", '</.well-known/bredge-agent.json>; rel="service-desc"; type="application/json"');
+  }
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("X-Frame-Options", "SAMEORIGIN");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
