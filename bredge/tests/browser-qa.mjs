@@ -38,6 +38,11 @@ async function assertPageBasics(page, path) {
   await page.waitForSelector("html.css-ready", { state: "attached", timeout: 10_000 });
   await page.waitForTimeout(120);
 
+  // Metadata must be in <head> itself, not streamed into a hidden body block.
+  assert.equal(await page.locator("head > title").count(), 1, `${path}: <title> must be in <head>`);
+  assert.equal(await page.locator('head > meta[name="description"]').count(), 1, `${path}: meta description must be in <head>`);
+  assert.equal(await page.locator('head > link[rel="canonical"]').count(), 1, `${path}: canonical must be in <head>`);
+
   // Third-party calendar markup (Cal.com) is not our page structure.
   const h1Count = await page.locator("h1:not(.cal-inline h1)").count();
   assert.equal(h1Count, 1, `${path}: expected exactly one H1, saw ${h1Count}`);
